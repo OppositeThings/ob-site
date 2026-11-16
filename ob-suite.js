@@ -1,6 +1,12 @@
-/* OB SOLID SUITE v16.6 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v16.7 · ob-suite.js · Opposite Things
    Served from GitHub through jsDelivr; the Squarespace Footer holds the settings block (OB_CONF) and one <script src> line.
    Pairs with Header v15.5 (stays in Squarespace), Custom CSS v16.3, ob-drawings.js v16.6 (Store page box, defer).
+   v16.7 = v16.6 +
+     · PHOTO DESCRIPTIONS: product photos whose description (alt text) is a file name ("All_products_test.jpg",
+       "a_new (1).png (Copy)") get the product's name instead: store tiles, product galleries (with the colour),
+       OTHER THINGS and home product blocks. Photos with a real description are left alone.
+     · OB SETTINGS CHECK: if the settings block in the Footer has a mistake, a note in the Squarespace preview says
+       what and where (visitors never see it; add ?obcheck to any address to see it outside the editor).
    v16.6 = v16.5 +
      · SETTINGS FROM THE FOOTER: window.OB_CONF in the Footer (category lines, categories, colour chips,
        SIZE GUIDE words, bag title, default print size) replaces the copies below, which stay as the backup.
@@ -258,26 +264,47 @@ try {
    it: "Disegnati in studio, taftati a mano in lana,\nrealizzati su ordinazione. Via le scarpe."
   }
  };
+ const confIssues = [];
  const OVR = (() => {
   try {
    const o = window.OB_CONF;
-   return o && typeof o === "object" ? o : {};
+   if (o === undefined) {
+    if (Array.from(document.scripts).some(s => !s.src && /window\.OB_CONF\s*=/.test(s.textContent || ""))) confIssues.push("there's a typo in it (often a missing comma, quote or bracket), so none of it is being used");
+    return {};
+   }
+   if (o && typeof o === "object") return o;
+   confIssues.push("it isn't a group of settings in { }, so none of it is being used");
+   return {};
   } catch {
    return {};
   }
  })();
  const isWords = w => !!w && typeof w === "object" && typeof w.en === "string";
- if (Array.isArray(OVR.colourLinks)) CONF.colourLinks = OVR.colourLinks.filter(d => d && typeof d.design === "string" && Array.isArray(d.colours));
- if (isWords(OVR.sizeGuide)) CONF.sizeGuide = OVR.sizeGuide;
- if (typeof OVR.cartTitle === "string") CONF.cartTitle = OVR.cartTitle;
- if (typeof OVR.defaultSize === "string") CONF.defaultSize = OVR.defaultSize;
- if (OVR.copy && typeof OVR.copy === "object") Object.keys(OVR.copy).forEach(k => {
-  const w = OVR.copy[k];
-  if (isWords(w)) COPY[k.toLowerCase()] = {
-   en: w.en,
-   it: typeof w.it === "string" ? w.it : w.en
-  };
- });
+ if ("colourLinks" in OVR) {
+  if (Array.isArray(OVR.colourLinks)) {
+   const ok = OVR.colourLinks.filter(d => d && typeof d.design === "string" && Array.isArray(d.colours));
+   if (ok.length < OVR.colourLinks.length) confIssues.push(`colourLinks: ${OVR.colourLinks.length - ok.length} design(s) skipped; each needs design: "…" and colours: [ … ]`);
+   CONF.colourLinks = ok;
+  } else confIssues.push("colourLinks: should be a list in [ ]; using the backup colour chips");
+ }
+ if ("sizeGuide" in OVR) {
+  if (isWords(OVR.sizeGuide)) CONF.sizeGuide = OVR.sizeGuide; else confIssues.push('sizeGuide: needs en: "…"; using the backup');
+ }
+ if ("cartTitle" in OVR) {
+  if (typeof OVR.cartTitle === "string") CONF.cartTitle = OVR.cartTitle; else confIssues.push("cartTitle: should be words in quotes; using the backup");
+ }
+ if ("defaultSize" in OVR) {
+  if (typeof OVR.defaultSize === "string") CONF.defaultSize = OVR.defaultSize; else confIssues.push("defaultSize: should be words in quotes; using the backup");
+ }
+ if ("copy" in OVR) {
+  if (OVR.copy && typeof OVR.copy === "object") Object.keys(OVR.copy).forEach(k => {
+   const w = OVR.copy[k];
+   if (isWords(w)) COPY[k.toLowerCase()] = {
+    en: w.en,
+    it: typeof w.it === "string" ? w.it : w.en
+   }; else confIssues.push(`copy.${k}: needs en: "…"; using the backup line`);
+  }); else confIssues.push("copy: should be a group in { }; using the backup lines");
+ }
  const catsFrom = list => {
   if (!Array.isArray(list)) return null;
   const out = list.filter(c => c && typeof c.key === "string" && typeof c.label === "string" && typeof c.path === "string").map(c => ({
@@ -290,7 +317,12 @@ try {
   }));
   return out.some(c => c.key === "all") ? out : null;
  };
- const CATEGORIES = catsFrom(OVR.categories) || [ {
+ let catsOvr = null;
+ if ("categories" in OVR) {
+  catsOvr = catsFrom(OVR.categories);
+  if (!catsOvr) confIssues.push("categories: the list needs an ALL chip, and each chip needs key, label and path; using the backup chips"); else if (Array.isArray(OVR.categories) && catsOvr.length < OVR.categories.length) confIssues.push(`categories: ${OVR.categories.length - catsOvr.length} chip(s) skipped; each needs key, label and path`);
+ }
+ const CATEGORIES = catsOvr || [ {
   key: "all",
   label: "ALL",
   path: "/store",
@@ -3825,6 +3857,84 @@ try {
   safeRun("imgCornersSet", imgCornersSet);
   onScroll();
  });
+ const FILE_ALT = /\.(jpe?g|png|webp|gif|heic|heif|tiff?|avif)\b|\(copy\)\s*$|^(img|dsc|dscf|pxl|screenshot)[\s_-]?\d/i;
+ const ALT_ITEM = ".product-list-item, .grid-item, .product-block, .sqs-block-product, .summary-item, .list-item";
+ const ALT_TITLE = ".product-list-item-title, .grid-title, .product-title, .product-block-title, .summary-title, [class*='item-title']";
+ const ALT_GALLERY = ".product-gallery, .ProductItem-gallery, [data-product-gallery]";
+ const ALT_SLIDE = ".product-gallery-slides-item, .product-gallery-thumbnails-item, .ProductItem-gallery-slides-item, .ProductItem-gallery-thumbnails-item";
+ const altText = el => el ? Array.from(el.childNodes).filter(n => !(n.nodeType === 1 && n.classList?.contains("obNameOv"))).map(n => n.textContent).join("").replace(/\s+/g, " ").trim() : "";
+ const altCase = t => /[a-z]/.test(t) || !/[A-Z]{2}/.test(t) ? t : t.toLowerCase().replace(/(^|[\s(\-\/])([a-z])/g, (m, a, b) => a + b.toUpperCase()).replace(/ (And|Of|The|In|On|With|For) /g, m => m.toLowerCase());
+ const altBad = img => {
+  if (img.dataset.obAlt) return false;
+  const a = img.getAttribute("alt");
+  return a === null || FILE_ALT.test(a.trim());
+ };
+ const altFix = () => {
+  const imgs = qsa("main img").filter(altBad);
+  if (!imgs.length) return;
+  const detail = isProductDetailPage() ? qs(".product-detail, .ProductItem") : null;
+  let detailName = "";
+  if (detail) {
+   detailName = altCase(altText(qs("h1.product-title, .product-meta h1, h1", detail)));
+   const cd = colourDesignNow();
+   const here = cd && cd.colours.find(c => slugOf(c.path) === cd.here);
+   if (detailName && here && here.name && !detailName.toUpperCase().includes(String(here.name).toUpperCase())) detailName += ", " + here.name;
+  }
+  imgs.forEach(img => {
+   let scope = null, name = "";
+   const gallery = detail && detail.contains(img) ? img.closest(ALT_GALLERY) : null;
+   if (gallery) {
+    scope = gallery;
+    name = detailName;
+   } else {
+    scope = img.closest(ALT_ITEM);
+    name = scope ? altCase(altText(qs(ALT_TITLE, scope))) : "";
+   }
+   if (!name) return;
+   img.dataset.obAltWas = img.getAttribute("alt") || "";
+   img.dataset.obAlt = "1";
+   if (img.closest(".product-image-zoom-duplicate")) {
+    img.setAttribute("alt", "");
+    return;
+   }
+   const slide = gallery ? img.closest(ALT_SLIDE) : null;
+   const n = Math.max(0, slide && slide.parentElement ? Array.from(slide.parentElement.children).filter(c => c.matches(ALT_SLIDE)).indexOf(slide) : qsa("img", scope).filter(i => !i.closest(".product-image-zoom-duplicate")).indexOf(img));
+   img.setAttribute("alt", n === 0 ? name : `${name}, photo ${n + 1}`);
+  });
+ };
+ const confWarn = () => {
+  if (!confIssues.length) return;
+  try {
+   console.warn("[OB SETTINGS] " + confIssues.join(" · "));
+  } catch {}
+  const preview = window.self !== window.top && !/[?&]ob-popup=/.test(location.search);
+  if (!preview && !/[?&]obcheck\b/.test(location.search)) return;
+  if (document.getElementById("obConfWarn") || !document.body) return;
+  const box = document.createElement("div");
+  box.id = "obConfWarn";
+  box.setAttribute("role", "status");
+  box.style.cssText = "position:fixed;left:12px;bottom:12px;z-index:2147483647;max-width:min(560px,calc(100vw - 24px));padding:12px 40px 12px 14px;background:#fff1b8;color:#111;border:1px solid #111;border-radius:5px;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:none;letter-spacing:0;text-align:left";
+  const head = document.createElement("strong");
+  head.textContent = "OB SETTINGS (Footer) needs a fix";
+  box.appendChild(head);
+  confIssues.forEach(t => {
+   const line = document.createElement("div");
+   line.textContent = "· " + t;
+   box.appendChild(line);
+  });
+  const note = document.createElement("div");
+  note.textContent = "Only you see this note, in the Squarespace preview. Visitors get the backup copies inside ob-suite.js.";
+  note.style.cssText = "opacity:.7;margin-top:6px";
+  box.appendChild(note);
+  const x = document.createElement("button");
+  x.type = "button";
+  x.textContent = "×";
+  x.setAttribute("aria-label", "Close");
+  x.style.cssText = "position:absolute;top:6px;right:8px;border:0;background:none;font:16px/1 inherit;color:#111;cursor:pointer;padding:4px";
+  x.addEventListener("click", () => box.remove());
+  box.appendChild(x);
+  document.body.appendChild(box);
+ };
  const initMainObserver = () => {
   if (STATE.obs.main) return;
   if (!(isHome() || isShopContext() || isStorePage())) return;
@@ -3864,6 +3974,7 @@ try {
     if (real.some(touchesPrice)) buttonPriceSync();
    }
    if (isStorePage()) scheduleRaf("copy", applyCopy);
+   scheduleRaf("alt", () => safeRun("altFix", altFix));
   };
   STATE.obs.main = new MutationObserver(callback);
   const opts = {
@@ -3893,6 +4004,10 @@ try {
   bindCookiePrefs();
   bindLeaveFade();
   bindHeadWarp();
+  window.addEventListener("load", () => {
+   safeRun("altFix", altFix);
+   setTimeout(() => safeRun("altFix", altFix), 2500);
+  });
   const onNav = () => {
    markViewportDirty();
    setTimeout(initForCurrentPage, 50);
@@ -3990,6 +4105,7 @@ try {
    safeRun("cartInit", cartInit);
    safeRun("cartBarInit", cartBarInit);
    safeRun("cartLabelInit", cartLabelInit);
+   safeRun("altFix", altFix);
    STATE.scrollY = window.scrollY || 0;
    onScroll();
   } finally {
@@ -4093,6 +4209,7 @@ try {
   safeRun("evenLines", evenLines);
  }
  onReady(initForCurrentPage);
+ onReady(() => safeRun("confWarn", confWarn));
  window.addEventListener("pageshow", e => {
   document.documentElement.classList.remove("obLeaving", "obLeavingInStore", "obLeavingTop");
   if (e.persisted) {
