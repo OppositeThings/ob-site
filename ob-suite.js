@@ -1,7 +1,19 @@
-/* OB SOLID SUITE v16.5 · ob-suite.js · Opposite Things
-   Served from GitHub through jsDelivr; the Squarespace Footer holds one <script src> line.
-   Pairs with Header v15.5 (stays in Squarespace), Custom CSS v16.3, ob-drawings.js (Store page box).
-   To change: edit here, publish a new release (v16.6…), change the version in the Footer line. */
+/* OB SOLID SUITE v16.6 · ob-suite.js · Opposite Things
+   Served from GitHub through jsDelivr; the Squarespace Footer holds the settings block (OB_CONF) and one <script src> line.
+   Pairs with Header v15.5 (stays in Squarespace), Custom CSS v16.3, ob-drawings.js v16.6 (Store page box, defer).
+   v16.6 = v16.5 +
+     · SETTINGS FROM THE FOOTER: window.OB_CONF in the Footer (category lines, categories, colour chips,
+       SIZE GUIDE words, bag title, default print size) replaces the copies below, which stay as the backup.
+       A mistake in that block can't break the site: anything missing or malformed falls back to these.
+     · FINDS line: the missing space after "antique," put back (backup copy below).
+     · SIZES panel: a design's drawing is also found through its colour chips (same design name), so a new
+       colourway only needs adding to the colour chips; the drawing's own paths are optional.
+     · The drawings are looked for when needed, not at start, so the Store box can load them with defer
+       (no wait before the page shows); if they arrive late, ob-drawings.js calls window.obDimsReady.
+     · Store chips are announced as links again (the list roles replaced "link" for screen readers).
+     · Image-block links start whether or not the page has finished loading.
+   To change code: edit here, publish a new release (v16.7…), change the version in the Footer line.
+   To change words or lists: edit OB_CONF in the Footer; no release needed. */
 /* ---- main suite ---- */
 try {
 (() => {
@@ -234,7 +246,7 @@ try {
    it: "Piccole cose per la casa.\nUtili, quasi sempre.\nBuona compagnia, sempre."
   },
   finds: {
-   en: "Mid-century and antique,found across Sicily.\nOne of each, then gone.",
+   en: "Mid-century and antique, found across Sicily.\nOne of each, then gone.",
    it: "Modernariato e antiquariato,\ntrovati in giro per la Sicilia.\nPezzi unici, poi spariscono."
   },
   furniture: {
@@ -246,7 +258,39 @@ try {
    it: "Disegnati in studio, taftati a mano in lana,\nrealizzati su ordinazione. Via le scarpe."
   }
  };
- const CATEGORIES = [ {
+ const OVR = (() => {
+  try {
+   const o = window.OB_CONF;
+   return o && typeof o === "object" ? o : {};
+  } catch {
+   return {};
+  }
+ })();
+ const isWords = w => !!w && typeof w === "object" && typeof w.en === "string";
+ if (Array.isArray(OVR.colourLinks)) CONF.colourLinks = OVR.colourLinks.filter(d => d && typeof d.design === "string" && Array.isArray(d.colours));
+ if (isWords(OVR.sizeGuide)) CONF.sizeGuide = OVR.sizeGuide;
+ if (typeof OVR.cartTitle === "string") CONF.cartTitle = OVR.cartTitle;
+ if (typeof OVR.defaultSize === "string") CONF.defaultSize = OVR.defaultSize;
+ if (OVR.copy && typeof OVR.copy === "object") Object.keys(OVR.copy).forEach(k => {
+  const w = OVR.copy[k];
+  if (isWords(w)) COPY[k.toLowerCase()] = {
+   en: w.en,
+   it: typeof w.it === "string" ? w.it : w.en
+  };
+ });
+ const catsFrom = list => {
+  if (!Array.isArray(list)) return null;
+  const out = list.filter(c => c && typeof c.key === "string" && typeof c.label === "string" && typeof c.path === "string").map(c => ({
+   key: c.key.toLowerCase(),
+   label: c.label,
+   path: c.path,
+   match: Array.isArray(c.match) && c.match.length ? c.match.map(m => String(m).toLowerCase()) : [ c.key.toLowerCase() ],
+   live: c.live !== false,
+   page: !!c.page
+  }));
+  return out.some(c => c.key === "all") ? out : null;
+ };
+ const CATEGORIES = catsFrom(OVR.categories) || [ {
   key: "all",
   label: "ALL",
   path: "/store",
@@ -633,7 +677,6 @@ try {
    row.setAttribute("aria-label", "Shop categories");
    const isc = document.createElement("div");
    isc.className = "obChipsInlineScroller";
-   isc.setAttribute("role", "list");
    row.appendChild(isc);
    list.insertBefore(row, list.firstChild);
    isc.addEventListener("click", e => {
@@ -684,7 +727,6 @@ try {
    bar.setAttribute("aria-label", "Shop categories");
    const sc = document.createElement("div");
    sc.id = IDS.chipsScroller;
-   sc.setAttribute("role", "list");
    bar.appendChild(sc);
    document.body?.prepend(bar);
   }
@@ -768,7 +810,6 @@ try {
    a.className = "obChipBtn";
    a.href = item.path;
    a.textContent = item.label;
-   a.setAttribute("role", "listitem");
    a.setAttribute("aria-current", item.key === activeKey ? "true" : "false");
    frag.appendChild(a);
   });
@@ -952,7 +993,7 @@ try {
     const isFrame = (host.textContent || "").toLowerCase().includes("frame");
     if (!isFrame) preselectSize(select);
     buildChips(select, host, "size", isFrame ? "SELECT FRAME:" : "SELECT SIZE:");
-    if (!isFrame) sizeGuidePlace(host.querySelector(".chips-size-label"));
+    if (isFrame) host.querySelector(".chips-size-label")?.classList.add("obFrameLabel"); else sizeGuidePlace(host.querySelector(".chips-size-label"));
     return;
    }
    if (choices.length > 1) {
@@ -982,7 +1023,8 @@ try {
    if (colours.length > 1 && colours.some(c => slugOf(c.path) === here)) return {
     colours,
     here,
-    label: design.label
+    label: design.label,
+    design: design.design
    };
   }
   return null;
@@ -1158,10 +1200,16 @@ try {
   }
   return dimsPaper.D;
  };
+ const dimsList = () => Array.isArray(window.obDimensions) ? window.obDimensions : CONF.dimensions || [];
  const dimsDesignNow = () => {
   const here = slugOf(location.pathname);
   if (!here) return null;
-  return (CONF.dimensions || []).find(d => d && d.outline && d.sizes && (d.paths || []).some(p => slugOf(p) === here)) || dimsPaperNow(here);
+  const list = dimsList().filter(d => d && d.outline && d.sizes);
+  const byPath = list.find(d => (d.paths || []).some(p => slugOf(p) === here));
+  if (byPath) return byPath;
+  const cd = colourDesignNow();
+  const name = cd && typeof cd.design === "string" ? cd.design.trim().toUpperCase() : "";
+  return name && list.find(d => String(d.design || "").trim().toUpperCase() === name) || dimsPaperNow(here);
  };
  const dimsSelect = () => {
   const all = qsa("#main-product-variants select").filter(s => {
@@ -1527,6 +1575,11 @@ try {
    dims.ro.observe(host.querySelector(".obDimsStage"));
   }
   return true;
+ };
+ window.obDimsReady = () => {
+  if (!isProductDetailPage()) return;
+  safeRun("dimsPlace", dimsPlace);
+  qsa("#main-product-variants .chips-size-label:not(.obFrameLabel)").forEach(l => safeRun("sizeGuidePlace", () => sizeGuidePlace(l)));
  };
  const headerBottom = () => {
   let b = 0;
@@ -4290,7 +4343,7 @@ try {
   })();
  });
  run("fluid image links", function() {
-  document.addEventListener('DOMContentLoaded', function() {
+  var go = function() {
    document.querySelectorAll('.sqs-block[data-definition-name="website.components.imageFluid"]').forEach(function(block) {
     var link = block.querySelector('a.sqs-block-image-link[href]');
     if (!link || block.dataset.obLinkFix) return;
@@ -4302,7 +4355,8 @@ try {
      if (window.obLeaveTo) window.obLeaveTo(href); else window.location.href = href;
     });
    });
-  });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
  });
  run("video section link", function() {
   document.addEventListener('click', function(e) {
