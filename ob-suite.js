@@ -4,7 +4,8 @@
    v17.0 = v16.7, tidied; nothing on the site looks or works differently, except for keyboard users in the pop-up
    and the photo zoom below:
      · POP-UP: while the newsletter / withdrawal / Klarna pop-up is open, the page behind it can't be reached with
-       Tab (it's made inert), so keyboard and screen-reader users stay in the pop-up until CLOSE or Esc.
+       Tab (it's made inert), so keyboard and screen-reader users stay in the pop-up until CLOSE or Esc. CLOSE
+       now really gets the focus as the pop-up opens (it was asked for while the pop-up was still hidden).
      · PAGE TYPE: home, store and bag pages are read from the Header's page labels (ob-page-home, ob-page-store,
        ob-page-cart, ob-page-product), so the list of pages lives in one place; the address is the backup if a
        label is missing. Worked out once per page (it can't change on a 7.1 site).
@@ -3725,9 +3726,11 @@ try {
   popInert(true);
   popLock();
   NEWS.el.getBoundingClientRect();
-  requestAnimationFrame(() => NEWS.el.classList.add("obPopShow"));
-  NEWS.el.querySelector(".obPopClose").focus({
-   preventScroll: true
+  requestAnimationFrame(() => {
+   NEWS.el.classList.add("obPopShow");
+   NEWS.el.querySelector(".obPopClose").focus({
+    preventScroll: true
+   });
   });
   f.el.contentWindow?.postMessage({
    obPopMeasure: 1
