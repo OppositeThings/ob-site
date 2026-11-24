@@ -17,6 +17,8 @@
      · PHOTO ZOOM UNDER TEXT (home, About hero): a photo that zooms on rollover stays zoomed while the pointer is
        on text laid over it (SHOP SLOT on INTRODUCING SLOT CHAIR); it used to zoom back out. The suite marks the
        photo .obZoomHold; Custom CSS 9.2 and 9.3 zoom it.
+     · STORE FILTER, STILL LOADING: on the ALL page, if a chip's products take more than 0.4s to arrive, the chosen
+       chip pulses until they show (html.obFilterSlow; Custom CSS "STORE FILTER, STILL LOADING").
    v16.7 = v16.6 +
      · PHOTO DESCRIPTIONS: product photos whose description (alt text) is a file name ("All_products_test.jpg",
        "a_new (1).png (Copy)") get the product's name instead: store tiles, product galleries (with the colour),
@@ -2549,7 +2551,18 @@ try {
   waitMs: 3e3,
   maxAgeMs: 864e5,
   outMs: 200,
-  inMs: 300
+  inMs: 300,
+  slowMs: 400
+ };
+ const filterSlow = token => {
+  const d = document.documentElement;
+  const t = setTimeout(() => {
+   if (token === filterState.token) d.classList.add("obFilterSlow");
+  }, FILTER.slowMs);
+  return () => {
+   clearTimeout(t);
+   d.classList.remove("obFilterSlow");
+  };
  };
  const filterState = {
   landed: false,
@@ -2787,8 +2800,10 @@ try {
   const d = document.documentElement;
   const out = d.classList.contains("obFilterWait") ? filterFade(box, 0, 0, 0) : filterFade(box, null, 0, FILTER.outMs);
   d.classList.remove("obFilterWait");
+  const slowDone = filterSlow(token);
   Promise.all([ out, filterNeed(key) ]).then(([, ok]) => {
    if (token !== filterState.token) return;
+   slowDone();
    if (!ok || !filterComplete(key)) {
     filterGiveUp(key);
     return;
@@ -2825,8 +2840,10 @@ try {
   if (key !== "all" && filterComplete(key)) filterShow(key); else if (key !== "all") {
    d.classList.add("obFilterWait");
    const token = filterState.token;
+   const slowDone = filterSlow(token);
    filterFetch(key).then(() => {
     if (token !== filterState.token) return;
+    slowDone();
     if (!filterComplete(key)) {
      filterGiveUp(key);
      return;
