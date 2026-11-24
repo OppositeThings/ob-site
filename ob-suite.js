@@ -22,6 +22,9 @@
        chip pulses until they show (html.obFilterSlow; Custom CSS 5.6b).
      · STORE CHIPS AT THE FOOTER: scrolling back up from the footer, the pop-out chips return once the footer's top
        edge is below the middle of the screen (CONF.chipsFooterShare); they used to wait until it had left the screen.
+     · STORE CHIPS AT THE TOP: the pop-out chips can come out as soon as the chips row in the page has scrolled
+       away under the header, and stay until it comes back, so one hands over to the other (they used to wait for
+       20% of the page; that stays only for a page without the row).
    v16.7 = v16.6 +
      · PHOTO DESCRIPTIONS: product photos whose description (alt text) is a file name ("All_products_test.jpg",
        "a_new (1).png (Copy)") get the product's name instead: store tiles, product galleries (with the colour),
@@ -889,7 +892,8 @@ try {
   if (now() < STATE.chips.graceUntil) return;
   if (STATE.headScroll) return;
   const y = STATE.scrollY;
-  const startY = (document.documentElement.scrollHeight - window.innerHeight) * .2;
+  const inflow = isCompact() ? qs("#" + IDS.chipsInline + " .obChipBtn") : qs("ul[data-ob-owned] a");
+  const startY = inflow && inflow.offsetHeight ? 0 : (document.documentElement.scrollHeight - window.innerHeight) * .2;
   const footer = qs("#footer-sections");
   const atFooter = !!footer && footer.getBoundingClientRect().top < window.innerHeight * CONF.chipsFooterShare;
   if (y < startY || !chipsInflowPassed() || atFooter) {
