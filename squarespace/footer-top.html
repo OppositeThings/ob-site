@@ -1,4 +1,4 @@
-<!-- OB first photos early v1 · starts the photos at the top of the page loading straight away, instead of waiting for Squarespace's own script (about 1 second later). Same files Squarespace asks for, so nothing downloads twice. -->
+<!-- OB first photos early v2 · starts the photos at the top of the page loading straight away, instead of waiting for Squarespace's own script (about 1 second later). Same files Squarespace asks for, so nothing downloads twice. v2: on product pages the first photo also gets its address straight away, so the page's short wait (Header, up to 0.8s) ends as soon as that photo is ready. -->
 <script>
 (function () {
   try {
@@ -66,7 +66,9 @@
       var r = boxOf(img);
       if (!r || r.height <= 0) continue;
       if (!inGallery && (r.top >= vh || r.bottom <= 0)) continue;
-      start(pick(img, r.width));
+      var url = pick(img, r.width);
+      start(url);
+      if (inGallery && url && !img.getAttribute("src")) img.setAttribute("src", url);
     }
   } catch (e) {}
 })();
