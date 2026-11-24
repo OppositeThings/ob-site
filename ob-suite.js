@@ -1,8 +1,8 @@
 /* OB SOLID SUITE v17.0 · ob-suite.js · Opposite Things
    Served from GitHub through jsDelivr; the Squarespace Footer holds the settings block (OB_CONF) and one <script src> line.
    Pairs with Header v15.5 (stays in Squarespace), Custom CSS v17.0, ob-drawings.js v16.6 (Store page box, defer).
-   v17.0 = v16.7, tidied; nothing on the site looks or works differently, except for keyboard users in the pop-up
-   and the photo zoom below:
+   v17.0 = v16.7, tidied. Under the hood only, except for keyboard users in the pop-up and the visible changes
+   listed after this part:
      · POP-UP: while the newsletter / withdrawal / Klarna pop-up is open, the page behind it can't be reached with
        Tab (it's made inert), so keyboard and screen-reader users stay in the pop-up until CLOSE or Esc. CLOSE
        now really gets the focus as the pop-up opens (it was asked for while the pop-up was still hidden).
@@ -14,7 +14,7 @@
        check. Squarespace 7.1 loads every page in full, so none of them ever ran. The re-start after the
        back button restores a page from memory, and after a phone is turned back from landscape, stays.
      · FURNITURE taken out of the backup chips and lines (OB SETTINGS hasn't had it since v16.6).
-   v17.0 also has one visible change, asked for:
+   v17.0 also has these visible changes, asked for (the last three from the loading work):
      · PHOTO ZOOM UNDER TEXT (home, About hero): a photo that zooms on rollover stays zoomed while the pointer is
        on text laid over it (SHOP SLOT on INTRODUCING SLOT CHAIR); it used to zoom back out. The suite marks the
        photo .obZoomHold; Custom CSS 9.2 and 9.3 zoom it.
