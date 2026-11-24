@@ -5179,4 +5179,30 @@ main .section-background .sqs-video-background-native {
   }
 }
 
+/* ----------------------------------------------------------------------
+   STORE FILTER, STILL LOADING
+   On the ALL page, if a chip's products take more than 0.4s to arrive
+   (the category isn't saved on this device yet and the connection is
+   slow), the chosen chip pulses gently until they show (the suite sets
+   html.obFilterSlow). With reduced motion it dims instead.
+   ---------------------------------------------------------------------- */
+
+@keyframes obChipPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+
+html.obFilterSlow .obChipBtn[aria-current="true"],
+html.obFilterSlow ul[data-ob-owned] a.category-link.active {
+  animation: obChipPulse 1.1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.obFilterSlow .obChipBtn[aria-current="true"],
+  html.obFilterSlow ul[data-ob-owned] a.category-link.active {
+    animation: none;
+    opacity: .5;
+  }
+}
+
 /* END */
