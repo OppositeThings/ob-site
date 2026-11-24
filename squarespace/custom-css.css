@@ -1,17 +1,31 @@
 /* ======================================================================
-   OB SHOP CSS — Squarespace 7.1 — v16.3
+   OB SHOP CSS — Squarespace 7.1 — v17.0
    Opposite Things · Website → Pages → Custom Code → Custom CSS.
-   Pairs with Header v15.5 and Footer v16.5 (rug drawings included).
+   Pairs with Header v15.5, the Footer (OB SETTINGS + ob-suite.js v17.0
+   from GitHub) and the Store page's ob-drawings.js. "The suite" in the
+   notes below is ob-suite.js: the code that used to sit in the Footer.
+
+   v17.0 — tidy-up: looks exactly as v16.3. The patches that sat at the
+     bottom are in their parts: 5.4b (the category line on its two
+     lines), 7.1b (phones: KLARNA under the price), 7.6b (accordion links
+     and lists), 7.13b (rug colour chips with no sizes), 8.2 (the empty
+     bag), 9.3b (About's TAKE SOMETHING HOME chip), 9.6 (home hero),
+     10.5b (PREV / NEXT rounding off). The About chip and PREV / NEXT use
+     the chip colours and corners from 1.1 (same values). Taken out: 3.2's
+     "not underlined" for the desktop nav's current page and its hover
+     (3.7's underline always won), and 7.8's second copy of the
+     accordion heads' easing (now one rule in 7.6). Notes brought up to
+     date (the suite in place of the Footer, 7.4, 4.2).
 
    v16.3 — speed pass: the image / link rollover pairs (2.6, 2.8) only
      for the links the site has (rugs, prints, objects); phones, products
      with no sizes: KLARNA under the price, right-aligned (7.1b).
 
    v16.2 — rugs with no sizes: the colour chips keep the usual gap above
-     the button (7.13b, at the bottom). The empty bag (8.1b).
+     the button (7.13b). The empty bag (8.1b, now 8.2).
 
    v16.1 — home: the same space above and below the landing paragraph
-     (9.5). The FAQ and policy pages' even lines are in the Footer.
+     (9.5). The FAQ and policy pages' even lines are in the suite.
 
    v16.0 — consolidation of v15.27: looks exactly as v15.27. The sections
      added through v15 (14 to 27) are folded into the parts they belong
@@ -59,7 +73,7 @@
    them in bulk.
 
    FRAGILE (flagged inline): the landscape easter egg (13.2), which is
-   paired with the Footer's test for a phone on its side.
+   paired with the suite's test for a phone on its side.
 
    PAGE LABELS (set on <html> by the Header, from the address):
      ob-page-home ...... /
@@ -173,7 +187,7 @@ body.collection-type-products main {
    site font too, so an old font isn't downloaded. Bold (B in the editor)
    shows as Medium.
    Capitals: there's no site-wide capitals rule; text shows as typed.
-   The list here is where Squarespace or the Footer writes the words
+   The list here is where Squarespace or the suite writes the words
    itself (the category line, product names and prices, SOLD, ADD TO
    CART, READ MORE, the bag page, the language picker, the menu's
    controls). Chips, BAG, PREV / NEXT and the forms set their own.
@@ -547,8 +561,13 @@ body .header-announcement-bar-wrapper {
 
 #header .header-nav-item--active a,
 #header a[aria-current="page"] {
-  text-decoration: none !important;
   font-weight: 500 !important;
+}
+
+/* The page you're on in the desktop nav is underlined: see the end of
+   3.7. This keeps other current-page links (the phone menu) plain. */
+#header a[aria-current="page"] {
+  text-decoration: none !important;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -558,8 +577,6 @@ body .header-announcement-bar-wrapper {
     font-weight: 500 !important;
   }
 
-  #header .header-nav-item--active a:hover,
-  #header .header-nav-item--active a:focus-visible,
   #header a[aria-current="page"]:hover,
   #header a[aria-current="page"]:focus-visible {
     text-decoration: none !important;
@@ -681,7 +698,7 @@ body .header-announcement-bar-wrapper {
 
 /* ----------------------------------------------------------------------
    3.4 BAG
-   The cart icon becomes the word BAG, in the nav's own type (the Footer
+   The cart icon becomes the word BAG, in the nav's own type (the suite
    copies it into --obNav*), with the count when the bag isn't empty:
    BAG (2). One piece of text, so the hover underline runs unbroken.
    Medium on the bag page and on hover. To say CART: change "BAG" in all
@@ -1273,7 +1290,7 @@ body.header--menu-open .header-menu .header-menu-nav-folder[data-folder="root"] 
    The bar sits under the header. It shows only further down a store
    page, sliding in when you scroll up and away when you scroll down,
    once the page's own chips are out of sight (desktop: the row under
-   the category line; phones: the row above the products). The Footer
+   the category line; phones: the row above the products). The suite
    builds both. "Phones" here means the phone header (html.ob-compact,
    to 799px).
    Phones: the row in the page runs edge to edge so it scrolls off the
@@ -1344,7 +1361,7 @@ html.obChipsHidden #obShopChipsBar {
 }
 
 /* Phones: the chips row in the page, between the category line and the
-   products (the Footer builds it). It runs edge to edge so it scrolls
+   products (the suite builds it). It runs edge to edge so it scrolls
    off the sides, with the first chip lined up with the products.
    Space under the row: the 12px below. */
 #obShopChipsInline {
@@ -1417,7 +1434,7 @@ html.obChipsHidden #obShopChipsScroller {
   }
 }
 
-/* ---- 8.5 phone chips: while the header is in its phone layout ----
+/* ---- Phone chips: while the header is in its phone layout ----
    (html.ob-compact, up to 799px), not only up to 767px. The bar's
    position moved here from the block above in v14.11; the chip sizes
    repeat :root above for the store chips only, so product pages from
@@ -1522,7 +1539,7 @@ body.collection-type-products .product-list-filters-drawer-open-button-container
    4.4 THE DESKTOP ROW
    From 768px with the desktop header (product pages from 768px too, for
    OTHER THINGS): the category links under the category line, built by
-   the Footer as a row of chips (ul[data-ob-owned]) in place of
+   the suite as a row of chips (ul[data-ob-owned]) in place of
    Squarespace's own. The :where() pair is written as two prefixes, not
    one with a comma, because LESS can't read :where(a, b:not(c)).
    ---------------------------------------------------------------------- */
@@ -1725,7 +1742,7 @@ body.collection-type-products .product-list .product-list-item .product-list-ite
    store and under OTHER THINGS on product pages.
    Hover (mouse): pointing anywhere on a product turns its name Bold and
    eases back; keyboard focus too.
-   The name scramble (Footer: names shuffle with the category) is drawn
+   The name scramble (suite: names shuffle with the category) is drawn
    over the name while it carries .obNameShuf; a scramble anywhere else
    stays hidden, so a copy left behind can't show as stray letters.
    ---------------------------------------------------------------------- */
@@ -1796,7 +1813,7 @@ html.ob-page-store .product-list .product-list-item .product-list-item-price {
 /* ----------------------------------------------------------------------
    5.3 HOVER IMAGE, TOUCH FLIP
    Mouse: the second photo shows on hover. Touch: never on its own; the
-   Footer's Touch Flip shows it while a finger is on the product
+   suite's Touch Flip shows it while a finger is on the product
    (obTouchFlipActive). The two touch queries are different on purpose:
    "(hover: none) and (pointer: coarse)" needs both, "(hover: none),
    (pointer: coarse)" either one. Don't merge them.
@@ -1886,6 +1903,26 @@ html.ob-page-store .product-list .product-list-item .product-list-item-price {
 }
 
 /* ----------------------------------------------------------------------
+   5.4b THE CATEGORY LINE ON ITS TWO SET LINES
+   The line keeps the two lines it's typed on (white-space: pre), across
+   the grid but its outer columns; phones: 13px, smaller on narrow
+   screens so it never wraps. Found by block ID.
+   ---------------------------------------------------------------------- */
+
+.fe-block-yui_3_17_2_1_1770139892259_8633 {
+  grid-column: ~"2 / -2" !important;
+}
+#block-yui_3_17_2_1_1770139892259_8633 p {
+  white-space: pre !important;
+}
+@media (max-width: 767px) {
+  #block-yui_3_17_2_1_1770139892259_8633 p {
+    font-size: ~"min(13px, 3vw)" !important;
+  }
+}
+
+
+/* ----------------------------------------------------------------------
    5.5 NO SQUARESPACE FADE-IN ON THE HEADER OR STORE TEXT
    Squarespace's site-wide Fade (Site Styles → Animations) keeps elements
    invisible until its scripts load, about half a second on iPhone. The
@@ -1906,11 +1943,11 @@ html.ob-page-store:not(.ob-page-product) :is(.preFade, .preSlide, .preScale, .pr
 
 /* ----------------------------------------------------------------------
    5.6 CHIPS IN PLACE (THE ALL PAGE)
-   On the ALL page the chips sort the products in place (Footer, STORE:
+   On the ALL page the chips sort the products in place (suite, STORE:
    CHIPS IN PLACE; /store#rugs). Other categories' products are hidden
    (obTileOff). Arriving at /store#rugs, the products wait out of sight
-   until the Footer knows which ones are rugs (at most 3s): obHashLanding
-   (Header) covers the moment before the Footer starts, obFilterSet is set
+   until the suite knows which ones are rugs (at most 3s): obHashLanding
+   (Header) covers the moment before the suite starts, obFilterSet is set
    once it has, obFilterWait while it fetches.
    ---------------------------------------------------------------------- */
 
@@ -1957,7 +1994,7 @@ html.ob-page-store.obFilterWait .product-list-container {
    the header (with the menu) fades too.
    Images: 0.5s (the Header's own is the fallback), carrying the 0.6s
    zoom transition as well, because this rule outranks the hover zooms.
-   Speeds: the 300ms / 500ms values. Keep the 200ms fade-outs (the Footer
+   Speeds: the 300ms / 500ms values. Keep the 200ms fade-outs (the suite
    clears the fade after a link).
    ---------------------------------------------------------------------- */
 
@@ -2042,8 +2079,8 @@ html.obLeaving > .obWarpLayer {
    6.2 BETWEEN STORE CATEGORIES (DESKTOP)
    Desktop, moving between store categories: the category line and the
    chips stay on screen with the header, so the line shuffles in place
-   (Footer) while only the products and what's below them fade out and
-   in. html.obLeavingInStore is set by the Footer as a chip is clicked,
+   (suite) while only the products and what's below them fade out and
+   in. html.obLeavingInStore is set by the suite as a chip is clicked,
    html.obFromStore by the Header on the next page. #obLineStays isn't on
    the page: inside :is() it lifts the first rule above 6.1's fade-out.
    ---------------------------------------------------------------------- */
@@ -2214,8 +2251,35 @@ html.obLeaving > .obWarpLayer {
 }
 
 /* ----------------------------------------------------------------------
+   7.1b PHONES: KLARNA UNDER THE PRICE, PRODUCTS WITH NO CHOICES
+   Products with no size / colour selector (e.g. Slot): on phones the
+   KLARNA line sits under the price, right-aligned to it (it fell to the
+   bottom of the column, under the accordion). Shows the copy already
+   under the price (.hidden-down-md) and hides the stranded phone copy
+   (.hidden-up-md). Phones only; selector products and desktop untouched.
+   ---------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  body.collection-type-products.view-item .product-meta:not(:has(#main-product-variants .chips-size-label, #main-product-variants .chips-colour-label)) > .product-description.hidden-down-md,
+  body.collection-type-products.view-item .product-meta:not(:has(#main-product-variants .chips-size-label, #main-product-variants .chips-colour-label)) > .product-description.hidden-down-md p {
+    text-align: right !important;
+  }
+
+  body.collection-type-products.view-item .product-meta:not(:has(#main-product-variants .chips-size-label, #main-product-variants .chips-colour-label)) > .product-description.hidden-down-md {
+    display: block !important;
+    clear: both !important;
+    margin-top: 10px !important;
+    margin-bottom: 16px !important;
+  }
+
+  body.collection-type-products.view-item .product-meta:not(:has(#main-product-variants .chips-size-label, #main-product-variants .chips-colour-label)) > .product-description.hidden-up-md {
+    display: none !important;
+  }
+}
+
+
+/* ----------------------------------------------------------------------
    7.2 VARIANT CHIPS
-   Squarespace's dropdowns are replaced by chips (Footer, PDP: VARIANT
+   Squarespace's dropdowns are replaced by chips (suite, PDP: VARIANT
    CHIPS); an option with one choice is chosen and hidden. 40px above the
    selectors on phones and from 900px (see 7.1 for the phone sub-text).
    Phones: the chips scroll sideways in one row, fading out at the right.
@@ -2330,8 +2394,8 @@ body.collection-type-products.view-item .variant-option[data-option-name="size"]
    Squarespace fades the gallery in over 0.9s with a stagger, after the
    first image has loaded, which read as lag; here 0.35s, no stagger
    (below about 0.2s it stops reading as a fade). Its arrows and counter
-   are hidden; phones get dots instead (the Footer builds #obGalleryDots).
-   Phones: while html.obGalleryStill is on (Footer: until the first
+   are hidden; phones get dots instead (the suite builds #obGalleryDots).
+   Phones: while html.obGalleryStill is on (suite: until the first
    touch) the gallery's slide animation is off, so the first photo just
    fades in. At exactly 768px Squarespace doesn't size the photo column
    (it took two thirds): there it gets the 769px size, at most half.
@@ -2455,8 +2519,8 @@ body.collection-type-products.view-item .obGalleryDot[aria-current="true"] {
 /* ----------------------------------------------------------------------
    7.4 LAYOUT AND SPACING
    Header padding: the tokens in 1. OTHER THINGS: 40px above (phones
-   10px), and only as many products as fit in a row (two to 899px, three
-   from 900px).
+   10px); how many across: 7.12 (four from 768px) and 7.14 (phones, a
+   sideways row).
    From 768px the info column stays put while the photos scroll, then
    stops at the bottom of the last one. top is where the column starts
    on the page (main's top padding, the token in 1, plus Squarespace's
@@ -2580,7 +2644,7 @@ body.collection-type-products.view-item .products-collection-related-products {
    longer words make it wider), 32px under the chips (the -3px), with
    28px below; from 1200px the full column (7.10). Phones: full width,
    48px above the accordion.
-   The lead-time line (Footer, PDP: LEAD TIME) is whatever the product's
+   The lead-time line (suite, PDP: LEAD TIME) is whatever the product's
    short description has after its first line: type it on a new line
    under (KLARNA PAY IN 3). As typed (not capitals), at the accordion's
    size and spacing, Bold as Medium. About 18px under the button on
@@ -2671,9 +2735,10 @@ body.collection-type-products.view-item .product-detail .product-meta .product-a
 
 /* ----------------------------------------------------------------------
    7.6 ACCORDION
-   The accordion (moved under ADD TO BAG by the Footer): text at 1.55;
-   heads Medium, Bold on hover (mouse) and keyboard focus, easing back.
-   The heads' weight applies to every accordion on the site.
+   The accordion (moved under ADD TO BAG by the suite): text at 1.55;
+   heads Medium, Bold on hover (mouse) and keyboard focus, easing over
+   .2s both ways. The heads' weight applies to every accordion on the
+   site.
    ---------------------------------------------------------------------- */
 
 :is(#page, #siteWrapper) .product-detail .sqs-block-accordion .accordion-item__description,
@@ -2685,15 +2750,33 @@ body.collection-type-products.view-item .product-detail .product-meta .product-a
   font-weight: 500 !important;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .sqs-block-accordion .accordion-item__title {
-    transition: font-weight .2s ease;
-  }
+.sqs-block-accordion .accordion-item__title {
+  transition: font-weight .2s ease;
+}
 
+@media (hover: hover) and (pointer: fine) {
   .sqs-block-accordion .accordion-item__click-target:hover .accordion-item__title,
   .sqs-block-accordion .accordion-item__click-target:focus-visible .accordion-item__title {
     font-weight: 700 !important;
   }
+}
+
+/* ----------------------------------------------------------------------
+   7.6b ACCORDION TEXT: LINKS AND LISTS
+   Links underlined like SIZE GUIDE and KLARNA (1px, .18em under);
+   list items with no gap between them.
+   ---------------------------------------------------------------------- */
+
+.accordion-block .accordion-item__description a {
+  color: inherit !important;
+  text-decoration-line: underline !important;
+  text-decoration-thickness: 1px !important;
+  text-underline-offset: 0.18em !important;
+}
+
+.accordion-block .accordion-item__description li > p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 /* ----------------------------------------------------------------------
@@ -2729,13 +2812,13 @@ body.collection-type-products.view-item .product-detail .product-meta .product-a
 
 /* ----------------------------------------------------------------------
    7.8 SIZE GUIDE
-   The Footer (PDP: SIZE GUIDE) adds SIZE GUIDE to the SELECT SIZE: line
+   The suite (PDP: SIZE GUIDE) adds SIZE GUIDE to the SELECT SIZE: line
    on a product with a SIZES panel (7.15); tapping it scrolls to the
    panel. Styled like the KLARNA link (7.7): underlined, the
    line's own size and weight, Bold on hover. From 768px it sits at the
    right of the line; phones: just after SELECT SIZE:, 12px along (the
    column-gap). On phones the KLARNA line sits at the right of the same
-   line (7.1): the Footer measures how far the line runs under it
+   line (7.1): the suite measures how far the line runs under it
    (--obSubClear) and the line keeps 12px clear of it, so a long
    translation drops SIZE GUIDE onto a line of its own rather than
    under KLARNA.
@@ -2795,12 +2878,6 @@ body.collection-type-products.view-item #main-product-variants .chips-size-label
   body.collection-type-products.view-item #main-product-variants .chips-size-label.obHasGuide {
     padding-right: ~"calc(var(--obSubClear, 0px) + 12px)" !important;
   }
-}
-
-/* Accordion heads ease their weight on every screen (7.6 sets it for the
-   mouse; this keeps it on touch screens too, as before) */
-body.collection-type-products.view-item .sqs-block-accordion .accordion-item__title {
-  transition: font-weight .2s ease;
 }
 
 /* ----------------------------------------------------------------------
@@ -2939,7 +3016,7 @@ body.collection-type-products.view-item .sqs-block-accordion .accordion-item__ti
   }
 
   /* ADD TO BAG: the full column wide, the chips' height and corners
-     (1.1), with the price on the right (Footer v15.4 copies it into data-ob-price, and
+     (1.1), with the price on the right (suite v15.4 copies it into data-ob-price, and
      changes it with the size). Same 32px above and below. */
   body.collection-type-products.view-item .product-detail .product-meta .product-add-to-cart .product-purchase-controls-wrapper .sqs-add-to-cart-button-wrapper .sqs-add-to-cart-button {
     display: flex !important;
@@ -3022,7 +3099,7 @@ body.collection-type-products.view-item section.related-products-section {
 /* ======================================================================
    7.13 RUG COLOUR CHIPS
    ----------------------------------------------------------------------
-   7.13 Rugs are one product per colourway. On a rug's page the Footer
+   7.13 Rugs are one product per colourway. On a rug's page the suite
    (PDP: COLOUR LINKS; the list is CONF.colourLinks) puts SELECT COLOUR:
    above SELECT SIZE:, with a chip for each colour of the design. Each
    chip is a link to that colour's page and carries the chosen size. They
@@ -3078,6 +3155,24 @@ body.collection-type-products.view-item section.related-products-section {
     margin-bottom: 0;
   }
 }
+
+/* ----------------------------------------------------------------------
+   7.13b RUG COLOUR CHIPS, NO SIZES
+   A rug with no sizes to choose has no selectors box, so the suite
+   (v16.2) makes one for the colour chips (.obColourOnly). The chips then
+   sit the usual distance above the button: 32px from 900px, 46px on
+   phones, as size chips do. More / less: the 8px and 32px.
+   ---------------------------------------------------------------------- */
+#main-product-variants.obColourOnly #obColourLinks {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 767px) {
+  #main-product-variants.obColourOnly #obColourLinks {
+    margin-bottom: 32px;
+  }
+}
+
 
 
 /* ======================================================================
@@ -3154,7 +3249,7 @@ body.collection-type-products.view-item section.related-products-section {
 /* ======================================================================
    7.15 SIZES PANEL (product pages)
    A panel under the product, above OTHER THINGS, for designs listed in
-   the Footer's CONF.dimensions (Footer v15.28): the outline drawn to
+   the suite's CONF.dimensions (suite v15.28): the outline drawn to
    scale with dimension lines, a chip per size (4.1's chips), the size
    written out, and a CM / MM switch. Its side margins are the page's
    (3vw; phones 6vw).
@@ -3353,7 +3448,7 @@ body.collection-type-products.view-item section.related-products-section {
    page's side margins are 6vw too (Squarespace's bag page keeps 3vw);
    the bar that holds SUBTOTAL and CHECKOUT at the bottom of the screen
    sizes itself from the page, so it follows.
-   The heading reads BAG, not Shopping Cart (Footer v15.38, CONF.cartTitle).
+   The heading reads BAG, not Shopping Cart (suite v15.38, CONF.cartTitle).
    ---------------------------------------------------------------------- */
 
 #sqs-cart-container { padding-top: 80px; }
@@ -3451,6 +3546,30 @@ body:has(#sqs-cart-root) #footer-sections {
   #sqs-cart-container { padding-top: 56px; }
 }
 
+/* ----------------------------------------------------------------------
+   8.2 THE EMPTY BAG
+   CONTINUE SHOPPING is CHECKOUT's shape: the chips' height and corners
+   (Squarespace draws it as a pill), 14px type from 768px.
+   ---------------------------------------------------------------------- */
+#sqs-cart-root .cart-continue-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: var(--obChipH) !important;
+  min-height: var(--obChipH) !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-radius: var(--obChipCorner) !important;
+  text-transform: uppercase !important;
+}
+
+@media (min-width: 768px) {
+  #sqs-cart-root .cart-continue-button {
+    font-size: 14px !important;
+  }
+}
+
+
 
 /* ======================================================================
    9. HOME, ABOUT AND PLAIN PAGES
@@ -3505,7 +3624,7 @@ body:not(.homepage):not([class*="homepage"]):not(.collection-type-products):not(
    Text over a background video flips its colour against the footage
    (difference), like the header. The flip goes on the whole text block:
    Squarespace layers each block separately.
-   The home video section is one big link (Footer, VIDEO SECTION LINK):
+   The home video section is one big link (suite, VIDEO SECTION LINK):
    the pointer shows a hand anywhere on it, and its link goes Bold while
    the mouse is over it.
    ---------------------------------------------------------------------- */
@@ -3640,6 +3759,41 @@ html.ob-page-about :is(#page, #siteWrapper) .sqs-block-html .sqs-html-content p 
   }
 }
 
+/* ----------------------------------------------------------------------
+   9.3b ABOUT: THE TAKE SOMETHING HOME CHIP
+   A store chip in look (4.1 tokens): rounds off on hover (22px is half
+   the chip height). 13px type and 14px sides, a touch roomier than the
+   store chips. Found by its block ID: if the block is rebuilt, the new
+   ID goes here.
+   ---------------------------------------------------------------------- */
+
+#block-bddd50c89c9d1d84d48e a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--obChipH);
+  padding: 10px 14px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: var(--obChipCorner);
+  background: var(--obChipBg);
+  color: var(--obChipText);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1;
+  text-decoration: none !important;
+  white-space: nowrap;
+  transition: border-radius 200ms ease, background-color 200ms ease;
+}
+#block-bddd50c89c9d1d84d48e a::after {
+  content: "\2192";
+}
+#block-bddd50c89c9d1d84d48e a:hover {
+  border-radius: 22px;
+  background: var(--obChipBgActive);
+}
+
+
 /* ======================================================================
    9.4 HOME LANDING LINK, BOLD ON ROLLOVER OF THE LINK ONLY
    ----------------------------------------------------------------------
@@ -3711,6 +3865,56 @@ section[data-section-id="6aea5e258882ac37a1e9b6e0"] .sqs-html-content > :last-ch
   section[data-section-id="6aea5e258882ac37a1e9b6e0"] .fluid-engine {
     padding-top: ~"min(5.3vw, 96px)" !important;
     padding-bottom: ~"calc(min(5.3vw, 96px) - var(--container-width) * var(--row-height-scaling-factor))" !important;
+  }
+}
+
+
+/* ----------------------------------------------------------------------
+   9.6 HOME HERO
+   The statement on the home landing: even space above and below on
+   phones (no margin under its last line), and on landing the section is
+   cropped to the screen under the header's H bar. Found by block and
+   section IDs: if either is rebuilt, the new ID goes here.
+   ---------------------------------------------------------------------- */
+
+#block-833ae6fe237abe3ab55d .sqs-html-content > *:last-child {
+  margin-bottom: 0 !important;
+}
+
+section[data-section-id="6ad932d919eb524248a93d6f"] {
+  height: ~"calc(100vh - 22px - 10.1vw)" !important;
+  height: ~"calc(100svh - 22px - 10.1vw)" !important;
+  min-height: 0 !important;
+  overflow: hidden;
+}
+section[data-section-id="6ad932d919eb524248a93d6f"] .content-wrapper {
+  position: absolute !important;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex !important;
+  align-items: center;
+}
+section[data-section-id="6ad932d919eb524248a93d6f"] .fluid-engine {
+  width: 100%;
+}
+@media (min-width: 1440px) {
+  section[data-section-id="6ad932d919eb524248a93d6f"] {
+    height: ~"calc(100vh - 56px - 7.7vw)" !important;
+    height: ~"calc(100svh - 56px - 7.7vw)" !important;
+  }
+}
+@media (min-width: 1920px) {
+  section[data-section-id="6ad932d919eb524248a93d6f"] {
+    height: ~"calc(100vh - 204px)" !important;
+    height: ~"calc(100svh - 204px)" !important;
+  }
+}
+@media (max-width: 767px) {
+  section[data-section-id="6ad932d919eb524248a93d6f"] {
+    height: ~"calc(100vh - 80px)" !important;
+    height: ~"calc(100svh - 80px)" !important;
   }
 }
 
@@ -4118,6 +4322,21 @@ body.view-item[class*="collection-type-blog"] .item-pagination.item-pagination--
   }
 }
 
+/* ----------------------------------------------------------------------
+   10.5b PREV / NEXT: ROUNDING OFF ON HOVER
+   Like a chosen store chip: the corners round to half the chip height
+   (22px) and the colour deepens to the chosen chip's.
+   ---------------------------------------------------------------------- */
+
+#itemPagination .item-pagination-link {
+  transition: border-radius 200ms ease, background-color 200ms ease, border-color 150ms ease, transform 220ms ease !important;
+}
+#itemPagination .item-pagination-link:hover {
+  border-radius: 22px !important;
+  background: var(--obChipBgActive) !important;
+}
+
+
 
 /* ======================================================================
    11. POP-UPS AND FORMS
@@ -4126,11 +4345,11 @@ body.view-item[class*="collection-type-blog"] .item-pagination.item-pagination--
 /* ----------------------------------------------------------------------
    11.1 THE POP-UP
    Links to the newsletter, withdrawal and Klarna pages open them in a
-   pop-up (Footer): the page itself, in a see-through frame over the
+   pop-up (suite): the page itself, in a see-through frame over the
    blurred page. The blur is drawn once at full strength and faded (a
    growing blur lagged on desktop); the page fades and drifts up once
    it's drawn (.obPopReady). More blur: raise 18px; more see-through:
-   lower .45. CLOSE sits where BAG is (the Footer lines it up; these are
+   lower .45. CLOSE sits where BAG is (the suite lines it up; these are
    the fallbacks). A quiet LOADING shows if the page isn't ready half a
    second after opening.
    Inside the frame (html.obPopFrame) the page shows its content only,
@@ -4140,7 +4359,7 @@ body.view-item[class*="collection-type-blog"] .item-pagination.item-pagination--
 /* How it opens: the blurred, tinted page fades in (0.35s) with CLOSE.
    The blur is drawn once at full strength and faded — growing its
    strength frame by frame made desktops lag. The sign-up fades and
-   drifts up into place once it's fully drawn (the Footer adds
+   drifts up into place once it's fully drawn (the suite adds
    .obPopReady) — usually straight away, as it loads quietly near the
    footer. Closing runs the other way, a little quicker. Only the blur
    layer itself fades — browsers drop the blur while a wrapper around
@@ -4163,7 +4382,7 @@ body.view-item[class*="collection-type-blog"] .item-pagination.item-pagination--
 }
 
 /* The page behind stays still while the pop-up is open (on phones the
-   Footer also pins it in place, v15.16: iPhone scrolled it anyway) */
+   suite also pins it in place, v15.16: iPhone scrolled it anyway) */
 html.obPopOpen {
   overflow: hidden !important;
 }
@@ -4193,7 +4412,7 @@ html.obPopOpen {
   opacity: var(--obPopTint, .45);
 }
 
-/* Phones and touch screens: closing, the Footer (v15.24) thins the blur
+/* Phones and touch screens: closing, the suite (v15.24) thins the blur
    and fades the tint (--obPopTint) by hand, frame by frame: left to the
    browser, iPhone dropped the blur at once and the page flashed in sharp.
    Meanwhile .obPopClosing keeps the pop-up on screen and its blur layer
@@ -4233,7 +4452,7 @@ html.obPopOpen {
   border: 0;
 }
 
-/* CLOSE: top right, in BAG's place and size (the Footer lines it up
+/* CLOSE: top right, in BAG's place and size (the suite lines it up
    with BAG when the pop-up opens; these are the fallbacks). Underlined
    on hover, like the language picker. */
 .obPopClose {
@@ -4598,7 +4817,7 @@ html.obPopFrame .page-section .content-wrapper {
 
 /* ----------------------------------------------------------------------
    12.1 THE FOOTER HEAD (BACK TO THE TOP)
-   Any unlinked image in the footer (the head) is a button (Footer):
+   Any unlinked image in the footer (the head) is a button (suite):
    tap it, or hold and let go, and the screen warps, then scrolls back to
    the top. Hover (mouse): the head tilts; held: squeezed. Tune: the
    scale / rotate values. It's unclipped so it can tilt past its box, and
@@ -4686,7 +4905,7 @@ html.obPopFrame .page-section .content-wrapper {
    The cookie preferences link in the footer's type; centred under the ©
    line on phones. Squarespace's floating COOKIE PREFERENCES button is
    hidden: visitors change their choice from the Privacy & Cookies page,
-   through a link set to #cookie-preferences (the Footer opens the
+   through a link set to #cookie-preferences (the suite opens the
    panel). The banner itself is untouched.
    ---------------------------------------------------------------------- */
 
@@ -4836,7 +5055,7 @@ html.obPopFrame .page-section .content-wrapper {
 /* ----------------------------------------------------------------------
    13.2 LANDSCAPE EASTER EGG (PHONES)
    A phone on its side (touch, no mouse, up to 932px wide) shows a quote
-   instead of the site. FRAGILE: paired with the Footer's Landscape
+   instead of the site. FRAGILE: paired with the suite's Landscape
    Orientation Recovery, which uses the same test and rebuilds the
    chips on the way back: change one, change the other. Not inside the
    pop-up frame, whose small wide window would count as a phone on its
@@ -4892,11 +5111,11 @@ html.obPopFrame .page-section .content-wrapper {
    5px), so photos, chips, ADD TO BAG and the sizes panel share one
    corner. Left square: anything in the footer.
    Image blocks and background videos (Home, About, Studio…) take their
-   corners from --obImgCorners, which the Footer sets on each one (v15.33,
+   corners from --obImgCorners, which the suite sets on each one (v15.33,
    ROUNDED PHOTOS): a corner that sits on the edge of the screen, or on
    another photo, stays square, so an edge-to-edge photo is left alone
    and two photos side by side round only their outer corners. Until the
-   Footer has run, image blocks are rounded and videos are square.
+   suite has run, image blocks are rounded and videos are square.
    ---------------------------------------------------------------------- */
 
 /* Store tiles and OTHER THINGS, Words thumbnails, Home's product blocks */
@@ -4924,7 +5143,7 @@ main .sqs-block-image .fluid-image-container img {
   border-radius: var(--obImgCorners, var(--obChipCorner)) !important;
 }
 
-/* Background videos: square until the Footer says otherwise */
+/* Background videos: square until the suite says otherwise */
 main .section-background .sqs-video-background-native {
   border-radius: var(--obImgCorners, 0) !important;
   overflow: hidden !important;
@@ -4951,180 +5170,6 @@ main .section-background .sqs-video-background-native {
   body.collection-type-products.view-item .product-gallery-slides {
     border-radius: var(--obChipCorner) !important;
     overflow: hidden !important;
-  }
-}
-
-/* ----------------------------------------------------------------------
-   8.1b THE EMPTY BAG (v16.2)
-   CONTINUE SHOPPING is CHECKOUT's shape: the chips' height and corners
-   (Squarespace draws it as a pill), 14px type from 768px.
-   ---------------------------------------------------------------------- */
-#sqs-cart-root .cart-continue-button {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  height: var(--obChipH) !important;
-  min-height: var(--obChipH) !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  border-radius: var(--obChipCorner) !important;
-  text-transform: uppercase !important;
-}
-
-@media (min-width: 768px) {
-  #sqs-cart-root .cart-continue-button {
-    font-size: 14px !important;
-  }
-}
-
-/* 50 — ABOUT: TAKE SOMETHING HOME chip */
-#block-bddd50c89c9d1d84d48e a {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 10px 14px;
-  box-sizing: border-box;
-  border: 1px solid transparent;
-  border-radius: 5px;
-  background: rgba(230, 228, 222, 0.62);
-  color: #111;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1;
-  text-decoration: none !important;
-  white-space: nowrap;
-  transition: border-radius 200ms ease, background-color 200ms ease;
-}
-#block-bddd50c89c9d1d84d48e a::after {
-  content: "\2192";
-}
-#block-bddd50c89c9d1d84d48e a:hover {
-  border-radius: 22px;
-  background: #d7d4cd;
-}
-
-/* 51 — BLOG PREV / NEXT: shape rollover */
-#itemPagination .item-pagination-link {
-  transition: border-radius 200ms ease, background-color 200ms ease, border-color 150ms ease, transform 220ms ease !important;
-}
-#itemPagination .item-pagination-link:hover {
-  border-radius: 22px !important;
-  background: #d7d4cd !important;
-}
-
-
-/* 52a — HOME HERO: even padding on mobile */
-#block-833ae6fe237abe3ab55d .sqs-html-content > *:last-child {
-  margin-bottom: 0 !important;
-}
-
-/* 55 — HOME HERO: crop the statement under the H bar on landing */
-section[data-section-id="6ad932d919eb524248a93d6f"] {
-  height: ~"calc(100vh - 22px - 10.1vw)" !important;
-  height: ~"calc(100svh - 22px - 10.1vw)" !important;
-  min-height: 0 !important;
-  overflow: hidden;
-}
-section[data-section-id="6ad932d919eb524248a93d6f"] .content-wrapper {
-  position: absolute !important;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  display: flex !important;
-  align-items: center;
-}
-section[data-section-id="6ad932d919eb524248a93d6f"] .fluid-engine {
-  width: 100%;
-}
-@media (min-width: 1440px) {
-  section[data-section-id="6ad932d919eb524248a93d6f"] {
-    height: ~"calc(100vh - 56px - 7.7vw)" !important;
-    height: ~"calc(100svh - 56px - 7.7vw)" !important;
-  }
-}
-@media (min-width: 1920px) {
-  section[data-section-id="6ad932d919eb524248a93d6f"] {
-    height: ~"calc(100vh - 204px)" !important;
-    height: ~"calc(100svh - 204px)" !important;
-  }
-}
-@media (max-width: 767px) {
-  section[data-section-id="6ad932d919eb524248a93d6f"] {
-    height: ~"calc(100vh - 80px)" !important;
-    height: ~"calc(100svh - 80px)" !important;
-  }
-}
-
-/* 56 — STORE: category line, always on its 2 set lines */
-.fe-block-yui_3_17_2_1_1770139892259_8633 {
-  grid-column: ~"2 / -2" !important;
-}
-#block-yui_3_17_2_1_1770139892259_8633 p {
-  white-space: pre !important;
-}
-@media (max-width: 767px) {
-  #block-yui_3_17_2_1_1770139892259_8633 p {
-    font-size: ~"min(13px, 3vw)" !important;
-  }
-}
-
-/* ==== ACCORDION LINKS: underline to match SIZE GUIDE / KLARNA ==== */
-.accordion-block .accordion-item__description a {
-  color: inherit !important;
-  text-decoration-line: underline !important;
-  text-decoration-thickness: 1px !important;
-  text-underline-offset: 0.18em !important;
-}
-
-/* ==== ACCORDION BULLETS: no gap between items ==== */
-.accordion-block .accordion-item__description li > p {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-}
-
-
-/* ----------------------------------------------------------------------
-   7.13b RUG COLOUR CHIPS, NO SIZES (v16.2)
-   A rug with no sizes to choose has no selectors box, so the Footer
-   (v16.2) makes one for the colour chips (.obColourOnly). The chips then
-   sit the usual distance above the button: 32px from 900px, 46px on
-   phones, as size chips do. More / less: the 8px and 32px.
-   ---------------------------------------------------------------------- */
-#main-product-variants.obColourOnly #obColourLinks {
-  margin-bottom: 8px;
-}
-
-@media (max-width: 767px) {
-  #main-product-variants.obColourOnly #obColourLinks {
-    margin-bottom: 32px;
-  }
-}
-
-/* ----------------------------------------------------------------------
-   7.1b  MOBILE KLARNA — NO-SELECTOR PRODUCTS (v16.3)
-   Products with no size / colour selector (e.g. Slot): on phones the
-   KLARNA line sits under the price, right-aligned to it (it fell to the
-   bottom of the column, under the accordion). Shows the copy already
-   under the price (.hidden-down-md) and hides the stranded phone copy
-   (.hidden-up-md). Phones only; selector products and desktop untouched.
-   ---------------------------------------------------------------------- */
-@media (max-width: 767px) {
-  body.collection-type-products.view-item .product-meta:not(:has(#main-product-variants .chips-size-label, #main-product-variants .chips-colour-label)) > .product-description.hidden-down-md,
-  body.collection-type-products.view-item .product-meta:not(:has(#main-product-variants .chips-size-label, #main-product-variants .chips-colour-label)) > .product-description.hidden-down-md p {
-    text-align: right !important;
-  }
-
-  body.collection-type-products.view-item .product-meta:not(:has(#main-product-variants .chips-size-label, #main-product-variants .chips-colour-label)) > .product-description.hidden-down-md {
-    display: block !important;
-    clear: both !important;
-    margin-top: 10px !important;
-    margin-bottom: 16px !important;
-  }
-
-  body.collection-type-products.view-item .product-meta:not(:has(#main-product-variants .chips-size-label, #main-product-variants .chips-colour-label)) > .product-description.hidden-up-md {
-    display: none !important;
   }
 }
 
