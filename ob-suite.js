@@ -1,6 +1,30 @@
-/* OB SOLID SUITE v16.7 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.0 · ob-suite.js · Opposite Things
    Served from GitHub through jsDelivr; the Squarespace Footer holds the settings block (OB_CONF) and one <script src> line.
-   Pairs with Header v15.5 (stays in Squarespace), Custom CSS v16.3, ob-drawings.js v16.6 (Store page box, defer).
+   Pairs with Header v15.5 (stays in Squarespace), Custom CSS v17.0, ob-drawings.js v16.6 (Store page box, defer).
+   v17.0 = v16.7, tidied. Under the hood only, except for keyboard users in the pop-up and the visible changes
+   listed after this part:
+     · POP-UP: while the newsletter / withdrawal / Klarna pop-up is open, the page behind it can't be reached with
+       Tab (it's made inert), so keyboard and screen-reader users stay in the pop-up until CLOSE or Esc. CLOSE
+       now really gets the focus as the pop-up opens (it was asked for while the pop-up was still hidden).
+     · PAGE TYPE: home, store and bag pages are read from the Header's page labels (ob-page-home, ob-page-store,
+       ob-page-cart, ob-page-product), so the list of pages lives in one place; the address is the backup if a
+       label is missing. Worked out once per page (it can't change on a 7.1 site).
+     · Taken out: the listeners for Squarespace's old page-swapping events (sqs:page-view, page:load,
+       squarespace:after-render), the wrapping of history.pushState / replaceState and the extra back-button
+       check. Squarespace 7.1 loads every page in full, so none of them ever ran. The re-start after the
+       back button restores a page from memory, and after a phone is turned back from landscape, stays.
+     · FURNITURE taken out of the backup chips and lines (OB SETTINGS hasn't had it since v16.6).
+   v17.0 also has these visible changes, asked for (the last three from the loading work):
+     · PHOTO ZOOM UNDER TEXT (home, About hero): a photo that zooms on rollover stays zoomed while the pointer is
+       on text laid over it (SHOP SLOT on INTRODUCING SLOT CHAIR); it used to zoom back out. The suite marks the
+       photo .obZoomHold; Custom CSS 9.2 and 9.3 zoom it.
+     · STORE FILTER, STILL LOADING: on the ALL page, if a chip's products take more than 0.4s to arrive, the chosen
+       chip pulses until they show (html.obFilterSlow; Custom CSS 5.6b).
+     · STORE CHIPS AT THE FOOTER: scrolling back up from the footer, the pop-out chips return once the footer's top
+       edge is below the middle of the screen (CONF.chipsFooterShare); they used to wait until it had left the screen.
+     · STORE CHIPS AT THE TOP: the pop-out chips can come out as soon as the chips row in the page has scrolled
+       away under the header, and stay until it comes back, so one hands over to the other (they used to wait for
+       20% of the page; that stays only for a page without the row).
    v16.7 = v16.6 +
      · PHOTO DESCRIPTIONS: product photos whose description (alt text) is a file name ("All_products_test.jpg",
        "a_new (1).png (Copy)") get the product's name instead: store tiles, product galleries (with the colour),
@@ -18,7 +42,7 @@
        (no wait before the page shows); if they arrive late, ob-drawings.js calls window.obDimsReady.
      · Store chips are announced as links again (the list roles replaced "link" for screen readers).
      · Image-block links start whether or not the page has finished loading.
-   To change code: edit here, publish a new release (v16.7…), change the version in the Footer line.
+   To change code: edit here, merge into main, put the new commit ID in the Footer's last line.
    To change words or lists: edit OB_CONF in the Footer; no release needed. */
 /* ---- main suite ---- */
 try {
@@ -33,6 +57,7 @@ try {
   chipsGraceMs: 800,
   chipsMinDeltaPx: 10,
   chipsHideDelayMs: 80,
+  chipsFooterShare: .5,
   galleryDotsMaxTries: 25,
   galleryDotsTryEveryMs: 250,
   axisLockDecidePx: 10,
@@ -255,10 +280,6 @@ try {
    en: "Mid-century and antique, found across Sicily.\nOne of each, then gone.",
    it: "Modernariato e antiquariato,\ntrovati in giro per la Sicilia.\nPezzi unici, poi spariscono."
   },
-  furniture: {
-   en: "Made to be sat on, moved around\nand occasionally argued over.",
-   it: "Fatti per sedersi, per essere spostati\ne, ogni tanto, per litigarci sopra."
-  },
   rugs: {
    en: "Drawn in the studio, hand-tufted in wool,\nmade to order. Shoes off.",
    it: "Disegnati in studio, taftati a mano in lana,\nrealizzati su ordinazione. Via le scarpe."
@@ -359,12 +380,6 @@ try {
   match: [ "slot" ],
   live: true,
   page: true
- }, {
-  key: "furniture",
-  label: "FURNITURE",
-  path: "/store/furniture",
-  match: [ "furniture" ],
-  live: false
  } ];
  const LIVE_CATEGORIES = CATEGORIES.filter(c => c.live);
  const categoryKeyFromText = s => {
@@ -469,7 +484,6 @@ try {
  };
  const markViewportDirty = () => {
   STATE.viewport.dirty = true;
-  STATE.cachedPageType = null;
  };
  const computeViewport = () => {
   if (!STATE.viewport.dirty) return STATE.viewport;
@@ -489,21 +503,21 @@ try {
  const prefersReducedMotion = () => MQ.reduce.matches;
  const getPageType = () => {
   if (STATE.cachedPageType) return STATE.cachedPageType;
-  const cls = document.body?.className || "";
+  const body = document.body;
+  const cls = body?.className || "";
+  const html = document.documentElement.classList;
+  const labelled = Array.from(html).some(c => c.startsWith("ob-page-"));
   const path = normalisePath(location.pathname);
   const isShop = cls.includes("collection-type-products") || cls.includes("collection-type-shop");
-  const isDetail = isShop && cls.includes("view-item");
-  const isHome = path === "/";
-  const isStorePage = path === "/store" || path.startsWith("/store/");
-  const isCart = path === "/cart";
-  STATE.cachedPageType = {
+  const type = {
    isShop,
-   isDetail,
-   isHome,
-   isStorePage,
-   isCart
+   isDetail: isShop && cls.includes("view-item"),
+   isHome: labelled ? html.contains("ob-page-home") : path === "/",
+   isStorePage: labelled ? html.contains("ob-page-store") : path === "/store" || path.startsWith("/store/"),
+   isCart: labelled ? html.contains("ob-page-cart") : path === "/cart"
   };
-  return STATE.cachedPageType;
+  if (body) STATE.cachedPageType = type;
+  return type;
  };
  const isShopContext = () => getPageType().isShop;
  const isProductDetailPage = () => getPageType().isDetail;
@@ -878,9 +892,10 @@ try {
   if (now() < STATE.chips.graceUntil) return;
   if (STATE.headScroll) return;
   const y = STATE.scrollY;
-  const startY = (document.documentElement.scrollHeight - window.innerHeight) * .2;
+  const inflow = isCompact() ? qs("#" + IDS.chipsInline + " .obChipBtn") : qs("ul[data-ob-owned] a");
+  const startY = inflow && inflow.offsetHeight ? 0 : (document.documentElement.scrollHeight - window.innerHeight) * .2;
   const footer = qs("#footer-sections");
-  const atFooter = !!footer && footer.getBoundingClientRect().top < window.innerHeight;
+  const atFooter = !!footer && footer.getBoundingClientRect().top < window.innerHeight * CONF.chipsFooterShare;
   if (y < startY || !chipsInflowPassed() || atFooter) {
    clearTimeout(STATE.chips.hideTimer);
    STATE.chips.hideTimer = null;
@@ -2544,7 +2559,18 @@ try {
   waitMs: 3e3,
   maxAgeMs: 864e5,
   outMs: 200,
-  inMs: 300
+  inMs: 300,
+  slowMs: 400
+ };
+ const filterSlow = token => {
+  const d = document.documentElement;
+  const t = setTimeout(() => {
+   if (token === filterState.token) d.classList.add("obFilterSlow");
+  }, FILTER.slowMs);
+  return () => {
+   clearTimeout(t);
+   d.classList.remove("obFilterSlow");
+  };
  };
  const filterState = {
   landed: false,
@@ -2771,7 +2797,7 @@ try {
   if (push) {
    const url = location.pathname + location.search + (key === "all" ? "" : "#" + liveCatOf(key).label.toLowerCase());
    try {
-    History.prototype.pushState.call(history, {
+    history.pushState({
      obFilter: key
     }, "", url);
    } catch {}
@@ -2782,8 +2808,10 @@ try {
   const d = document.documentElement;
   const out = d.classList.contains("obFilterWait") ? filterFade(box, 0, 0, 0) : filterFade(box, null, 0, FILTER.outMs);
   d.classList.remove("obFilterWait");
+  const slowDone = filterSlow(token);
   Promise.all([ out, filterNeed(key) ]).then(([, ok]) => {
    if (token !== filterState.token) return;
+   slowDone();
    if (!ok || !filterComplete(key)) {
     filterGiveUp(key);
     return;
@@ -2820,8 +2848,10 @@ try {
   if (key !== "all" && filterComplete(key)) filterShow(key); else if (key !== "all") {
    d.classList.add("obFilterWait");
    const token = filterState.token;
+   const slowDone = filterSlow(token);
    filterFetch(key).then(() => {
     if (token !== filterState.token) return;
+    slowDone();
     if (!filterComplete(key)) {
      filterGiveUp(key);
      return;
@@ -3108,6 +3138,34 @@ try {
   if (document.readyState !== "complete") window.addEventListener("load", () => safeRun("imgCornersSet", imgCornersSet), {
    once: true
   });
+ };
+ const zoomHold = {
+  bound: false,
+  held: []
+ };
+ const zoomHoldInit = () => {
+  if (zoomHold.bound || inEditor) return;
+  if (!(isHome() || document.documentElement.classList.contains("ob-page-about"))) return;
+  if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+  zoomHold.bound = true;
+  const set = blocks => {
+   zoomHold.held.forEach(b => blocks.includes(b) || b.classList.remove("obZoomHold"));
+   blocks.forEach(b => b.classList.add("obZoomHold"));
+   zoomHold.held = blocks;
+  };
+  document.addEventListener("pointerover", e => {
+   const text = e.target.closest?.("main .fe-block");
+   const fe = text?.parentElement;
+   if (!text || !fe || !text.querySelector(".sqs-block-html")) return set([]);
+   const r = text.getBoundingClientRect();
+   set(qsa(":scope > .fe-block .sqs-block-image", fe).filter(b => {
+    const i = b.getBoundingClientRect();
+    return r.left < i.right && r.right > i.left && r.top < i.bottom && r.bottom > i.top;
+   }));
+  }, {
+   passive: true
+  });
+  document.documentElement.addEventListener("pointerleave", () => set([]));
  };
  const footIsGroup = b => !!b.querySelector(".sqs-html-content p:first-child > strong:first-child") && !!b.querySelector("a[href]");
  const footPlace = b => {
@@ -3495,7 +3553,8 @@ try {
   panel: null,
   frames: {},
   active: null,
-  lastFocus: null
+  lastFocus: null,
+  inert: null
  };
  const inPopFrame = inEditor && /[?&]ob-popup=/.test(location.search);
  const popupOf = a => {
@@ -3667,6 +3726,17 @@ try {
   raf = requestAnimationFrame(step);
   tid = setTimeout(finish, POP_CLOSE_MS + 500);
  };
+ const popInert = on => {
+  if (on) {
+   if (NEWS.inert) return;
+   NEWS.inert = Array.from(document.body.children).filter(el => el !== NEWS.el && !el.inert && el.tagName !== "SCRIPT");
+   NEWS.inert.forEach(el => el.inert = true);
+  } else if (NEWS.inert) {
+   NEWS.inert.forEach(el => el.inert = false);
+   NEWS.inert = null;
+   chipsBarInert(document.documentElement.classList.contains("obChipsHidden"));
+  }
+ };
  const newsOpen = (href, pop) => {
   NEWS.stopClosing?.();
   const f = newsLoad(href, pop);
@@ -3677,11 +3747,14 @@ try {
   NEWS.lastFocus = document.activeElement;
   newsPlaceClose();
   document.documentElement.classList.add("obPopOpen");
+  popInert(true);
   popLock();
   NEWS.el.getBoundingClientRect();
-  requestAnimationFrame(() => NEWS.el.classList.add("obPopShow"));
-  NEWS.el.querySelector(".obPopClose").focus({
-   preventScroll: true
+  requestAnimationFrame(() => {
+   NEWS.el.classList.add("obPopShow");
+   NEWS.el.querySelector(".obPopClose").focus({
+    preventScroll: true
+   });
   });
   f.el.contentWindow?.postMessage({
    obPopMeasure: 1
@@ -3693,6 +3766,7 @@ try {
   if (byHand) NEWS.el.classList.add("obPopClosing");
   NEWS.el.classList.remove("obPopShow");
   document.documentElement.classList.remove("obPopOpen");
+  popInert(false);
   if (byHand) newsFadeByHand(); else popUnlockLater();
   NEWS.lastFocus?.focus?.({
    preventScroll: true
@@ -4008,15 +4082,6 @@ try {
    safeRun("altFix", altFix);
    setTimeout(() => safeRun("altFix", altFix), 2500);
   });
-  const onNav = () => {
-   markViewportDirty();
-   setTimeout(initForCurrentPage, 50);
-  };
-  [ "sqs:page-view", "page:load", "squarespace:after-render" ].forEach(evt => document.addEventListener(evt, onNav));
-  window.addEventListener("popstate", () => {
-   if (normalisePath(location.pathname) + "|" + location.search === STATE.lastInitKey) return;
-   onNav();
-  });
   if (!/[?&]ob-popup=/.test(location.search)) {
    const sideMQ = window.matchMedia("(orientation: landscape) and (max-width: 932px) and (hover: none) and (pointer: coarse)");
    let wasSide = false;
@@ -4025,7 +4090,8 @@ try {
     if (wasSide && !side) {
      document.documentElement.classList.remove("obChipsHidden");
      qs("#" + IDS.chipsBar)?.remove();
-     setTimeout(onNav, 50);
+     markViewportDirty();
+     setTimeout(initForCurrentPage, 50);
     }
     wasSide = side;
    };
@@ -4033,14 +4099,6 @@ try {
    window.addEventListener("orientationchange", onSide);
    onSide();
   }
-  const wrapHistory = orig => function() {
-   const before = location.href;
-   const result = orig.apply(this, arguments);
-   if (location.href !== before) onNav();
-   return result;
-  };
-  history.pushState = wrapHistory(history.pushState);
-  history.replaceState = wrapHistory(history.replaceState);
  };
  const teardown = keepChips => {
   STATE.obs.main?.disconnect();
@@ -4051,7 +4109,6 @@ try {
   STATE.obs.sizeGuide?.disconnect();
   STATE.obs.main = STATE.obs.cart = STATE.obs.gallery = STATE.obs.accordion = STATE.obs.cartQty = STATE.obs.sizeGuide = null;
   STATE.cartBound = false;
-  STATE.cachedPageType = null;
   STATE.chips.lastY = null;
   STATE.priceQueue.clear();
   if (!keepChips) {
@@ -4101,6 +4158,7 @@ try {
    safeRun("headWarpDecorate", headWarpDecorate);
    safeRun("footInit", footInit);
    safeRun("imgCornersInit", imgCornersInit);
+   safeRun("zoomHoldInit", zoomHoldInit);
    safeRun("cartPricesWatch", cartPricesWatch);
    safeRun("cartInit", cartInit);
    safeRun("cartBarInit", cartBarInit);
@@ -4514,7 +4572,6 @@ try {
    } else {
     reformatDates();
    }
-   document.addEventListener('sqs:page-view', reformatDates);
    window.addEventListener('load', reformatDates);
   })();
  });
@@ -4583,7 +4640,8 @@ try {
 /* ---- meta fit ---- */
 try {
 (() => {
-  if (!/^\/store\/p\//i.test(location.pathname)) return;   // product pages only
+  const html = document.documentElement.classList;   // product pages only (the Header's page label; the address if the label is missing)
+  if (!(html.contains("ob-page-product") || /^\/store\/p\//i.test(location.pathname))) return;
   const FLOOR = 60;     // highest the column may ride while sticking (keeps it clear of the header)
   const GAP = 24;       // space kept under the column
   const MIN_DESC = 110; // shortest an open accordion text may get; below this the column stops sticking
