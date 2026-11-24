@@ -18,7 +18,8 @@
      date (the suite in place of the Footer, 7.4, 4.2).
      One visible change: a home or About photo that zooms on rollover
      stays zoomed while the pointer is on text over it (9.2, 9.3,
-     .obZoomHold from the suite v17). New: 5.6b, the chosen chip pulses
+     .obZoomHold from the suite v17). /studio left the page labels (no
+     such page; Header v15.6 drops it too). New: 5.6b, the chosen chip pulses
      while a category's products are still loading on a slow connection.
 
    v16.3 — speed pass: the image / link rollover pairs (2.6, 2.8) only
@@ -82,7 +83,6 @@
    PAGE LABELS (set on <html> by the Header, from the address):
      ob-page-home ...... /
      ob-page-about ..... /about, /about-3
-     ob-page-studio .... /studio
      ob-page-store ..... /store and everything under it
      ob-page-product ... /store/p/…  (also has ob-page-store)
      ob-page-words ..... /blog-1 and its posts
@@ -796,7 +796,7 @@ body.header--menu-open::before {
 
 /* The page stays still behind the open menu (it would show moving
    through the blur). Squarespace locks the page itself, but on iPhone
-   the home page and plain pages (About, Studio…) carry their own
+   the home page and plain pages (About, Trade…) carry their own
    setting (13.1) that cancelled that lock — this locks them all. Where
    you were on the page is kept. Taps work as normal. */
 html:has(body.header--menu-open) {
@@ -5143,7 +5143,7 @@ html.obPopFrame .page-section .content-wrapper {
    Every photo and video box gets the chips' corners (--obChipCorner,
    5px), so photos, chips, ADD TO BAG and the sizes panel share one
    corner. Left square: anything in the footer.
-   Image blocks and background videos (Home, About, Studio…) take their
+   Image blocks and background videos (Home, About, Trade…) take their
    corners from --obImgCorners, which the suite sets on each one (v15.33,
    ROUNDED PHOTOS): a corner that sits on the edge of the screen, or on
    another photo, stays square, so an edge-to-edge photo is left alone
