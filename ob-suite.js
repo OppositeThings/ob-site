@@ -21,9 +21,11 @@
        chip pulses until they show (html.obFilterSlow; Custom CSS "STORE FILTER, STILL LOADING").
      · STORE CHIPS AT THE FOOTER: scrolling back up from the footer, the pop-out chips return once the footer's top
        edge is below the middle of the screen (CONF.chipsFooterShare); they used to wait until it had left the screen.
-     · STORE CHIPS AT THE TOP: scrolling back up, the pop-out chips stay until about half a screen from the top
-       (60% of the screen's height, CONF.chipsTopShare) instead of leaving 20% of the way down the page; they're gone
-       before the chips row in the page comes back, so the two never show together (20% stays for a page without it).
+     · STORE CHIPS AT THE TOP: scrolling back up, the pop-out chips stay until the top of the screen is halfway up
+       the first row of products (CONF.chipsTopShare) instead of leaving 20% of the way down the page; they're gone
+       before the chips row in the page comes back, so the two never show together (20% stays for a page without
+       that row).
+
    v16.7 = v16.6 +
      · PHOTO DESCRIPTIONS: product photos whose description (alt text) is a file name ("All_products_test.jpg",
        "a_new (1).png (Copy)") get the product's name instead: store tiles, product galleries (with the colour),
@@ -57,7 +59,7 @@ try {
   chipsMinDeltaPx: 10,
   chipsHideDelayMs: 80,
   chipsFooterShare: .5,
-  chipsTopShare: .6,
+  chipsTopShare: .5,
   galleryDotsMaxTries: 25,
   galleryDotsTryEveryMs: 250,
   axisLockDecidePx: 10,
@@ -893,7 +895,8 @@ try {
   if (STATE.headScroll) return;
   const y = STATE.scrollY;
   const inflow = isCompact() ? qs("#" + IDS.chipsInline + " .obChipBtn") : qs("ul[data-ob-owned] a");
-  const startY = inflow && inflow.offsetHeight ? window.innerHeight * CONF.chipsTopShare : (document.documentElement.scrollHeight - window.innerHeight) * .2;
+  const tile = qs(".product-list-item:not(.obTileOff)");
+  const startY = !inflow || !inflow.offsetHeight ? (document.documentElement.scrollHeight - window.innerHeight) * .2 : tile ? tile.getBoundingClientRect().top + y + tile.offsetHeight * CONF.chipsTopShare : window.innerHeight * .6;
   const footer = qs("#footer-sections");
   const atFooter = !!footer && footer.getBoundingClientRect().top < window.innerHeight * CONF.chipsFooterShare;
   if (y < startY || !chipsInflowPassed() || atFooter) {
