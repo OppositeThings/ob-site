@@ -16,6 +16,9 @@
      (3.7's underline always won), and 7.8's second copy of the
      accordion heads' easing (now one rule in 7.6). Notes brought up to
      date (the suite in place of the Footer, 7.4, 4.2).
+     One visible change: a home or About photo that zooms on rollover
+     stays zoomed while the pointer is on text over it (9.2, 9.3,
+     .obZoomHold from the suite v17).
 
    v16.3 — speed pass: the image / link rollover pairs (2.6, 2.8) only
      for the links the site has (rugs, prints, objects); phones, products
@@ -3683,12 +3686,14 @@ html.ob-page-home .fluid-engine:has(.sqs-html-content > p.sqsrte-large:only-chil
 }
 
 @media (hover: hover) and (pointer: fine) {
-  /* Homepage image zoom */
+  /* Homepage image zoom. .obZoomHold (suite, v17): the pointer is on
+     text laid over the photo (SHOP SLOT), so it stays zoomed. */
   body.homepage .sqs-block-image .image-block-outer-wrapper { overflow: hidden !important; }
 
   body.homepage .sqs-block-image img { transition: transform .6s ease !important; }
 
-  body.homepage .sqs-block-image:hover img { transform: scale(1.04) !important; }
+  body.homepage .sqs-block-image:hover img,
+  body.homepage .sqs-block-image.obZoomHold img { transform: scale(1.04) !important; }
 
   body.homepage .sqs-block-product .image-container { overflow: hidden !important; }
 
@@ -3740,7 +3745,8 @@ html.ob-page-about .page-section:first-child .sqs-block-image img {
   transition: transform .6s ease !important;
 }
 
-html.ob-page-about .page-section:first-child .sqs-block-image:hover img {
+html.ob-page-about .page-section:first-child .sqs-block-image:hover img,
+html.ob-page-about .page-section:first-child .sqs-block-image.obZoomHold img {
   transform: scale(1.04) !important;
 }
 

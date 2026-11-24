@@ -1,7 +1,8 @@
 /* OB SOLID SUITE v17.0 · ob-suite.js · Opposite Things
    Served from GitHub through jsDelivr; the Squarespace Footer holds the settings block (OB_CONF) and one <script src> line.
    Pairs with Header v15.5 (stays in Squarespace), Custom CSS v17.0, ob-drawings.js v16.6 (Store page box, defer).
-   v17.0 = v16.7, tidied; nothing on the site looks or works differently, except for keyboard users in the pop-up:
+   v17.0 = v16.7, tidied; nothing on the site looks or works differently, except for keyboard users in the pop-up
+   and the photo zoom below:
      · POP-UP: while the newsletter / withdrawal / Klarna pop-up is open, the page behind it can't be reached with
        Tab (it's made inert), so keyboard and screen-reader users stay in the pop-up until CLOSE or Esc.
      · PAGE TYPE: home, store and bag pages are read from the Header's page labels (ob-page-home, ob-page-store,
@@ -12,6 +13,10 @@
        check. Squarespace 7.1 loads every page in full, so none of them ever ran. The re-start after the
        back button restores a page from memory, and after a phone is turned back from landscape, stays.
      · FURNITURE taken out of the backup chips and lines (OB SETTINGS hasn't had it since v16.6).
+   v17.0 also has one visible change, asked for:
+     · PHOTO ZOOM UNDER TEXT (home, About hero): a photo that zooms on rollover stays zoomed while the pointer is
+       on text laid over it (SHOP SLOT on INTRODUCING SLOT CHAIR); it used to zoom back out. The suite marks the
+       photo .obZoomHold; Custom CSS 9.2 and 9.3 zoom it.
    v16.7 = v16.6 +
      · PHOTO DESCRIPTIONS: product photos whose description (alt text) is a file name ("All_products_test.jpg",
        "a_new (1).png (Copy)") get the product's name instead: store tiles, product galleries (with the colour),
@@ -3109,6 +3114,34 @@ try {
    once: true
   });
  };
+ const zoomHold = {
+  bound: false,
+  held: []
+ };
+ const zoomHoldInit = () => {
+  if (zoomHold.bound || inEditor) return;
+  if (!(isHome() || document.documentElement.classList.contains("ob-page-about"))) return;
+  if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+  zoomHold.bound = true;
+  const set = blocks => {
+   zoomHold.held.forEach(b => blocks.includes(b) || b.classList.remove("obZoomHold"));
+   blocks.forEach(b => b.classList.add("obZoomHold"));
+   zoomHold.held = blocks;
+  };
+  document.addEventListener("pointerover", e => {
+   const text = e.target.closest?.("main .fe-block");
+   const fe = text?.parentElement;
+   if (!text || !fe || !text.querySelector(".sqs-block-html")) return set([]);
+   const r = text.getBoundingClientRect();
+   set(qsa(":scope > .fe-block .sqs-block-image", fe).filter(b => {
+    const i = b.getBoundingClientRect();
+    return r.left < i.right && r.right > i.left && r.top < i.bottom && r.bottom > i.top;
+   }));
+  }, {
+   passive: true
+  });
+  document.documentElement.addEventListener("pointerleave", () => set([]));
+ };
  const footIsGroup = b => !!b.querySelector(".sqs-html-content p:first-child > strong:first-child") && !!b.querySelector("a[href]");
  const footPlace = b => {
   const cs = getComputedStyle(b);
@@ -4098,6 +4131,7 @@ try {
    safeRun("headWarpDecorate", headWarpDecorate);
    safeRun("footInit", footInit);
    safeRun("imgCornersInit", imgCornersInit);
+   safeRun("zoomHoldInit", zoomHoldInit);
    safeRun("cartPricesWatch", cartPricesWatch);
    safeRun("cartInit", cartInit);
    safeRun("cartBarInit", cartBarInit);
