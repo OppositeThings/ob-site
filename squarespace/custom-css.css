@@ -18,7 +18,8 @@
      date (the suite in place of the Footer, 7.4, 4.2).
      One visible change: a home or About photo that zooms on rollover
      stays zoomed while the pointer is on text over it (9.2, 9.3,
-     .obZoomHold from the suite v17).
+     .obZoomHold from the suite v17). New: 5.6b, the chosen chip pulses
+     while a category's products are still loading on a slow connection.
 
    v16.3 — speed pass: the image / link rollover pairs (2.6, 2.8) only
      for the links the site has (rugs, prints, objects); phones, products
@@ -1962,6 +1963,32 @@ html.ob-page-store.obHashLanding:not(.ob-page-product):not(.obFilterSet) .produc
 html.ob-page-store.obFilterWait .product-list-container {
   opacity: 0 !important;
 }
+/* ----------------------------------------------------------------------
+   5.6b STORE FILTER, STILL LOADING (v17)
+   On the ALL page, if a chip's products take more than 0.4s to arrive
+   (the category isn't saved on this device yet and the connection is
+   slow), the chosen chip pulses gently until they show (the suite sets
+   html.obFilterSlow). With reduced motion it dims instead.
+   ---------------------------------------------------------------------- */
+
+@keyframes obChipPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+
+html.obFilterSlow .obChipBtn[aria-current="true"],
+html.obFilterSlow ul[data-ob-owned] a.category-link.active {
+  animation: obChipPulse 1.1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.obFilterSlow .obChipBtn[aria-current="true"],
+  html.obFilterSlow ul[data-ob-owned] a.category-link.active {
+    animation: none;
+    opacity: .5;
+  }
+}
+
 /* ----------------------------------------------------------------------
    5.7 PRICES AT THE MENU'S WEIGHT
    Prices take the menu's weight (STORE, ABOUT…: Site Styles → Fonts →
@@ -5176,32 +5203,6 @@ main .section-background .sqs-video-background-native {
   body.collection-type-products.view-item .product-gallery-slides {
     border-radius: var(--obChipCorner) !important;
     overflow: hidden !important;
-  }
-}
-
-/* ----------------------------------------------------------------------
-   STORE FILTER, STILL LOADING
-   On the ALL page, if a chip's products take more than 0.4s to arrive
-   (the category isn't saved on this device yet and the connection is
-   slow), the chosen chip pulses gently until they show (the suite sets
-   html.obFilterSlow). With reduced motion it dims instead.
-   ---------------------------------------------------------------------- */
-
-@keyframes obChipPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: .4; }
-}
-
-html.obFilterSlow .obChipBtn[aria-current="true"],
-html.obFilterSlow ul[data-ob-owned] a.category-link.active {
-  animation: obChipPulse 1.1s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html.obFilterSlow .obChipBtn[aria-current="true"],
-  html.obFilterSlow ul[data-ob-owned] a.category-link.active {
-    animation: none;
-    opacity: .5;
   }
 }
 

@@ -19,7 +19,7 @@
        on text laid over it (SHOP SLOT on INTRODUCING SLOT CHAIR); it used to zoom back out. The suite marks the
        photo .obZoomHold; Custom CSS 9.2 and 9.3 zoom it.
      · STORE FILTER, STILL LOADING: on the ALL page, if a chip's products take more than 0.4s to arrive, the chosen
-       chip pulses until they show (html.obFilterSlow; Custom CSS "STORE FILTER, STILL LOADING").
+       chip pulses until they show (html.obFilterSlow; Custom CSS 5.6b).
    v16.7 = v16.6 +
      · PHOTO DESCRIPTIONS: product photos whose description (alt text) is a file name ("All_products_test.jpg",
        "a_new (1).png (Copy)") get the product's name instead: store tiles, product galleries (with the colour),
