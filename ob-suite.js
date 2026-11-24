@@ -19,6 +19,8 @@
        photo .obZoomHold; Custom CSS 9.2 and 9.3 zoom it.
      · STORE FILTER, STILL LOADING: on the ALL page, if a chip's products take more than 0.4s to arrive, the chosen
        chip pulses until they show (html.obFilterSlow; Custom CSS "STORE FILTER, STILL LOADING").
+     · STORE CHIPS AT THE FOOTER: scrolling back up from the footer, the pop-out chips return once the footer's top
+       edge is below the middle of the screen (CONF.chipsFooterShare); they used to wait until it had left the screen.
    v16.7 = v16.6 +
      · PHOTO DESCRIPTIONS: product photos whose description (alt text) is a file name ("All_products_test.jpg",
        "a_new (1).png (Copy)") get the product's name instead: store tiles, product galleries (with the colour),
@@ -51,6 +53,7 @@ try {
   chipsGraceMs: 800,
   chipsMinDeltaPx: 10,
   chipsHideDelayMs: 80,
+  chipsFooterShare: .5,
   galleryDotsMaxTries: 25,
   galleryDotsTryEveryMs: 250,
   axisLockDecidePx: 10,
@@ -887,7 +890,7 @@ try {
   const y = STATE.scrollY;
   const startY = (document.documentElement.scrollHeight - window.innerHeight) * .2;
   const footer = qs("#footer-sections");
-  const atFooter = !!footer && footer.getBoundingClientRect().top < window.innerHeight;
+  const atFooter = !!footer && footer.getBoundingClientRect().top < window.innerHeight * CONF.chipsFooterShare;
   if (y < startY || !chipsInflowPassed() || atFooter) {
    clearTimeout(STATE.chips.hideTimer);
    STATE.chips.hideTimer = null;
