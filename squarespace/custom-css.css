@@ -1,9 +1,12 @@
 /* ======================================================================
-   OB SHOP CSS — Squarespace 7.1 — v17.0
+   OB SHOP CSS — Squarespace 7.1 — v17.1
    Opposite Things · Website → Pages → Custom Code → Custom CSS.
    Pairs with Header v15.5, the Footer (OB SETTINGS + ob-suite.js v17.0
    from GitHub) and the Store page's ob-drawings.js. "The suite" in the
    notes below is ob-suite.js: the code that used to sit in the Footer.
+
+   v17.1 — the FINDS lettering on the homepage no longer zooms on hover
+     (9.2). Nothing else changed.
 
    v17.0 — tidy-up: looks exactly as v16.3. The patches that sat at the
      bottom are in their parts: 5.4b (the category line on its two
@@ -3650,7 +3653,8 @@ body:not(.homepage):not([class*="homepage"]):not(.collection-type-products):not(
    The category text (under RUGS, PRINTS, CANDLES) and the Words quote:
    line spacing 1.45; the heading 3px above its text (phones 4px). The
    FINDS block and MORE ON INSTAGRAM are left as they are.
-   Hover (mouse): images zoom 4% inside their frame over 0.6s.
+   Hover (mouse): images zoom 4% inside their frame over 0.6s (not the
+   FINDS lettering).
    Text over a background video flips its colour against the footage
    (difference), like the header. The flip goes on the whole text block:
    Squarespace layers each block separately.
@@ -3727,6 +3731,14 @@ html.ob-page-home .fluid-engine:has(.sqs-html-content > p.sqsrte-large:only-chil
   body.homepage .sqs-block-product .image-container img { transition: transform .6s ease !important; }
 
   body.homepage .sqs-block-product:hover .image-container img { transform: scale(1.04) !important; }
+
+  /* v17.1: the FINDS lettering is an image block but shouldn't zoom.
+     Found by its file name (Finds_…) and, as a backup, by its block. */
+  body.homepage .sqs-block-image:hover img[data-src*="Finds_"],
+  body.homepage .sqs-block-image.obZoomHold img[data-src*="Finds_"],
+  body.homepage #block-f2c6bc69b5f82ee4e229 img {
+    transform: none !important;
+  }
 }
 
 section.page-section:has(.section-background .sqs-video-background-native) .fe-block:has(.sqs-html-content) {
