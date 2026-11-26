@@ -205,7 +205,8 @@
             if (r.bottom < 80 || r.top > window.innerHeight - 80) window.scrollTo(0, Math.max(0, window.pageYOffset + r.top - 40));
           }
         }
-        try { if (opener && opener.focus) opener.focus({ preventScroll: true }); } catch (e) {}
+        var back = (p && p.item && (!phone() || p.item.classList.contains("selected"))) ? p.item : opener;
+        try { if (back && back.focus) back.focus({ preventScroll: true }); } catch (e) {}
       };
       if (pushed && !fromHistory) {
         pushed = false;
