@@ -154,7 +154,8 @@ window.OB_CONF=window.OB_CONF||{};OB_CONF.otherThings={on:true,show:6,max:12,ski
       /* a click right after a drag doesn't open the product */
       setTimeout(function () { dragged = false; }, 0);
       var v = performance.now() - d.lt > 80 ? 0 : d.v;
-      snapTo(row.scrollLeft - (still() ? 0 : v * 260));
+      var g = still() ? 0 : v * 260, cap = row.clientWidth * 0.6;
+      snapTo(row.scrollLeft - Math.max(-cap, Math.min(cap, g)));
     };
 
     var bound = false;
