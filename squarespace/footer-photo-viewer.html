@@ -1,4 +1,4 @@
-<!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it opens full screen over the page, which shows through blurred. Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer the photo opens at three quarters of the screen width (scroll down to see the rest of a tall photo); no second zoom. v2: blurred page behind, photos loop, bigger straight away, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small square with a frosted chip hanging off it that trails it slightly ([ENLARGE]; no trail with reduced motion); on phones [ENLARGE] sits in the corner of the photo. The words: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. -->
+<!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it opens full screen over the page, which shows through blurred. Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer the photo opens at three quarters of the screen width (scroll down to see the rest of a tall photo); no second zoom. v2: blurred page behind, photos loop, bigger straight away, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small square with a frosted chip hanging off it that trails it slightly ([ENLARGE]; no trail with reduced motion); on phones [ENLARGE] sits in the corner of the photo. The words, and blur: false for a plain background: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. -->
 <style>
 .product-gallery-slides-item,.product-gallery-slides-item img{cursor:pointer}
 @media (hover:hover) and (pointer:fine){.product-gallery-slides-item,.product-gallery-slides-item img{cursor:none!important}}
@@ -15,6 +15,7 @@
 .obPv::backdrop{background:transparent}
 .obPvBlur{position:absolute;inset:0;background:rgba(255,255,250,.55);-webkit-backdrop-filter:blur(60px) saturate(1.1);backdrop-filter:blur(60px) saturate(1.1)}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.obPvBlur{background:#fffffa}}
+.obPvSolid .obPvBlur{background:#fffffa;-webkit-backdrop-filter:none;backdrop-filter:none}
 .obPv:not([open]){display:none}
 .obPvTrack{position:absolute;inset:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .obPvTrack::-webkit-scrollbar{display:none}
@@ -213,6 +214,7 @@
       if (loop) html += slide(0, true);
       track.innerHTML = html;
       dlg.classList.toggle("obPvOne", list.length < 2);
+      dlg.classList.toggle("obPvSolid", ((window.OB_CONF || {}).viewer || {}).blur === false);
       document.documentElement.style.overflow = "hidden";
       dlg.showModal();
       here = -1;
