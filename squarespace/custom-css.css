@@ -1,9 +1,19 @@
 /* ======================================================================
-   OB SHOP CSS — Squarespace 7.1 — v17.0
+   OB SHOP CSS — Squarespace 7.1 — v17.3
    Opposite Things · Website → Pages → Custom Code → Custom CSS.
    Pairs with Header v15.5, the Footer (OB SETTINGS + ob-suite.js v17.0
    from GitHub) and the Store page's ob-drawings.js. "The suite" in the
    notes below is ob-suite.js: the code that used to sit in the Footer.
+
+   v17.3 — store grid: less space between rows of products on computers
+     and tablets (5.1, about 30% less; phones unchanged at 15px).
+
+   v17.2 — SOLD on product photos is a small solid chip in the chosen
+     size chip's grey, set like the pointer's word chip, 12px in from the
+     top right corner of the photo (5.1b): store, Finds, OTHER THINGS.
+
+   v17.1 — the FINDS lettering on the homepage no longer zooms on hover
+     (9.2). Nothing else changed.
 
    v17.0 — tidy-up: looks exactly as v16.3. The patches that sat at the
      bottom are in their parts: 5.4b (the category line on its two
@@ -1690,28 +1700,52 @@ body.collection-type-products .product-list .product-list-item .product-list-ite
   margin: 0 !important;
 }
 
-/* ---- Sold-out badge overlay (matches home page product-block) ---- */
+/* ---- 5.1b SOLD: a solid chip in the photo's top right corner ----
+   Set like the word chip by the pointer (Footer): 12px Geist Mono,
+   regular, capitals, 5px corners (--obChipCorner). Solid, in the chosen
+   size chip's grey (--obChipBgActive), not frosted, so it never looks
+   like part of the pointer's trail. 12px in from the top and right of the photo
+   (10px on phones). Store grid, Finds, OTHER THINGS and the home page's
+   product blocks. Further in / out: the 12px and 10px. */
 .collection-type-products .product-list-item,
 .product-list-section .product-list-item {
   position: relative;
 }
 
 .collection-type-products .product-list-item.sold-out .product-mark.sold-out,
-.product-list-section .product-list-item.sold-out .product-mark.sold-out {
-  position: absolute;
-  top: 10%;
-  right: 0;
-  transform: translateY(-50%);
-  left: auto;
+.product-list-section .product-list-item.sold-out .product-mark.sold-out,
+.sqs-block-product .sqs-product-mark-wrapper .product-mark.sold-out {
+  position: absolute !important;
+  top: 12px !important;
+  right: 12px !important;
+  bottom: auto !important;
+  left: auto !important;
+  transform: none !important;
   z-index: 6;
-  background: #222;
-  padding: 6px 8px;
-  color: #fff;
-  font-size: 1rem;
-  line-height: 1em;
+  margin: 0 !important;
+  padding: 5px 9px !important;
+  border: 0 !important;
+  border-radius: var(--obChipCorner) !important;
+  background: var(--obChipBgActive) !important;
+  color: #111 !important;
+  font-family: ot-geist-mono-1st64u, ui-monospace, SFMono-Regular, Menlo, monospace !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.02em !important;
   text-transform: uppercase;
-  letter-spacing: normal;
+  white-space: nowrap;
+  pointer-events: none;
   -webkit-font-smoothing: antialiased;
+}
+
+@media (max-width: 767px) {
+  .collection-type-products .product-list-item.sold-out .product-mark.sold-out,
+  .product-list-section .product-list-item.sold-out .product-mark.sold-out,
+  .sqs-block-product .sqs-product-mark-wrapper .product-mark.sold-out {
+    top: 10px !important;
+    right: 10px !important;
+  }
 }
 
 /* Stop the empty status row reserving vertical space below the title */
@@ -1728,13 +1762,13 @@ body.collection-type-products .product-list .product-list-item .product-list-ite
 
 @media (min-width: 768px) {
   body.collection-type-products .product-list-layout-container[data-product-list-layout="grid"] {
-    row-gap: ~"min(var(--product-list-row-spacing, 9vh), 5.625vw)" !important;
+    row-gap: ~"min(var(--product-list-row-spacing, 9vh), 4vw)" !important; /* v17.3: was 5.625vw */
   }
 }
 
 @media (min-width: 431px) and (max-width: 767px) {
   body.collection-type-products .product-list-layout-container[data-product-list-layout="grid"] {
-    row-gap: ~"calc(15px + 28.2 / 337 * (100vw - 430px))" !important;
+    row-gap: ~"calc(15px + 15.7 / 337 * (100vw - 430px))" !important; /* v17.3: was 28.2 */
   }
 }
 
@@ -3650,7 +3684,8 @@ body:not(.homepage):not([class*="homepage"]):not(.collection-type-products):not(
    The category text (under RUGS, PRINTS, CANDLES) and the Words quote:
    line spacing 1.45; the heading 3px above its text (phones 4px). The
    FINDS block and MORE ON INSTAGRAM are left as they are.
-   Hover (mouse): images zoom 4% inside their frame over 0.6s.
+   Hover (mouse): images zoom 4% inside their frame over 0.6s (not the
+   FINDS lettering).
    Text over a background video flips its colour against the footage
    (difference), like the header. The flip goes on the whole text block:
    Squarespace layers each block separately.
@@ -3727,6 +3762,14 @@ html.ob-page-home .fluid-engine:has(.sqs-html-content > p.sqsrte-large:only-chil
   body.homepage .sqs-block-product .image-container img { transition: transform .6s ease !important; }
 
   body.homepage .sqs-block-product:hover .image-container img { transform: scale(1.04) !important; }
+
+  /* v17.1: the FINDS lettering is an image block but shouldn't zoom.
+     Found by its file name (Finds_…) and, as a backup, by its block. */
+  body.homepage .sqs-block-image:hover img[data-src*="Finds_"],
+  body.homepage .sqs-block-image.obZoomHold img[data-src*="Finds_"],
+  body.homepage #block-f2c6bc69b5f82ee4e229 img {
+    transform: none !important;
+  }
 }
 
 section.page-section:has(.section-background .sqs-video-background-native) .fe-block:has(.sqs-html-content) {
