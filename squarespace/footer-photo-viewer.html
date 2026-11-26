@@ -1,6 +1,6 @@
 <!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it flies from the page into a full-screen view over a heavily blurred copy of the same photo, and flies back when it closes (no movement with reduced motion). Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer the photo opens at three quarters of the screen width (scroll down to see the rest of a tall photo); no second zoom. v2: blurred page behind, photos loop, bigger straight away, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small circle (or rounded square: viewer.cursor in OB SETTINGS) with a frosted chip hanging off it that trails it slightly ([ENLARGE] on the page, [PREV] / [NEXT] on the left / right half of the big photo, where a click goes back / on, and [CLOSE] around it, where a click closes (the round arrows only show for keyboard users); no trail with reduced motion). On phones (up to 767px wide) the photos are already full width, so the viewer is off there and the page gallery swipes as before. The words, and blur: false for a plain background: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. Also (v17.18): on the home page the same pointer shows [SHOP] over the hero photo and a click opens the store (all products); the hero's SHOP link is hidden on computers but stays for phones, tablets and keyboard users (heroShop in OB SETTINGS). Elsewhere, over a photo that links somewhere, the pointer is the same dot with no word (cursorDot: false in OB SETTINGS turns it off). v17.19: on computers the arrow is gone: a small circle follows the mouse everywhere and grows over anything clickable (v17.27: over photos the dot becomes a circle, square, triangle or the PETALS rug's outline at random, solid or frosted glass (shapeStyle), cursorShapes in OB SETTINGS) (v17.22: one solid black dot with a thin white keyline that only changes size, cursorSize in OB SETTINGS; v17.23: remembers where the mouse was for the Header's early dot, so the arrow doesn't flash in on a new page); form fields keep their text cursor (cursor: "arrow" in OB SETTINGS brings the arrow back). -->
 <style>
-@media (hover:hover) and (pointer:fine){.obInfoLink{pointer-events:none!important;cursor:default!important}.obTilePic,.obTilePic *{cursor:none!important}html.obPlainCursor :is(.obTilePic,.obTilePic *){cursor:pointer!important}html.obPlainCursor .obPvTip i{display:none!important}html.obPlainCursor .obPvTip b{left:18px;top:14px}html.obPlainCursor :is(.product-gallery-slides-item,.product-gallery-slides-item *,.obPv .obPvSlide,.obPv .obPvSlide *,section.obHeroShopIn,section.obHeroShopIn *,.obDotIn,.obDotIn *){cursor:pointer!important}}
+@media (hover:hover) and (pointer:fine){.obInfoLink{pointer-events:none!important;cursor:default!important}.obTilePic,.obTilePic *{cursor:none!important}html.obPlainCursor :is(.obTilePic,.obTilePic *){cursor:pointer!important}html.obTileOver main *{cursor:none!important}html.obPlainCursor.obTileOver main *{cursor:pointer!important}html.obPlainCursor .obPvTip i{display:none!important}html.obPlainCursor .obPvTip b{left:18px;top:14px}html.obPlainCursor :is(.product-gallery-slides-item,.product-gallery-slides-item *,.obPv .obPvSlide,.obPv .obPvSlide *,section.obHeroShopIn,section.obHeroShopIn *,.obDotIn,.obDotIn *){cursor:pointer!important}}
 @media (hover:hover) and (pointer:fine){body{cursor:default}main :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption){cursor:default}main a[href] :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption),main :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption) :is(a[href],a[href] *,button,button *){cursor:pointer}:is(input:not([type=submit]):not([type=button]):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=image]):not([type=color]):not([type=file]),textarea,[contenteditable=""],[contenteditable=true]){cursor:text}}
 @media (min-width:768px){.product-gallery-slides-item,.product-gallery-slides-item img{cursor:pointer}}
 @media (hover:hover) and (pointer:fine){.product-gallery-slides-item,.product-gallery-slides-item img,.obPv .obPvSlide,.obPv .obPvSlide img{cursor:none!important}}
@@ -474,7 +474,7 @@
     var isText = function (el) { return !!(el && el.closest && el.closest(TEXT)); };
     var heroWord = function (el, e) {
       var hit = !!(e && el && el.closest && heroHit(e.clientX, e.clientY) && heroSec.contains(el));
-      if (hit) { var a = el.closest("a[href], button, input, select, textarea, label"); if ((a && a !== heroLink) || isText(el)) hit = false; }
+      if (hit) { var a = el.closest("a[href], button, input, select, textarea, label"); if (a && a !== heroLink) hit = false; }
       if (hit !== heroIn) { heroIn = hit; if (heroSec) heroSec.classList.toggle("obHeroShopIn", hit); }
       return hit ? t("shopTip", HC().word) : "";
     };
@@ -486,8 +486,7 @@
       if (!el || !el.closest || !heroFind() || !heroSec.contains(el)) return;
       var a = el.closest("a[href], button, input, select, textarea, label");
       if (a && a !== heroLink) return;
-      /* words on the hero: not a link on computers (the old whole-section link in the suite is stopped here too) */
-      if (!a && isText(el)) { if (fine()) e.stopPropagation(); return; }
+      /* v17.33: words lying on the hero photo count as the photo (same hand, same word, same link) */
       if (!a && !heroHit(e.clientX, e.clientY)) return;
       if (heroDown && (Math.abs(e.clientX - heroDown.x) > 10 || Math.abs(e.clientY - heroDown.y) > 10)) return;
       e.preventDefault();
@@ -549,17 +548,32 @@
         }
       } catch (e) {}
     };
+    /* the tile photo under the pointer, by its outline, so words lying on top of a photo count as the photo too (v17.33) */
+    var tileAt = function (el, x, y) {
+      if (!el || !el.closest || typeof x !== "number") return null;
+      var a = el.closest("a[href], button, input, select, textarea, label");
+      if (a && !a.classList.contains("obTilePic")) return null;
+      var ps = document.querySelectorAll(".obTilePic");
+      for (var i = 0; i < ps.length; i++) {
+        var im = ps[i].querySelector("img");
+        var r = (im || ps[i]).getBoundingClientRect();
+        if (r.width && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return ps[i];
+      }
+      return null;
+    };
     var tileWord = function (el) {
-      var p = el.closest && el.closest(".obTilePic");
-      if (!p || !el.closest("img, .fluid-image-container, .image-block-wrapper, .grid-image, .product-list-image-wrapper, .summary-thumbnail-container") && el !== p) return "";
+      var p = lastE ? tileAt(el, lastE.clientX, lastE.clientY) : null;
+      document.documentElement.classList.toggle("obTileOver", !!p && !(el.closest && el.closest(".obTilePic")));
+      if (!p) return "";
       return p.getAttribute("data-ob-word") || t("shopTip", HC().word);
     };
     window.addEventListener("click", function (e) {
       if (e.defaultPrevented || e.button !== 0 || !fine()) return;
-      var p = e.target && e.target.closest && e.target.closest(".obTilePic[data-ob-href]");
-      if (!p || e.target.closest("a[href], button")) return;
+      var p = tileAt(e.target, e.clientX, e.clientY);
+      if (!p || (p.tagName === "A" && p.contains(e.target))) return;
       e.preventDefault();
-      var href = p.getAttribute("data-ob-href");
+      e.stopPropagation();
+      var href = p.getAttribute("data-ob-href") || p.getAttribute("href");
       if (e.metaKey || e.ctrlKey) { window.open(href, "_blank", "noopener"); return; }
       if (window.obLeaveTo) window.obLeaveTo(href); else location.href = href;
     }, true);
@@ -693,7 +707,7 @@
     document.addEventListener("pointerup", tipAgain, { passive: true });
     document.addEventListener("keyup", tipAgain, { passive: true });
     window.addEventListener("scroll", tipAgain, { passive: true });
-    document.documentElement.addEventListener("pointerleave", function () { tip.classList.remove("obPvTipOn"); on = false; dotSet(null); });
+    document.documentElement.addEventListener("pointerleave", function () { tip.classList.remove("obPvTipOn"); on = false; dotSet(null); document.documentElement.classList.remove("obTileOver"); });
     /* the pointer went into an embedded frame (card fields, maps, videos) or off the window */
     document.addEventListener("pointerover", function (e) { if (e.target && e.target.tagName === "IFRAME") { tip.classList.remove("obPvTipOn"); on = false; } }, { passive: true });
     window.addEventListener("blur", function () { tip.classList.remove("obPvTipOn"); on = false; });
