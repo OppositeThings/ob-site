@@ -1,4 +1,6 @@
-/* OB SOLID SUITE v17.0 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.1 · ob-suite.js · Opposite Things
+   v17.1 = v17.0 + store text swap (Footer v17.42): on phones the category line changes with a short slide and fade
+   instead of the letter scramble and product names no longer scramble; textSwap in OB_CONF picks per device.
    Served from GitHub through jsDelivr; the Squarespace Footer holds the settings block (OB_CONF) and one <script src> line.
    Pairs with Header v15.5 (stays in Squarespace), Custom CSS v17.0, ob-drawings.js v16.6 (Store page box, defer).
    v17.0 = v16.7, tidied. Under the hood only, except for keyboard users in the pop-up and the visible changes
@@ -2399,7 +2401,75 @@ try {
   };
   requestAnimationFrame(tick);
  };
+ /* textSwap in OB SETTINGS: how the category line and product names change with the store chips.
+    "fade" = the line slides up and fades out, the new one rises in (names just come in with the photos);
+    "scramble" = the letter scramble. Defaults: phones "fade", computers "scramble". */
+ const swapStyle = () => {
+  const o = (window.OB_CONF || {}).textSwap || {};
+  return MQ.mobile.matches ? o.phone || "fade" : o.computer || "scramble";
+ };
+ const swapFade = () => swapStyle() === "fade";
+ const copyFade = (p, from, to) => {
+  const token = String(now()) + Math.random();
+  p.dataset.obShuffling = token;
+  p.setAttribute("aria-label", to);
+  const alive = () => p.dataset.obShuffling === token;
+  const finish = () => {
+   if (!alive()) return;
+   p.__obFade?.cancel();
+   p.__obFade = null;
+   p.style.removeProperty("min-height");
+   p.textContent = to;
+   p.removeAttribute("aria-label");
+   delete p.dataset.obShuffling;
+  };
+  if (!p.animate) {
+   finish();
+   return;
+  }
+  const run = (kf, ms, ease, next) => {
+   p.__obFade?.cancel();
+   const a = p.animate(kf, {
+    duration: ms,
+    easing: ease,
+    fill: "forwards"
+   });
+   p.__obFade = a;
+   a.onfinish = () => {
+    if (alive()) next();
+   };
+  };
+  const rise = () => {
+   p.textContent = to;
+   run([ {
+    opacity: 0,
+    transform: "translateY(.4em)"
+   }, {
+    opacity: 1,
+    transform: "none"
+   } ], 260, "cubic-bezier(.2,.7,.2,1)", finish);
+  };
+  /* the line keeps its height while it swaps, so the photos below don't jump */
+  p.style.minHeight = p.offsetHeight + "px";
+  if (!from) {
+   rise();
+  } else {
+   const op = parseFloat(getComputedStyle(p).opacity);
+   run([ {
+    opacity: isNaN(op) ? 1 : op,
+    transform: "none"
+   }, {
+    opacity: 0,
+    transform: "translateY(-.4em)"
+   } ], 150, "ease-in", rise);
+  }
+  setTimeout(finish, 1500);
+ };
  const copyShuffle = (p, from, to) => {
+  if (swapFade()) {
+   copyFade(p, from, to);
+   return;
+  }
   const chars = [ ...to ], old = [ ...from ], n = chars.length, dur = SHUFFLE.ms;
   const token = String(now()) + Math.random();
   p.dataset.obShuffling = token;
@@ -2476,7 +2546,7 @@ try {
   });
  };
  const namesShuffleIn = (grid, base = 0) => {
-  if (!SHUFFLE.names || !grid || inEditor || prefersReducedMotion()) return;
+  if (!SHUFFLE.names || swapFade() || !grid || inEditor || prefersReducedMotion()) return;
   setTimeout(namesSweep, base + 320 + SHUFFLE.namesMs + 2600);
   const vh = window.innerHeight;
   let i = 0;
