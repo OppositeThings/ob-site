@@ -2435,9 +2435,14 @@ try {
     fill: "forwards"
    });
    p.__obFade = a;
-   a.onfinish = () => {
+   let done = false;
+   const go = () => {
+    if (done || p.__obFade !== a) return;
+    done = true;
     if (alive()) next();
    };
+   a.onfinish = go;
+   setTimeout(go, ms + 40);
   };
   const rise = () => {
    p.textContent = to;
