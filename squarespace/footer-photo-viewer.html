@@ -84,7 +84,7 @@
     var phone = function () { return window.matchMedia("(max-width: 767px)").matches; };
     var SLIDES = ".product-gallery-slides-item";
 
-    var dlg, track, count, live, prev, next, closeBtn, list = [], here = 0, opener = null, pushed = false, scrollT, loop = false, touching = false, anim = 0;
+    var dlg, track, count, live, prev, next, closeBtn, list = [], here = 0, opener = null, pushed = false, scrollT, loop = false, touching = false, anim = 0, navUntil = 0;
     /* with more than one photo the row is: a copy of the last, the photos, a copy of the first, so a swipe past either end carries on round */
     var posOf = function (i) { return loop ? i + 1 : i; };
     var realOf = function (p) { if (!loop) return p; var n = list.length; return (p - 1 + n) % n; };
@@ -179,7 +179,7 @@
       /* a click on the photo: left half the one before, right half the next; around it: close */
       track.addEventListener("click", function (e) {
         var z = zone(e);
-        if (z === "close") close();
+        if (z === "close") { if (Date.now() >= navUntil) close(); }
         else if (z) go(here + (z === "prev" ? -1 : 1));
       });
     };
@@ -217,6 +217,7 @@
       var p = loop && !direct ? (i < 0 ? 0 : i >= n ? n + 1 : posOf(i)) : posOf((i + n) % n);
       var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       set((i + n) % n);
+      navUntil = Date.now() + 520;
       if (reduce) { jump(posOf((i + n) % n)); return; }
       /* our own short slide (the browser's smooth scroll and the snapping can cancel each other) */
       cancelAnimationFrame(anim);
@@ -229,6 +230,8 @@
         if (k < 1) { anim = requestAnimationFrame(step); return; }
         anim = 0;
         if (loop && (p === 0 || p === n + 1)) jump(p === 0 ? n : 1); else jump(p);
+        navUntil = 0;
+        if (window.__obPvTipAgain) window.__obPvTipAgain();
       };
       anim = requestAnimationFrame(step);
     };
@@ -359,7 +362,8 @@
       if (e.pointerType && e.pointerType !== "mouse") { tip.classList.remove("obPvTipOn"); on = false; return; }
       var home = dlg && dlg.open ? dlg : document.body;
       if (tip.parentNode !== home) home.appendChild(tip);
-      var w = tipWord(document.elementFromPoint(e.clientX, e.clientY));
+      /* while the photos are sliding, keep the word as it was (no [CLOSE] flashing up between photos) */
+      var w = Date.now() < navUntil && on && chip.textContent ? chip.textContent : tipWord(document.elementFromPoint(e.clientX, e.clientY));
       if (!w) { tip.classList.remove("obPvTipOn"); on = false; return; }
       if (chip.textContent !== w) chip.textContent = w;
       var shape = String(((window.OB_CONF || {}).viewer || {}).cursor || "circle");
@@ -370,6 +374,7 @@
       if (!raf) raf = requestAnimationFrame(draw);
     };
     var tipAgain = function () { setTimeout(function () { tipAt(lastE); }, 40); };
+    window.__obPvTipAgain = tipAgain;
     document.addEventListener("pointermove", tipAt, { passive: true });
     document.addEventListener("pointerup", tipAgain, { passive: true });
     document.addEventListener("keyup", tipAgain, { passive: true });
