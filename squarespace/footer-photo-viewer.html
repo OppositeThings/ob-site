@@ -1,7 +1,7 @@
-<!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it flies from the page into a full-screen view over a heavily blurred copy of the same photo, and flies back when it closes (no movement with reduced motion). Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer the photo opens at three quarters of the screen width (scroll down to see the rest of a tall photo); no second zoom. v2: blurred page behind, photos loop, bigger straight away, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small circle (or rounded square: viewer.cursor in OB SETTINGS) with a frosted chip hanging off it that trails it slightly ([ENLARGE] on the page, [PREV] / [NEXT] on the left / right half of the big photo, where a click goes back / on, and [CLOSE] around it, where a click closes (the round arrows only show for keyboard users); no trail with reduced motion). On phones (up to 767px wide) the photos are already full width, so the viewer is off there and the page gallery swipes as before. The words, and blur: false for a plain background: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. Also (v17.18): on the home page the same pointer shows [SHOP] over the hero photo and a click opens the store (all products); the hero's SHOP link is hidden on computers but stays for phones, tablets and keyboard users (heroShop in OB SETTINGS). Elsewhere, over a photo that links somewhere, the pointer is the same dot with no word (cursorDot: false in OB SETTINGS turns it off). v17.19: on computers the arrow is gone: a small circle follows the mouse everywhere and grows over anything clickable (v17.22: one solid black dot with a thin white keyline that only changes size, cursorSize in OB SETTINGS); form fields keep their text cursor (cursor: "arrow" in OB SETTINGS brings the arrow back). -->
+<!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it flies from the page into a full-screen view over a heavily blurred copy of the same photo, and flies back when it closes (no movement with reduced motion). Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer the photo opens at three quarters of the screen width (scroll down to see the rest of a tall photo); no second zoom. v2: blurred page behind, photos loop, bigger straight away, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small circle (or rounded square: viewer.cursor in OB SETTINGS) with a frosted chip hanging off it that trails it slightly ([ENLARGE] on the page, [PREV] / [NEXT] on the left / right half of the big photo, where a click goes back / on, and [CLOSE] around it, where a click closes (the round arrows only show for keyboard users); no trail with reduced motion). On phones (up to 767px wide) the photos are already full width, so the viewer is off there and the page gallery swipes as before. The words, and blur: false for a plain background: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. Also (v17.18): on the home page the same pointer shows [SHOP] over the hero photo and a click opens the store (all products); the hero's SHOP link is hidden on computers but stays for phones, tablets and keyboard users (heroShop in OB SETTINGS). Elsewhere, over a photo that links somewhere, the pointer is the same dot with no word (cursorDot: false in OB SETTINGS turns it off). v17.19: on computers the arrow is gone: a small circle follows the mouse everywhere and grows over anything clickable (v17.22: one solid black dot with a thin white keyline that only changes size, cursorSize in OB SETTINGS; v17.23: remembers where the mouse was for the Header's early dot, so the arrow doesn't flash in on a new page); form fields keep their text cursor (cursor: "arrow" in OB SETTINGS brings the arrow back). -->
 <style>
 @media (min-width:768px){.product-gallery-slides-item,.product-gallery-slides-item img{cursor:pointer}}
-@media (hover:hover) and (pointer:fine){.product-gallery-slides-item,.product-gallery-slides-item img,.obPv .obPvSlide,.obPv:not(.obPvOne) .obPvSlide img{cursor:none!important}}
+@media (hover:hover) and (pointer:fine){.product-gallery-slides-item,.product-gallery-slides-item img,.obPv .obPvSlide,.obPv .obPvSlide img{cursor:none!important}}
 .obPvTip{position:fixed;left:0;top:0;z-index:2147483001;pointer-events:none;opacity:0;transition:opacity .08s ease-out}
 .obPvTip.obPvTipOn{opacity:1;transition:opacity .2s ease}
 .obPvTip b{transition:opacity .12s ease}
@@ -85,7 +85,8 @@
       if (!sl) return "";
       var im = sl.querySelector("img");
       if (!im || el !== im) return "close";
-      if (list.length < 2) return "";
+      /* only one photo: nowhere to go, so the photo closes too */
+      if (list.length < 2) return "close";
       var r = im.getBoundingClientRect();
       return e.clientX < r.left + r.width / 2 ? "prev" : "next";
     };
@@ -522,6 +523,8 @@
     var tipAt = function (e) {
       if (!e) return;
       lastE = { clientX: e.clientX, clientY: e.clientY, pointerType: e.pointerType };
+      /* the Header's early dot (shown on arrival so the arrow doesn't flash in) hands over to this one */
+      if (e.pointerType === "mouse" || !e.pointerType) document.documentElement.classList.remove("obDotEarly");
       if (e.pointerType && e.pointerType !== "mouse") { tip.classList.remove("obPvTipOn"); on = false; dotSet(null); document.documentElement.classList.remove("obDotCursor"); return; }
       var home = dlg && dlg.open && !closing ? dlg : (closing ? tip.parentNode || document.body : document.body);
       if (tip.parentNode !== home) home.appendChild(tip);
@@ -550,6 +553,16 @@
       if (!raf) raf = requestAnimationFrame(draw);
     };
     var tipAgain = function () { setTimeout(function () { tipAt(lastE); }, 40); };
+    /* remember where the mouse was, so the next page's Header can put the dot there straight away */
+    var dotSave = function () {
+      try {
+        if (!lastE || (lastE.pointerType && lastE.pointerType !== "mouse") || !dotMode()) { sessionStorage.removeItem("obDot"); return; }
+        var cs = (window.OB_CONF || {}).cursorSize || {};
+        sessionStorage.setItem("obDot", JSON.stringify({ x: Math.round(lastE.clientX), y: Math.round(lastE.clientY), s: +cs.normal || 10 }));
+      } catch (e) {}
+    };
+    window.addEventListener("pagehide", dotSave);
+    document.addEventListener("pointerdown", dotSave, { capture: true, passive: true });
     window.__obPvTipAgain = tipAgain;
     document.addEventListener("pointermove", tipAt, { passive: true });
     document.addEventListener("pointerup", tipAgain, { passive: true });

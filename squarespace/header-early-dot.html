@@ -1,0 +1,23 @@
+<!-- OB EARLY DOT v1 · goes at the very top of the Header (Header v15.7 = v15.6 + this block). Computers only: on arrival from another page of the site, the arrow is hidden at once and the black dot is drawn where the mouse was, so the arrow doesn't flash in while the page loads. The Footer's dot takes over when the mouse moves. If the Footer code hasn't started within 2.5 seconds, the normal arrow comes back. Form fields keep their text cursor. Nothing happens on a first visit, on phones, or with cursor: "arrow" in OB SETTINGS. -->
+<style>
+@media (hover:hover) and (pointer:fine){
+html.obDotEarly,html.obDotEarly *{cursor:none!important}
+html.obDotEarly :is(input:not([type=submit]):not([type=button]):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=image]),textarea,select,[contenteditable=""],[contenteditable=true],iframe){cursor:auto!important}
+html.obDotEarly::after{content:"";position:fixed;left:0;top:0;width:var(--obDotS,10px);height:var(--obDotS,10px);border-radius:50%;background:#111;box-shadow:0 0 0 1px #fffffa;transform:translate(var(--obDotX,-99px),var(--obDotY,-99px)) translate(-50%,-50%);z-index:2147483002;pointer-events:none}
+}
+</style>
+<script>
+(function () {
+  try {
+    if (!window.matchMedia || !window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    var p = JSON.parse(sessionStorage.getItem("obDot") || "null");
+    if (!p || typeof p.x !== "number" || typeof p.y !== "number") return;
+    var d = document.documentElement;
+    d.style.setProperty("--obDotX", p.x + "px");
+    d.style.setProperty("--obDotY", p.y + "px");
+    if (p.s) d.style.setProperty("--obDotS", p.s + "px");
+    d.classList.add("obDotEarly");
+    setTimeout(function () { if (!window.__obPvTipAgain) d.classList.remove("obDotEarly"); }, 2500);
+  } catch (e) {}
+})();
+</script>
