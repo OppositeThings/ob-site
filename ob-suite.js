@@ -3019,10 +3019,22 @@ try {
     filterGiveUp(key);
     return;
    }
-   filterToTop();
-   filterShow(key);
-   namesShuffleIn(filterGrid());
-   filterFade(box, 0, 1, FILTER.inMs);
+   /* v17.1: the old products are put fully out of sight before the new ones go in, a frame apart, so the two
+      can never show at once (on iPhones the fade-out could still be on screen as the new products faded in) */
+   if (box) {
+    box.__obFade?.cancel();
+    box.__obFade = null;
+    box.style.opacity = "0";
+    void box.offsetWidth;
+   }
+   requestAnimationFrame(() => {
+    if (token !== filterState.token) return;
+    filterToTop();
+    filterShow(key);
+    namesShuffleIn(filterGrid());
+    if (box) box.style.removeProperty("opacity");
+    filterFade(box, 0, 1, FILTER.inMs);
+   });
   });
   return true;
  };
