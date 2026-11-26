@@ -1,9 +1,11 @@
-<!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it opens full screen over a heavily blurred copy of the same photo. Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer the photo opens at three quarters of the screen width (scroll down to see the rest of a tall photo); no second zoom. v2: blurred page behind, photos loop, bigger straight away, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small circle (or rounded square: viewer.cursor in OB SETTINGS) with a frosted chip hanging off it that trails it slightly ([ENLARGE] on the page, [PREV] / [NEXT] on the left / right half of the big photo, where a click goes back / on, and [CLOSE] around it, where a click closes (the round arrows only show for keyboard users); no trail with reduced motion). On phones (up to 767px wide) the photos are already full width, so the viewer is off there and the page gallery swipes as before. The words, and blur: false for a plain background: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. -->
+<!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it flies from the page into a full-screen view over a heavily blurred copy of the same photo, and flies back when it closes (no movement with reduced motion). Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer the photo opens at three quarters of the screen width (scroll down to see the rest of a tall photo); no second zoom. v2: blurred page behind, photos loop, bigger straight away, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small circle (or rounded square: viewer.cursor in OB SETTINGS) with a frosted chip hanging off it that trails it slightly ([ENLARGE] on the page, [PREV] / [NEXT] on the left / right half of the big photo, where a click goes back / on, and [CLOSE] around it, where a click closes (the round arrows only show for keyboard users); no trail with reduced motion). On phones (up to 767px wide) the photos are already full width, so the viewer is off there and the page gallery swipes as before. The words, and blur: false for a plain background: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. -->
 <style>
 @media (min-width:768px){.product-gallery-slides-item,.product-gallery-slides-item img{cursor:pointer}}
 @media (hover:hover) and (pointer:fine){.product-gallery-slides-item,.product-gallery-slides-item img,.obPv .obPvSlide,.obPv:not(.obPvOne) .obPvSlide img{cursor:none!important}}
 .obPvTip{position:fixed;left:0;top:0;z-index:2147483001;pointer-events:none;opacity:0;transition:opacity .2s}
 .obPvTip.obPvTipOn{opacity:1}
+.obPvTip b{transition:opacity .12s ease}
+.obPvTip b.obPvSwap{opacity:0}
 .obPvTip i{position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:3px;background:#111}
 .obPvTip[data-shape="circle"] i{border-radius:50%}
 .obPvTip[data-shape="square"] i{border-radius:0}
@@ -16,6 +18,9 @@
 .obPvBlur{position:absolute;inset:0;overflow:hidden;background:#fffffa}
 .obPvBlur i{position:absolute;inset:0;background:center / cover no-repeat;-webkit-filter:blur(60px) saturate(1.15);filter:blur(60px) saturate(1.15);transform:scale(1.25) translateZ(0);opacity:0;transition:opacity .5s ease;will-change:opacity}
 .obPvBlur i.obPvOn{opacity:1}
+.obPvBlur,.obPvBar{transition:opacity .3s ease}
+.obPv.obPvIntro .obPvBlur,.obPv.obPvIntro .obPvBar,.obPv.obPvOutro .obPvBlur,.obPv.obPvOutro .obPvBar{opacity:0}
+.obPv.obPvOutro{pointer-events:none}
 .obPvBlur::after{content:"";position:absolute;inset:0;background:rgba(255,255,250,.5)}
 .obPvSolid .obPvBlur i{display:none}
 .obPv:not([open]){display:none}
@@ -84,7 +89,7 @@
     var phone = function () { return window.matchMedia("(max-width: 767px)").matches; };
     var SLIDES = ".product-gallery-slides-item";
 
-    var dlg, track, count, live, prev, next, closeBtn, list = [], here = 0, opener = null, pushed = false, scrollT, loop = false, touching = false, anim = 0, navUntil = 0;
+    var dlg, track, count, live, prev, next, closeBtn, list = [], here = 0, opener = null, pushed = false, scrollT, loop = false, touching = false, anim = 0, navUntil = 0, closing = false;
     /* with more than one photo the row is: a copy of the last, the photos, a copy of the first, so a swipe past either end carries on round */
     var posOf = function (i) { return loop ? i + 1 : i; };
     var realOf = function (p) { if (!loop) return p; var n = list.length; return (p - 1 + n) % n; };
@@ -236,6 +241,24 @@
       anim = requestAnimationFrame(step);
     };
 
+    /* the photo flies between its place on the page and its place in the viewer */
+    var still = function () { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; };
+    var FLY = 320;
+    var seen = function (r) { return r && r.width > 0 && r.bottom > 0 && r.top < window.innerHeight && r.right > 0 && r.left < window.innerWidth; };
+    var fly = function (im, from, to, back) {
+      if (!im || !seen(from) || !to || !to.width) return false;
+      var dx = from.left - to.left, dy = from.top - to.top, sx = from.width / to.width, sy = from.height / to.height;
+      im.style.transition = "none";
+      im.style.transformOrigin = "0 0";
+      im.style.transform = back ? "none" : "translate(" + dx + "px," + dy + "px) scale(" + sx + "," + sy + ")";
+      void im.offsetWidth;
+      im.style.transition = "transform " + FLY + "ms cubic-bezier(.2,.7,.2,1)";
+      im.style.transform = back ? "translate(" + dx + "px," + dy + "px) scale(" + sx + "," + sy + ")" : "none";
+      return true;
+    };
+    var pageImg = function (p) { return p && p.item && p.item.querySelector("img"); };
+    var viewImg = function (i) { var sl = track.children[posOf(i)]; return sl && sl.querySelector("img"); };
+
     var open = function (start, from) {
       list = photos();
       if (!list.length) return;
@@ -256,10 +279,21 @@
       dlg.classList.toggle("obPvOne", list.length < 2);
       dlg.classList.toggle("obPvSolid", ((window.OB_CONF || {}).viewer || {}).blur === false);
       document.documentElement.style.overflow = "hidden";
+      dlg.classList.remove("obPvOutro");
+      closing = false;
       dlg.showModal();
+      if (tip.classList.contains("obPvTipOn")) dlg.appendChild(tip);
       here = -1;
       jump(posOf(start));
       set(start);
+      if (!still() && !phone()) {
+        var src = pageImg(list[start]), im = viewImg(start);
+        if (src && fly(im, src.getBoundingClientRect(), im.getBoundingClientRect(), false)) {
+          dlg.classList.add("obPvIntro");
+          void dlg.offsetWidth;
+          dlg.classList.remove("obPvIntro");
+        }
+      }
       /* keyboard: focus on CLOSE; mouse: no focus ring anywhere */
       if (byKey) closeBtn.focus({ preventScroll: true });
       else { dlg.setAttribute("tabindex", "-1"); dlg.focus({ preventScroll: true }); }
@@ -268,10 +302,29 @@
 
     var after = null;
     var close = function (fromHistory) {
-      if (!dlg || !dlg.open) return;
+      if (!dlg || !dlg.open || closing) return;
       var last = here;
+      closing = true;
+      var im = viewImg(last), dst = pageImg(list[last]);
+      /* computers: bring the photo you end on into view behind the viewer first, so it flies back to it */
+      if (dst && !phone()) {
+        var r0 = dst.getBoundingClientRect();
+        if (r0.bottom < 80 || r0.top > window.innerHeight - 80) { try { window.scrollTo({ top: Math.max(0, window.pageYOffset + r0.top - 40), behavior: "instant" }); } catch (e) { window.scrollTo(0, Math.max(0, window.pageYOffset + r0.top - 40)); } }
+      }
+      var flew = !still() && !phone() && dst && im && fly(im, dst.getBoundingClientRect(), im.getBoundingClientRect(), true);
+      dlg.classList.add("obPvOutro");
+      setTimeout(function () { shut(fromHistory, last); }, flew || !still() ? FLY : 0);
+    };
+    var shut = function (fromHistory, last) {
+      /* the pointer word stays put while the viewer goes, then changes over to [ENLARGE] */
+      if (tip.parentNode === dlg) document.body.appendChild(tip);
       dlg.close();
+      closing = false;
+      dlg.classList.remove("obPvOutro");
+      var vi = viewImg(last);
+      if (vi) { vi.style.transition = "none"; vi.style.transform = ""; }
       document.documentElement.style.overflow = "";
+      if (window.__obPvTipAgain) window.__obPvTipAgain();
       /* back on the page: show the photo you were looking at (after the browser has finished going back) */
       var finish = function () {
         var p = list[last];
@@ -347,8 +400,16 @@
       if (!dlg || !dlg.open) { var it = el.closest(SLIDES); if (it && it.querySelector("img") && document.body.classList.contains("view-item")) return t("enlarge"); }
       return "";
     };
-    var mx = 0, my = 0, cx = 0, cy = 0, on = false, raf = 0, lastE = null;
-    var still = function () { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; };
+    var mx = 0, my = 0, cx = 0, cy = 0, on = false, raf = 0, lastE = null, word = "", swapT = 0;
+    /* a new word fades out and in rather than jumping */
+    var setWord = function (w) {
+      if (w === word) return;
+      word = w;
+      if (!on || still()) { chip.textContent = w; chip.classList.remove("obPvSwap"); return; }
+      chip.classList.add("obPvSwap");
+      clearTimeout(swapT);
+      swapT = setTimeout(function () { chip.textContent = word; chip.classList.remove("obPvSwap"); }, 120);
+    };
     var draw = function () {
       raf = 0;
       if (still()) { cx = mx; cy = my; } else { cx += (mx - cx) * 0.09; cy += (my - cy) * 0.09; }
@@ -360,12 +421,12 @@
       if (!e) return;
       lastE = { clientX: e.clientX, clientY: e.clientY, pointerType: e.pointerType };
       if (e.pointerType && e.pointerType !== "mouse") { tip.classList.remove("obPvTipOn"); on = false; return; }
-      var home = dlg && dlg.open ? dlg : document.body;
+      var home = dlg && dlg.open && !closing ? dlg : (closing ? tip.parentNode || document.body : document.body);
       if (tip.parentNode !== home) home.appendChild(tip);
-      /* while the photos are sliding, keep the word as it was (no [CLOSE] flashing up between photos) */
-      var w = Date.now() < navUntil && on && chip.textContent ? chip.textContent : tipWord(document.elementFromPoint(e.clientX, e.clientY));
+      /* while the photos slide or the viewer closes, keep the word as it was */
+      var w = (closing || Date.now() < navUntil) && on && word ? word : tipWord(document.elementFromPoint(e.clientX, e.clientY));
       if (!w) { tip.classList.remove("obPvTipOn"); on = false; return; }
-      if (chip.textContent !== w) chip.textContent = w;
+      setWord(w);
       var shape = String(((window.OB_CONF || {}).viewer || {}).cursor || "circle");
       if (tip.getAttribute("data-shape") !== shape) tip.setAttribute("data-shape", shape);
       mx = e.clientX; my = e.clientY;
