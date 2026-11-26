@@ -181,6 +181,15 @@ window.OB_CONF=window.OB_CONF||{};OB_CONF.otherThings={on:true,show:6,max:12,ski
           row.addEventListener("dragstart", function (e) { if (document.documentElement.classList.contains("obOtOn")) e.preventDefault(); });
           row.addEventListener("click", function (e) { if (dragged || row.classList.contains("obOtDragging")) { e.preventDefault(); e.stopPropagation(); } }, true);
           row.addEventListener("pointerenter", words);
+          /* keyboard: with the row or a product in it focused, the arrow keys move one product along, Home / End go to either end */
+          row.addEventListener("keydown", function (e) {
+            if (!document.documentElement.classList.contains("obOtOn") || e.altKey || e.ctrlKey || e.metaKey) return;
+            var it = row.querySelector(".product-list-item"), step = it ? it.getBoundingClientRect().width + parseFloat(getComputedStyle(row).columnGap || 0) : 200;
+            var to = e.key === "ArrowRight" ? row.scrollLeft + step : e.key === "ArrowLeft" ? row.scrollLeft - step : e.key === "Home" ? 0 : e.key === "End" ? row.scrollWidth : null;
+            if (to === null) return;
+            e.preventDefault();
+            row.scrollTo({ left: to, behavior: still() ? "auto" : "smooth" });
+          });
         }
       } else {
         ["role", "aria-label", "tabindex", "data-ob-tip"].forEach(function (k) { row.removeAttribute(k); });
