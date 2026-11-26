@@ -1,7 +1,8 @@
 /* OB SOLID SUITE v17.1 · ob-suite.js · Opposite Things
    v17.1 = v17.0 + store text swap (Footer v17.44): product names scramble in their own text (one copy on screen,
-   never doubled), all in one animation loop, settling left to right in 0.4s; textSwap in OB_CONF: phone / computer
-   "scramble" (default) or "fade" for the category line, names: false turns the name scramble off.
+   never doubled), all in one animation loop; textSwap in OB_CONF: phone / computer "scramble" (default) or "fade"
+   for the category line; names: "header" (same scramble as the line, default), "scramble" (calmer, left to right in
+   0.4s) or false.
    Served from GitHub through jsDelivr; the Squarespace Footer holds the settings block (OB_CONF) and one <script src> line.
    Pairs with Header v15.5 (stays in Squarespace), Custom CSS v17.0, ob-drawings.js v16.6 (Store page box, defer).
    v17.0 = v16.7, tidied. Under the hood only, except for keyboard users in the pop-up and the visible changes
@@ -2521,7 +2522,7 @@ try {
   title.classList.remove("obNameShuf");
   title.style.removeProperty("white-space");
  };
- const nameJob = (title, wait, dur) => {
+ const nameJob = (title, wait, dur, header) => {
   nameRestore(title);
   qsa(".obNameOv", title).forEach(x => x.remove());
   if (title.children.length) return null;
@@ -2533,10 +2534,12 @@ try {
   };
   const chars = [ ...to ], n = chars.length;
   const cur = chars.map(ch => isShuffleLetter(ch) ? shuffleLetter() : ch);
-  const at = chars.map((_, i) => wait + dur * .25 + (i + 1) / n * dur * .75);
+  /* "header": letters settle in a loose wave like the category line; otherwise strictly left to right */
+  const at = header ? chars.map((_, i) => wait + i / n * dur * .65 + dur * .35 * Math.random()) : chars.map((_, i) => wait + dur * .25 + (i + 1) / n * dur * .75);
   return {
    title,
    st,
+   header: !!header,
    to,
    chars,
    cur,
@@ -2595,7 +2598,7 @@ try {
     }
     for (let i = 0; i < j.chars.length; i++) {
      if (j.cur[i] === j.chars[i] && t >= j.at[i]) continue;
-     if (t >= j.at[i] || !isShuffleLetter(j.chars[i])) j.cur[i] = j.chars[i]; else if (roll) j.cur[i] = shuffleLetter();
+     if (t >= j.at[i] || !isShuffleLetter(j.chars[i])) j.cur[i] = j.chars[i]; else if (j.header ? Math.random() < .45 : roll) j.cur[i] = shuffleLetter();
     }
     const s = j.cur.join("");
     if (s !== j.last) {
@@ -2620,10 +2623,16 @@ try {
    }
   });
  };
- const namesOn = () => ((window.OB_CONF || {}).textSwap || {}).names !== false;
+ /* textSwap.names in OB_CONF: "header" = the same scramble as the category line (default), "scramble" = calmer,
+    left to right in 0.4s, false = no scramble */
+ const namesMode = () => {
+  const v = ((window.OB_CONF || {}).textSwap || {}).names;
+  return v === false ? "" : v === "scramble" ? "scramble" : "header";
+ };
+ const namesOn = () => !!namesMode();
  const namesShuffleIn = (grid, base = 0) => {
   if (!SHUFFLE.names || !namesOn() || !grid || inEditor || prefersReducedMotion()) return;
-  setTimeout(namesSweep, base + NAMES.staggerMax + SHUFFLE.namesMs + 2600);
+  setTimeout(namesSweep, base + NAMES.staggerMax + SHUFFLE.ms + 2600);
   const vh = window.innerHeight;
   /* read every position first, then write */
   const picks = [];
@@ -2638,7 +2647,8 @@ try {
   });
   const jobs = [];
   picks.forEach(([title, single]) => {
-   const j = nameJob(title, base + Math.min(jobs.length * NAMES.staggerMs, NAMES.staggerMax), SHUFFLE.namesMs);
+   const header = namesMode() === "header";
+   const j = nameJob(title, base + Math.min(jobs.length * NAMES.staggerMs, NAMES.staggerMax), header ? SHUFFLE.ms : SHUFFLE.namesMs, header);
    if (j) {
     j.single = single;
     jobs.push(j);
