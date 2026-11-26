@@ -499,7 +499,7 @@
     var heroTick = function () { heroSec = null; heroFind(); if (++heroTries < 6) setTimeout(heroTick, 500); };
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", heroTick); else heroTick();
 
-    /* home page tiles (v17.32): on a computer every linked photo below the hero shows the word chip (its SHOP… button's words, or Shop) and the whole photo clicks through; the SHOP… buttons under the photos are hidden (they stay for phones, tablets and keyboard users) and the names, prices and SOLD labels are not links there. A photo with no link of its own (Finds) takes its button's link. tiles: false in OB SETTINGS switches this off. */
+    /* home page tiles (v17.32): on a computer every linked photo below the hero shows the word chip (its SHOP… button's words, or Shop) and the whole photo clicks through; the SHOP… buttons under the photos are hidden (they stay for phones, tablets and keyboard users) and the names, prices and SOLD labels are not links there. A photo with no link of its own (Finds) is left alone, button and all. tiles: false in OB SETTINGS switches this off. */
     var tileTries = 0;
     var tileMark = function () {
       try {
@@ -532,10 +532,11 @@
               if (sc > bestS) { bestS = sc; best = P; }
             }
             if (!best || bestS < 0) continue;
+            /* a photo with no link of its own (Finds) keeps its button as it is (Ben, v17.35) */
+            if (best.tagName !== "A") continue;
             L.classList.add("obTileLink");
             if (/^\[?\s*shop\b/i.test(txt)) {
               if (!best.getAttribute("data-ob-word")) best.setAttribute("data-ob-word", txt.replace(/[\[\]]/g, "").trim());
-              if (best.tagName !== "A" && !best.getAttribute("data-ob-href")) best.setAttribute("data-ob-href", L.getAttribute("href"));
               var blk = L.closest(".fe-block") || L.closest(".sqs-block");
               (blk && (blk.textContent || "").replace(/\s+/g, " ").trim() === txt && !blk.querySelector("img") ? blk : L).classList.add("obHeroShopHide");
             } else {
@@ -580,6 +581,9 @@
     var tileTick = function () { tileMark(); if (++tileTries < 6) setTimeout(tileTick, 500); };
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", tileTick); else tileTick();
     window.addEventListener("load", function () { setTimeout(tileMark, 300); });
+    /* photos further down can get their size late: check again while scrolling */
+    var tileScrollT = 0;
+    window.addEventListener("scroll", function () { if (tileScrollT) return; tileScrollT = setTimeout(function () { tileScrollT = 0; tileMark(); }, 250); }, { passive: true });
     /* the rest of the site: over a photo that links somewhere (store grid, product cards, Finds, home tiles) the pointer is the same dot, with no word. cursorDot: false in OB SETTINGS switches it off. */
     var DOT = "\u00b7dot", dotEl = null;
     var dotSet = function (a) {
