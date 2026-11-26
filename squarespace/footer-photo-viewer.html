@@ -1,14 +1,22 @@
-<!-- OB PHOTO VIEWER v1 · product pages: click or tap a photo and it opens full screen. Swipe (phones), arrows or the arrow keys move between the photos; CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer, a click on the big photo zooms in to see the detail (move the mouse to look around), a second click zooms out. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. -->
+<!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it opens full screen over the page, which shows through blurred. Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer, a click on the big photo zooms it to the full width of the screen (move the mouse up and down to look along it), a second click zooms out. v2: blurred page behind, photos loop, zoom fills the screen width, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small word, [ENLARGE] on the page and [ZOOM IN] / [ZOOM OUT] in the viewer; on phones [ENLARGE] sits in the corner of the photo. The words: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. -->
 <style>
-.product-gallery-slides-item img{cursor:zoom-in}
-.obPv{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:#fffffa;color:#111;overflow:hidden;font-family:ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;z-index:2147483000}
-.obPv::backdrop{background:#fffffa}
+.product-gallery-slides-item,.product-gallery-slides-item img{cursor:pointer}
+@media (hover:hover) and (pointer:fine){.product-gallery-slides-item,.product-gallery-slides-item img,.obPvSlide img{cursor:none!important}}
+.obPvTip{position:fixed;left:0;top:0;z-index:2147483001;pointer-events:none;padding:5px 7px;border-radius:5px;background:rgba(255,255,250,.88);color:#111;font:13px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0;text-transform:uppercase;white-space:nowrap;opacity:0;transition:opacity .15s}
+.obPvTip.obPvTipOn{opacity:1}
+.obPvTag{display:none}
+@media (hover:none){.obPvTag{display:block;position:absolute;right:8px;bottom:8px;z-index:2;pointer-events:none;padding:5px 7px;border-radius:5px;background:rgba(255,255,250,.88);color:#111;font:11px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase}}
+.product-gallery-slides-item::after{pointer-events:none}
+.product-gallery-slides-item:focus:not(:focus-visible)::after{display:none}
+.obPv{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;color:#111;overflow:hidden;font-family:ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;z-index:2147483000}
+.obPv::backdrop{background:rgba(255,255,250,.7);-webkit-backdrop-filter:blur(28px);backdrop-filter:blur(28px)}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.obPv::backdrop{background:#fffffa}}
 .obPv:not([open]){display:none}
 .obPvTrack{position:absolute;inset:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .obPvTrack::-webkit-scrollbar{display:none}
 .obPvSlide{flex:0 0 100%;width:100%;height:100%;margin:0;scroll-snap-align:center;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;padding:64px 24px 56px;box-sizing:border-box;overflow:hidden}
 .obPvSlide img{display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;cursor:zoom-in;transition:transform .25s cubic-bezier(.25,.1,.25,1)}
-.obPv.obPvZoom .obPvSlide.obPvHere img{cursor:zoom-out;transition:none}
+.obPv.obPvZoom .obPvSlide.obPvHere img{transition:none}
 .obPv.obPvZoom .obPvTrack{overflow-x:hidden}
 .obPvBar{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;justify-content:space-between;padding:16px 24px;pointer-events:none;font-size:14px;line-height:1;letter-spacing:0;text-transform:uppercase}
 .obPvBar>*{pointer-events:auto}
@@ -18,7 +26,6 @@
 .obPvClose:hover,.obPvClose:focus-visible{text-decoration:underline;text-underline-offset:3px}
 .obPvNav{position:absolute;top:50%;width:48px;height:48px;margin-top:-24px;display:flex;align-items:center;justify-content:center;border-radius:999px!important;background:rgba(230,228,222,.62)!important;font-size:18px!important;line-height:1}
 .obPvNav:hover{background:rgba(214,211,203,.8)!important}
-.obPvNav[disabled]{opacity:0;pointer-events:none}
 .obPvPrev{left:24px}
 .obPvNext{right:24px}
 .obPv button:focus-visible{outline:2px solid #111;outline-offset:3px}
@@ -44,11 +51,21 @@
       try { var w = localStorage.getItem("wglang"); if (w) return w.slice(0, 2).toLowerCase(); } catch (e) {}
       return (document.documentElement.lang || "en").slice(0, 2).toLowerCase();
     };
-    var t = function (k) { var w = WORDS[k]; return w[lang()] || w.en; };
+    WORDS.enlarge = { en: "[Enlarge]", it: "[Ingrandisci]" };
+    WORDS.zoomIn = { en: "[Zoom in]", it: "[Zoom]" };
+    WORDS.zoomOut = { en: "[Zoom out]", it: "[Riduci]" };
+    var t = function (k) {
+      var c = (window.OB_CONF || {}).viewer || {}, w = c[k] || WORDS[k];
+      if (typeof w === "string") return w;
+      return (w && (w[lang()] || w.en)) || WORDS[k].en;
+    };
     var phone = function () { return window.matchMedia("(max-width: 767px)").matches; };
     var SLIDES = ".product-gallery-slides-item";
 
-    var dlg, track, count, live, prev, next, closeBtn, list = [], here = 0, opener = null, pushed = false, scrollT;
+    var dlg, track, count, live, prev, next, closeBtn, list = [], here = 0, opener = null, pushed = false, scrollT, loop = false;
+    /* with more than one photo the row is: a copy of the last, the photos, a copy of the first, so a swipe past either end carries on round */
+    var posOf = function (i) { return loop ? i + 1 : i; };
+    var realOf = function (p) { if (!loop) return p; var n = list.length; return (p - 1 + n) % n; };
 
     var photos = function () {
       var out = [];
@@ -72,9 +89,12 @@
     };
 
     var load = function (i) {
-      var sl = track && track.children[i];
-      if (!sl) return;
-      var im = sl.querySelector("img");
+      if (!track || !list.length) return;
+      i = (i + list.length) % list.length;
+      for (var p = 0; p < track.children.length; p++) { if (realOf(p) === i) loadAt(p, i); }
+    };
+    var loadAt = function (p, i) {
+      var im = track.children[p].querySelector("img");
       if (im && !im.getAttribute("src")) {
         im.onload = function () { this.style.background = "none"; };
         im.setAttribute("sizes", "100vw");
@@ -106,16 +126,18 @@
       dlg.addEventListener("keydown", function (e) {
         if (e.key === "ArrowRight") { e.preventDefault(); go(here + 1); }
         else if (e.key === "ArrowLeft") { e.preventDefault(); go(here - 1); }
-        else if (e.key === "Home") { e.preventDefault(); go(0); }
-        else if (e.key === "End") { e.preventDefault(); go(list.length - 1); }
+        else if (e.key === "Home") { e.preventDefault(); go(0, true); }
+        else if (e.key === "End") { e.preventDefault(); go(list.length - 1, true); }
       });
       track.addEventListener("scroll", function () {
         clearTimeout(scrollT);
         scrollT = setTimeout(function () {
           var w = track.clientWidth || 1;
-          var i = Math.round(track.scrollLeft / w);
-          if (i !== here) set(i, true);
-        }, 60);
+          var p = Math.round(track.scrollLeft / w);
+          if (loop && (p === 0 || p === list.length + 1)) jump(p === 0 ? list.length : 1);
+          var i = realOf(p);
+          if (i !== here) set(i);
+        }, 80);
       }, { passive: true });
 
       /* computer: click the photo to zoom in, move to look around, click again to zoom out */
@@ -123,7 +145,7 @@
       var aim = function (e) {
         if (!zoomed) return;
         var r = zoomed.parentNode.getBoundingClientRect();
-        var x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+        var x = zoomed.__lockX ? 0.5 : (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
         zoomed.style.transformOrigin = (Math.max(0, Math.min(1, x)) * 100) + "% " + (Math.max(0, Math.min(1, y)) * 100) + "%";
       };
       var unzoom = function () {
@@ -138,7 +160,11 @@
         if (phone()) return;
         if (zoomed) { unzoom(); return; }
         var nat = im.naturalWidth || 0, box = im.getBoundingClientRect(), shown = Math.min(box.width, box.height * nat / (im.naturalHeight || 1)) || 1;
-        var k = Math.max(2, Math.min(3, nat / shown));
+        /* zoom until the photo is as wide as the screen; a photo that is already nearly that wide just doubles */
+        var k = (track.clientWidth || window.innerWidth) / shown;
+        im.__lockX = k >= 1.5;
+        if (k < 1.5) k = 2;
+        k = Math.min(k, 5);
         zoomed = im;
         dlg.classList.add("obPvZoom");
         aim(e);
@@ -148,22 +174,30 @@
       dlg.__unzoom = unzoom;
     };
 
-    var set = function (i, fromScroll) {
-      i = Math.max(0, Math.min(list.length - 1, i));
+    var jump = function (p) {
+      track.style.scrollSnapType = "none";
+      track.scrollLeft = p * track.clientWidth;
+      void track.offsetWidth;
+      track.style.scrollSnapType = "";
+    };
+    var set = function (i) {
       here = i;
       if (dlg.__unzoom) dlg.__unzoom();
-      for (var k = 0; k < track.children.length; k++) track.children[k].classList.toggle("obPvHere", k === i);
+      for (var k = 0; k < track.children.length; k++) track.children[k].classList.toggle("obPvHere", k === posOf(i));
       load(i); load(i + 1); load(i - 1);
       count.textContent = (i + 1) + " / " + list.length;
       live.textContent = (i + 1) + " " + t("of") + " " + list.length;
-      prev.disabled = i === 0;
-      next.disabled = i === list.length - 1;
-      if (!fromScroll) {
-        var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        track.scrollTo({ left: i * track.clientWidth, behavior: reduce ? "auto" : "smooth" });
-      }
     };
-    var go = function (i) { if (i >= 0 && i < list.length) set(i, false); };
+    /* move to photo i; past the last comes the first and before the first the last */
+    var go = function (i, direct) {
+      var n = list.length;
+      if (n < 2) return;
+      var p = loop && !direct ? (i < 0 ? 0 : i >= n ? n + 1 : posOf(i)) : posOf((i + n) % n);
+      var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      set((i + n) % n);
+      if (reduce) { jump(posOf((i + n) % n)); return; }
+      track.scrollTo({ left: p * track.clientWidth, behavior: "smooth" });
+    };
 
     var open = function (start, from) {
       list = photos();
@@ -173,18 +207,21 @@
       closeBtn.textContent = t("close");
       prev.setAttribute("aria-label", t("prev"));
       next.setAttribute("aria-label", t("next"));
-      var html = "";
-      for (var i = 0; i < list.length; i++) {
+      loop = list.length > 1;
+      var slide = function (i, copy) {
         var d = /^(\d+)x(\d+)$/.exec(list[i].dims);
-        html += '<figure class="obPvSlide" role="group" aria-roledescription="slide" aria-label="' + (i + 1) + " " + t("of") + " " + list.length + '"><img alt="' + list[i].alt.replace(/"/g, "&quot;") + '"' + (d ? ' width="' + d[1] + '" height="' + d[2] + '"' : "") + ' decoding="async" draggable="false"' + (list[i].now ? ' style="background:url(&quot;' + list[i].now.replace(/"/g, "%22") + '&quot;) center / contain no-repeat"' : "") + '></figure>';
-      }
+        return '<figure class="obPvSlide"' + (copy ? ' aria-hidden="true"' : ' role="group" aria-roledescription="slide" aria-label="' + (i + 1) + " " + t("of") + " " + list.length + '"') + '><img alt="' + (copy ? "" : list[i].alt.replace(/"/g, "&quot;")) + '"' + (d ? ' width="' + d[1] + '" height="' + d[2] + '"' : "") + ' decoding="async" draggable="false"' + (list[i].now ? ' style="background:url(&quot;' + list[i].now.replace(/"/g, "%22") + '&quot;) center / contain no-repeat"' : "") + '></figure>';
+      };
+      var html = loop ? slide(list.length - 1, true) : "";
+      for (var i = 0; i < list.length; i++) html += slide(i, false);
+      if (loop) html += slide(0, true);
       track.innerHTML = html;
       dlg.classList.toggle("obPvOne", list.length < 2);
       document.documentElement.style.overflow = "hidden";
       dlg.showModal();
       here = -1;
-      track.scrollLeft = start * track.clientWidth;
-      set(start, true);
+      jump(posOf(start));
+      set(start);
       closeBtn.focus({ preventScroll: true });
       try { history.pushState({ obPv: 1 }, ""); pushed = true; } catch (e) { pushed = false; }
     };
@@ -250,9 +287,52 @@
       open(indexOf(item), item);
     });
 
+    /* the word that follows the pointer over a photo (computers), in place of the magnifier */
+    var tip = document.createElement("div");
+    tip.className = "obPvTip";
+    tip.setAttribute("aria-hidden", "true");
+    tip.setAttribute("data-wg-notranslate", "");
+    var tipWord = function (el) {
+      if (!el || !el.closest) return "";
+      if (el.closest(".obPvSlide img")) return dlg && dlg.classList.contains("obPvZoom") ? t("zoomOut") : (phone() ? "" : t("zoomIn"));
+      if (!dlg || !dlg.open) { var it = el.closest(SLIDES); if (it && it.querySelector("img") && document.body.classList.contains("view-item")) return t("enlarge"); }
+      return "";
+    };
+    var lastE = null;
+    var tipAt = function (e) {
+      if (!e) return;
+      lastE = { clientX: e.clientX, clientY: e.clientY, target: e.target, pointerType: e.pointerType };
+      if (e.pointerType && e.pointerType !== "mouse") { tip.classList.remove("obPvTipOn"); return; }
+      var home = dlg && dlg.open ? dlg : document.body;
+      if (tip.parentNode !== home) home.appendChild(tip);
+      var el = document.elementFromPoint(e.clientX, e.clientY) || e.target;
+      var w = tipWord(el);
+      if (!w) { tip.classList.remove("obPvTipOn"); return; }
+      if (tip.textContent !== w) tip.textContent = w;
+      tip.style.transform = "translate(" + Math.round(e.clientX - tip.offsetWidth / 2) + "px," + Math.round(e.clientY - tip.offsetHeight / 2) + "px)";
+      tip.classList.add("obPvTipOn");
+    };
+    var tipAgain = function () { setTimeout(function () { tipAt(lastE); }, 40); };
+    document.addEventListener("pointermove", tipAt, { passive: true });
+    document.addEventListener("pointerup", tipAgain, { passive: true });
+    document.addEventListener("keyup", tipAgain, { passive: true });
+    document.documentElement.addEventListener("pointerleave", function () { tip.classList.remove("obPvTipOn"); });
+
+    /* phones: [ENLARGE] in the corner of each photo */
+    var tags = function () {
+      var items = document.querySelectorAll(SLIDES);
+      for (var i = 0; i < items.length; i++) {
+        if (!items[i].querySelector("img")) continue;
+        var g = items[i].querySelector(".obPvTag");
+        if (!g) { g = document.createElement("span"); g.className = "obPvTag"; g.setAttribute("aria-hidden", "true"); g.setAttribute("data-wg-notranslate", ""); items[i].appendChild(g); }
+        if (g.textContent !== t("enlarge")) g.textContent = t("enlarge");
+      }
+    };
+
     /* keyboard: each photo on the page can be reached with Tab and opened with Enter or Space */
     var mark = function () {
       if (!document.body.classList.contains("view-item")) return;
+      tags();
       var items = document.querySelectorAll(SLIDES);
       for (var i = 0; i < items.length; i++) {
         var it = items[i];
