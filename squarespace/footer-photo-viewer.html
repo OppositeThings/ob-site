@@ -1,7 +1,7 @@
-<!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it opens full screen over the page, which shows through blurred. Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer, a click on the big photo zooms it to the full width of the screen (move the mouse up and down to look along it), a second click zooms out. v2: blurred page behind, photos loop, zoom fills the screen width, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small square with a frosted chip hanging off it that trails it slightly ([ENLARGE] on the page, [ZOOM IN] / [ZOOM OUT] in the viewer; no trail with reduced motion); on phones [ENLARGE] sits in the corner of the photo. The words: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. -->
+<!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it opens full screen over the page, which shows through blurred. Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer the photo opens at three quarters of the screen width (scroll down to see the rest of a tall photo); no second zoom. v2: blurred page behind, photos loop, bigger straight away, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small square with a frosted chip hanging off it that trails it slightly ([ENLARGE]; no trail with reduced motion); on phones [ENLARGE] sits in the corner of the photo. The words: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. -->
 <style>
 .product-gallery-slides-item,.product-gallery-slides-item img{cursor:pointer}
-@media (hover:hover) and (pointer:fine){.product-gallery-slides-item,.product-gallery-slides-item img,.obPvSlide img{cursor:none!important}}
+@media (hover:hover) and (pointer:fine){.product-gallery-slides-item,.product-gallery-slides-item img{cursor:none!important}}
 .obPvTip{position:fixed;left:0;top:0;z-index:2147483001;pointer-events:none;opacity:0;transition:opacity .2s}
 .obPvTip.obPvTipOn{opacity:1}
 .obPvTip i{position:absolute;left:-5px;top:-5px;width:10px;height:10px;background:#111;border:1px solid rgba(255,255,250,.7);box-sizing:border-box}
@@ -18,9 +18,7 @@
 .obPvTrack{position:absolute;inset:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .obPvTrack::-webkit-scrollbar{display:none}
 .obPvSlide{flex:0 0 100%;width:100%;height:100%;margin:0;scroll-snap-align:center;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;padding:64px 24px 56px;box-sizing:border-box;overflow:hidden}
-.obPvSlide img{display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;cursor:zoom-in;transition:transform .25s cubic-bezier(.25,.1,.25,1)}
-.obPv.obPvZoom .obPvSlide.obPvHere img{transition:none}
-.obPv.obPvZoom .obPvTrack{overflow-x:hidden}
+.obPvSlide img{display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;cursor:default}
 .obPvBar{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;justify-content:space-between;padding:16px 24px;pointer-events:none;font-size:14px;line-height:1;letter-spacing:0;text-transform:uppercase}
 .obPvBar>*{pointer-events:auto}
 .obPvCount{font-variant-numeric:tabular-nums}
@@ -32,17 +30,18 @@
 .obPvPrev{left:24px}
 .obPvNext{right:24px}
 .obPv button:focus-visible{outline:2px solid #111;outline-offset:3px}
-.obPv.obPvZoom .obPvNav{opacity:0;pointer-events:none}
 .obPv.obPvOne .obPvNav,.obPv.obPvOne .obPvCount{visibility:hidden}
 .obPvLive{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (min-width:768px){.obPvSlide{padding:72px 96px 48px}}
+@media (min-width:768px){
+.obPvSlide{flex-direction:column;align-items:center;justify-content:flex-start;padding:64px 0 48px;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+.obPvSlide::-webkit-scrollbar{display:none}
+.obPvSlide img{flex:none;width:75vw;height:auto;margin:auto 0;object-fit:fill}
+}
 @media (max-width:767px){
 .obPvBar{padding:10px 16px;font-size:13px}
 .obPvSlide{padding:56px 0 40px}
 .obPvNav{display:none}
-.obPvSlide img{cursor:default}
 }
-@media (prefers-reduced-motion:reduce){.obPvSlide img{transition:none}}
 </style>
 <script>
 (function () {
@@ -55,8 +54,6 @@
       return (document.documentElement.lang || "en").slice(0, 2).toLowerCase();
     };
     WORDS.enlarge = { en: "[Enlarge]", it: "[Ingrandisci]" };
-    WORDS.zoomIn = { en: "[Zoom in]", it: "[Zoom]" };
-    WORDS.zoomOut = { en: "[Zoom out]", it: "[Riduci]" };
     var t = function (k) {
       var c = (window.OB_CONF || {}).viewer || {}, w = c[k] || WORDS[k];
       if (typeof w === "string") return w;
@@ -100,7 +97,7 @@
       var im = track.children[p].querySelector("img");
       if (im && !im.getAttribute("src")) {
         im.onload = function () { this.style.background = "none"; };
-        im.setAttribute("sizes", "100vw");
+        im.setAttribute("sizes", phone() ? "100vw" : "75vw");
         im.setAttribute("srcset", srcset(list[i]));
         im.setAttribute("src", list[i].src + "?format=1500w");
       }
@@ -131,6 +128,13 @@
         else if (e.key === "ArrowLeft") { e.preventDefault(); go(here - 1); }
         else if (e.key === "Home") { e.preventDefault(); go(0, true); }
         else if (e.key === "End") { e.preventDefault(); go(list.length - 1, true); }
+        else if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "PageDown" || e.key === "PageUp" || (e.key === " " && e.target === dlg)) {
+          var sl = track.children[posOf(here)];
+          if (!sl) return;
+          e.preventDefault();
+          var big = e.key === "PageDown" || e.key === "PageUp" || e.key === " ";
+          sl.scrollBy({ top: (e.key === "ArrowUp" || e.key === "PageUp" ? -1 : 1) * (big ? sl.clientHeight * 0.85 : 120), behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+        }
       });
       track.addEventListener("scroll", function () {
         clearTimeout(scrollT);
@@ -143,38 +147,8 @@
         }, 80);
       }, { passive: true });
 
-      /* computer: click the photo to zoom in, move to look around, click again to zoom out */
-      var zoomed = null;
-      var aim = function (e) {
-        if (!zoomed) return;
-        var r = zoomed.parentNode.getBoundingClientRect();
-        var x = zoomed.__lockX ? 0.5 : (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-        zoomed.style.transformOrigin = (Math.max(0, Math.min(1, x)) * 100) + "% " + (Math.max(0, Math.min(1, y)) * 100) + "%";
-      };
-      var unzoom = function () {
-        if (!zoomed) return;
-        zoomed.style.transform = "";
-        zoomed = null;
-        dlg.classList.remove("obPvZoom");
-      };
-      track.addEventListener("click", function (e) {
-        var im = e.target.closest && e.target.closest(".obPvSlide img");
-        if (!im) { if (zoomed) unzoom(); else if (e.target.classList.contains("obPvSlide")) close(); return; }
-        if (phone()) return;
-        if (zoomed) { unzoom(); return; }
-        var nat = im.naturalWidth || 0, box = im.getBoundingClientRect(), shown = Math.min(box.width, box.height * nat / (im.naturalHeight || 1)) || 1;
-        /* zoom until the photo is as wide as the screen; a photo that is already nearly that wide just doubles */
-        var k = (track.clientWidth || window.innerWidth) / shown;
-        im.__lockX = k >= 1.5;
-        if (k < 1.5) k = 2;
-        k = Math.min(k, 5);
-        zoomed = im;
-        dlg.classList.add("obPvZoom");
-        aim(e);
-        im.style.transform = "scale(" + k + ")";
-      });
-      track.addEventListener("mousemove", aim);
-      dlg.__unzoom = unzoom;
+      /* a click beside the photo closes */
+      track.addEventListener("click", function (e) { if (e.target.classList && e.target.classList.contains("obPvSlide")) close(); });
     };
 
     var jump = function (p) {
@@ -185,8 +159,7 @@
     };
     var set = function (i) {
       here = i;
-      if (dlg.__unzoom) dlg.__unzoom();
-      for (var k = 0; k < track.children.length; k++) track.children[k].classList.toggle("obPvHere", k === posOf(i));
+      for (var k = 0; k < track.children.length; k++) { var on = k === posOf(i); if (on && !track.children[k].classList.contains("obPvHere")) track.children[k].scrollTop = 0; track.children[k].classList.toggle("obPvHere", on); }
       load(i); load(i + 1); load(i - 1);
       count.textContent = (i + 1) + " / " + list.length;
       live.textContent = (i + 1) + " " + t("of") + " " + list.length;
@@ -232,7 +205,6 @@
     var after = null;
     var close = function (fromHistory) {
       if (!dlg || !dlg.open) return;
-      if (dlg.__unzoom) dlg.__unzoom();
       var last = here;
       dlg.close();
       document.documentElement.style.overflow = "";
@@ -299,7 +271,6 @@
     var sq = tip.firstChild, chip = tip.lastChild;
     var tipWord = function (el) {
       if (!el || !el.closest) return "";
-      if (el.closest(".obPvSlide img")) return dlg && dlg.classList.contains("obPvZoom") ? t("zoomOut") : (phone() ? "" : t("zoomIn"));
       if (!dlg || !dlg.open) { var it = el.closest(SLIDES); if (it && it.querySelector("img") && document.body.classList.contains("view-item")) return t("enlarge"); }
       return "";
     };
