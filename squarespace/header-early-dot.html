@@ -1,9 +1,15 @@
-<!-- OB EARLY DOT v2 · goes at the very top of the Header (Header v15.8 = v15.6 + this block; v2: the fail-safe waits until the page has been read, so a slow page no longer brings the arrow back early). Computers only: on arrival from another page of the site, the arrow is hidden at once and the black dot is drawn where the mouse was, so the arrow doesn't flash in while the page loads. The Footer's dot takes over when the mouse moves. If the Footer code isn't running once the page has been read, the normal arrow comes back. Form fields keep their text cursor. Nothing happens on a first visit, on phones, or with cursor: "arrow" in OB SETTINGS. -->
+<!-- OB EARLY DOT v4 · goes at the very top of the Header (Header v15.9 = v15.6 + this block; v4: opening a product by clicking a photo, the arrow stays hidden and the circle stays under the mouse while the product photos are still being laid out; v2: the fail-safe waits until the page has been read; v3: with the arrow setting, a new page that opens with the mouse already over a photo hides the arrow there at once and draws a circle where the mouse is, until the Footer's shape takes over). Computers only: on arrival from another page of the site, the arrow is hidden at once and the black dot is drawn where the mouse was, so the arrow doesn't flash in while the page loads. The Footer's dot takes over when the mouse moves. If the Footer code isn't running once the page has been read, the normal arrow comes back. Form fields keep their text cursor. Nothing happens on a first visit, on phones, or with cursor: "arrow" in OB SETTINGS. -->
 <style>
 @media (hover:hover) and (pointer:fine){
 html.obDotEarly,html.obDotEarly *{cursor:none!important}
 html.obDotEarly :is(input:not([type=submit]):not([type=button]):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=image]),textarea,select,[contenteditable=""],[contenteditable=true],iframe){cursor:auto!important}
 html.obDotEarly::after{content:"";position:fixed;left:0;top:0;width:var(--obDotS,10px);height:var(--obDotS,10px);border-radius:50%;background:#111;box-shadow:0 0 0 1px #fffffa;transform:translate(var(--obDotX,-99px),var(--obDotY,-99px)) translate(-50%,-50%);z-index:2147483002;pointer-events:none}
+html.obPicEarly :is(.product-gallery-slides-item,.product-gallery-slides-item *,main a[href] img,main .grid-item-image,main .product-list-item img,main .sqs-block-image img,main .sqs-block-image .fluidImageOverlay,main .sqs-block-product img),html.ob-page-home.obPicEarly main section.page-section:first-child :is(.content-wrapper,.fluid-engine,.section-background,.section-background *){cursor:none!important}
+html.obPicHold,html.obPicHold body,html.obPicHold :is(main,main *){cursor:none!important}
+html.obPicHold :is(#header,#header *){cursor:revert-layer}
+html.obPicHold main :is(input:not([type=submit]):not([type=button]):not([type=checkbox]):not([type=radio]),textarea,select,iframe){cursor:auto!important}
+html.obPicDot::after{content:"";position:fixed;left:0;top:0;width:var(--obPicS,22px);height:var(--obPicS,22px);border-radius:50%;background:#111;box-shadow:0 0 0 1px #fffffa;transform:translate(var(--obPicX,-99px),var(--obPicY,-99px)) translate(-50%,-50%);z-index:2147483002;pointer-events:none}
+html.obPicDot.obPicGlass::after{background:rgba(255,255,250,.16);-webkit-backdrop-filter:blur(5px) saturate(1.2);backdrop-filter:blur(5px) saturate(1.2);box-shadow:inset 0 0 0 1.5px #111}
 }
 </style>
 <script>
@@ -19,6 +25,49 @@ html.obDotEarly::after{content:"";position:fixed;left:0;top:0;width:var(--obDotS
     d.classList.add("obDotEarly");
     /* fail-safe: once the page has been read, the Footer code should be running; if not, bring the arrow back */
     var check = function () { setTimeout(function () { if (!window.__obPvTipAgain) d.classList.remove("obDotEarly"); }, 500); };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", check); else check();
+  } catch (e) {}
+})();
+
+/* arrow setting: arriving with the mouse over a photo */
+(function () {
+  try {
+    if (!window.matchMedia || !window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    if (sessionStorage.getItem("obDot")) return;
+    var p = JSON.parse(sessionStorage.getItem("obPtr") || "null");
+    if (!p || typeof p.x !== "number" || typeof p.y !== "number") return;
+    var d = document.documentElement, t0 = Date.now();
+    d.style.setProperty("--obPicX", p.x + "px");
+    d.style.setProperty("--obPicY", p.y + "px");
+    if (p.s) d.style.setProperty("--obPicS", p.s + "px");
+    if (p.st === "glass") d.classList.add("obPicGlass");
+    d.classList.add("obPicEarly");
+    if (p.pic && /\/p\//.test(location.pathname)) d.classList.add("obPicHold");
+    var PIC = ".product-gallery-slides-item, main a[href] img, main .grid-item-image, main .product-list-item img, main .sqs-block-image img, main .sqs-block-image .fluidImageOverlay, main .sqs-block-product img";
+    var TEXT = "p, h1, h2, h3, h4, h5, h6, li, a:not(:has(img))";
+    var look = function () {
+      if (!d.classList.contains("obPicEarly")) { d.classList.remove("obPicDot"); return; }
+      if (Date.now() - t0 > 4000) { d.classList.remove("obPicEarly", "obPicDot", "obPicHold"); return; }
+      if (window.__obPvTipAgain && !d.classList.contains("obPicHold")) return;
+      if (document.body) {
+        var el = document.elementFromPoint(p.x, p.y), on = false;
+        /* product page opened from a photo: until its photos have a size, keep the circle (the photo will land under the mouse) */
+        if (d.classList.contains("obPicHold")) {
+          var g = document.querySelector(".product-gallery-slides-item img, .product-gallery-slides-item");
+          var r = g && g.getBoundingClientRect();
+          if ((r && r.height > 20 && r.width > 20) || Date.now() - t0 > 2500) { d.classList.remove("obPicHold"); if (window.__obPvTipAgain) window.__obPvTipAgain(); }
+        }
+        if (d.classList.contains("obPicHold")) on = !(el && el.closest && el.closest("header, #header, input, textarea, select, iframe"));
+        else if (el && el.closest && !el.closest(TEXT)) {
+          on = !!el.closest(PIC);
+          if (!on && d.classList.contains("ob-page-home")) { var s = el.closest("main section.page-section"); on = !!(s && s === document.querySelector("main section.page-section")); }
+        }
+        d.classList.toggle("obPicDot", on);
+      }
+      requestAnimationFrame(look);
+    };
+    requestAnimationFrame(look);
+    var check = function () { setTimeout(function () { if (!window.__obPvTipAgain) d.classList.remove("obPicEarly", "obPicDot", "obPicHold"); }, 500); };
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", check); else check();
   } catch (e) {}
 })();

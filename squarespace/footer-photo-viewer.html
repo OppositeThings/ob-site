@@ -1,5 +1,6 @@
 <!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it flies from the page into a full-screen view over a heavily blurred copy of the same photo, and flies back when it closes (no movement with reduced motion). Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer the photo opens at three quarters of the screen width (scroll down to see the rest of a tall photo); no second zoom. v2: blurred page behind, photos loop, bigger straight away, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small circle (or rounded square: viewer.cursor in OB SETTINGS) with a frosted chip hanging off it that trails it slightly ([ENLARGE] on the page, [PREV] / [NEXT] on the left / right half of the big photo, where a click goes back / on, and [CLOSE] around it, where a click closes (the round arrows only show for keyboard users); no trail with reduced motion). On phones (up to 767px wide) the photos are already full width, so the viewer is off there and the page gallery swipes as before. The words, and blur: false for a plain background: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. Also (v17.18): on the home page the same pointer shows [SHOP] over the hero photo and a click opens the store (all products); the hero's SHOP link is hidden on computers but stays for phones, tablets and keyboard users (heroShop in OB SETTINGS). Elsewhere, over a photo that links somewhere, the pointer is the same dot with no word (cursorDot: false in OB SETTINGS turns it off). v17.19: on computers the arrow is gone: a small circle follows the mouse everywhere and grows over anything clickable (v17.27: over photos the dot becomes a circle, square, triangle or the PETALS rug's outline at random, solid or frosted glass (shapeStyle), cursorShapes in OB SETTINGS) (v17.22: one solid black dot with a thin white keyline that only changes size, cursorSize in OB SETTINGS; v17.23: remembers where the mouse was for the Header's early dot, so the arrow doesn't flash in on a new page); form fields keep their text cursor (cursor: "arrow" in OB SETTINGS brings the arrow back). -->
 <style>
+@media (hover:hover) and (pointer:fine){body{cursor:default}main :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption){cursor:default}main a[href] :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption),main :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption) :is(a[href],a[href] *,button,button *){cursor:pointer}:is(input:not([type=submit]):not([type=button]):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=image]):not([type=color]):not([type=file]),textarea,[contenteditable=""],[contenteditable=true]){cursor:text}}
 @media (min-width:768px){.product-gallery-slides-item,.product-gallery-slides-item img{cursor:pointer}}
 @media (hover:hover) and (pointer:fine){.product-gallery-slides-item,.product-gallery-slides-item img,.obPv .obPvSlide,.obPv .obPvSlide img{cursor:none!important}}
 .obPvTip{position:fixed;left:0;top:0;z-index:2147483001;pointer-events:none;opacity:0;transition:opacity .08s ease-out}
@@ -480,7 +481,9 @@
       if (!el || !el.closest || !heroFind() || !heroSec.contains(el)) return;
       var a = el.closest("a[href], button, input, select, textarea, label");
       if (a && a !== heroLink) return;
-      if (!a && (!heroHit(e.clientX, e.clientY) || isText(el))) return;
+      /* words on the hero: not a link on computers (the old whole-section link in the suite is stopped here too) */
+      if (!a && isText(el)) { if (fine()) e.stopPropagation(); return; }
+      if (!a && !heroHit(e.clientX, e.clientY)) return;
       if (heroDown && (Math.abs(e.clientX - heroDown.x) > 10 || Math.abs(e.clientY - heroDown.y) > 10)) return;
       e.preventDefault();
       e.stopPropagation();
@@ -541,6 +544,7 @@
       lastE = { clientX: e.clientX, clientY: e.clientY, pointerType: e.pointerType };
       /* the Header's early dot (shown on arrival so the arrow doesn't flash in) hands over to this one */
       if (e.pointerType === "mouse" || !e.pointerType) document.documentElement.classList.remove("obDotEarly");
+      if (window.PointerEvent && e instanceof PointerEvent) document.documentElement.classList.remove("obPicEarly", "obPicDot", "obPicHold");
       if (e.pointerType && e.pointerType !== "mouse") { tip.classList.remove("obPvTipOn"); on = false; dotSet(null); document.documentElement.classList.remove("obDotCursor"); return; }
       var home = dlg && dlg.open && !closing ? dlg : (closing ? tip.parentNode || document.body : document.body);
       if (tip.parentNode !== home) home.appendChild(tip);
@@ -548,7 +552,11 @@
       var w = (closing || Date.now() < navUntil) && on && word ? word : tipWord(document.elementFromPoint(e.clientX, e.clientY));
       /* over a photo (a word, or a photo that links somewhere): a shape picked at random each time the pointer arrives on one, never the same twice running */
       var pic = !!w;
-      if (pic && !onPic) { var pool = SHAPES.filter(function (x) { return x !== picShape; }); picShape = pool[Math.floor(Math.random() * pool.length)]; }
+      if (pic && !onPic) {
+        /* the first photo after arriving keeps the Header's circle, so nothing jumps */
+        if (document.documentElement.classList.contains("obPicDot")) picShape = "circle";
+        else { var pool = SHAPES.filter(function (x) { return x !== picShape; }); picShape = pool[Math.floor(Math.random() * pool.length)]; }
+      }
       onPic = pic;
       var grow = false;
       if (dotMode()) {
@@ -580,6 +588,7 @@
       if (!on) { cx = mx; cy = my; on = true; }
       tip.classList.add("obPvTipOn");
       if (!raf) raf = requestAnimationFrame(draw);
+      document.documentElement.classList.remove("obPicEarly", "obPicDot", "obPicHold");
     };
     var tipAgain = function () { setTimeout(function () { tipAt(lastE); }, 40); };
     /* remember where the mouse was, so the next page's Header can put the dot there straight away */
@@ -587,7 +596,8 @@
       try {
         if (!lastE || (lastE.pointerType && lastE.pointerType !== "mouse")) { sessionStorage.removeItem("obDot"); sessionStorage.removeItem("obPtr"); return; }
         /* any mode: where the mouse was, so the next page can show the right shape and word under it at once */
-        sessionStorage.setItem("obPtr", JSON.stringify({ x: Math.round(lastE.clientX), y: Math.round(lastE.clientY) }));
+        var cz = (window.OB_CONF || {}).cursorSize || {}, gl = String((window.OB_CONF || {}).shapeStyle || "glass");
+        sessionStorage.setItem("obPtr", JSON.stringify({ x: Math.round(lastE.clientX), y: Math.round(lastE.clientY), st: gl, s: (+cz.hover || 16) + (gl === "glass" ? 6 : 0), pic: onPic ? 1 : 0 }));
         if (!dotMode()) { sessionStorage.removeItem("obDot"); return; }
         var cs = (window.OB_CONF || {}).cursorSize || {};
         sessionStorage.setItem("obDot", JSON.stringify({ x: Math.round(lastE.clientX), y: Math.round(lastE.clientY), s: +cs.normal || 10 }));
@@ -601,6 +611,7 @@
         var hand = function () { if (!lastE || lastE.arrived) { tipAt({ clientX: p0.x, clientY: p0.y, pointerType: "mouse" }); if (lastE) lastE.arrived = true; } };
         if (document.body) hand(); else document.addEventListener("DOMContentLoaded", hand);
         [300, 800, 1500].forEach(function (ms) { setTimeout(hand, ms); });
+        setTimeout(function () { if (!document.documentElement.classList.contains("obPicHold")) document.documentElement.classList.remove("obPicEarly", "obPicDot", "obPicHold"); }, 1700);
         window.addEventListener("load", function () { setTimeout(hand, 50); });
       }
     } catch (e) {}
