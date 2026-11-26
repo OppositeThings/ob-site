@@ -570,20 +570,23 @@
     /* remember where the mouse was, so the next page's Header can put the dot there straight away */
     var dotSave = function () {
       try {
-        if (!lastE || (lastE.pointerType && lastE.pointerType !== "mouse") || !dotMode()) { sessionStorage.removeItem("obDot"); return; }
+        if (!lastE || (lastE.pointerType && lastE.pointerType !== "mouse")) { sessionStorage.removeItem("obDot"); sessionStorage.removeItem("obPtr"); return; }
+        /* any mode: where the mouse was, so the next page can show the right shape and word under it at once */
+        sessionStorage.setItem("obPtr", JSON.stringify({ x: Math.round(lastE.clientX), y: Math.round(lastE.clientY) }));
+        if (!dotMode()) { sessionStorage.removeItem("obDot"); return; }
         var cs = (window.OB_CONF || {}).cursorSize || {};
         sessionStorage.setItem("obDot", JSON.stringify({ x: Math.round(lastE.clientX), y: Math.round(lastE.clientY), s: +cs.normal || 10 }));
       } catch (e) {}
     };
     window.addEventListener("pagehide", dotSave);
-    /* arriving from another page: take over from the Header's early dot straight away, at the same spot (no wait for the mouse to move) */
+    /* arriving from another page with the mouse already over something (a photo, say): show its shape and word straight away, without waiting for the mouse to move; checked again as the photos are laid out */
     try {
-      if (document.documentElement.classList.contains("obDotEarly") && dotMode()) {
-        var p0 = JSON.parse(sessionStorage.getItem("obDot") || "null");
-        if (p0 && typeof p0.x === "number") {
-          var hand = function () { if (!lastE) tipAt({ clientX: p0.x, clientY: p0.y, pointerType: "mouse" }); };
-          if (document.body) hand(); else document.addEventListener("DOMContentLoaded", hand);
-        }
+      var p0 = JSON.parse(sessionStorage.getItem("obPtr") || sessionStorage.getItem("obDot") || "null");
+      if (p0 && typeof p0.x === "number" && fine()) {
+        var hand = function () { if (!lastE || lastE.arrived) { tipAt({ clientX: p0.x, clientY: p0.y, pointerType: "mouse" }); if (lastE) lastE.arrived = true; } };
+        if (document.body) hand(); else document.addEventListener("DOMContentLoaded", hand);
+        [300, 800, 1500].forEach(function (ms) { setTimeout(hand, ms); });
+        window.addEventListener("load", function () { setTimeout(hand, 50); });
       }
     } catch (e) {}
     document.addEventListener("pointerdown", dotSave, { capture: true, passive: true });
