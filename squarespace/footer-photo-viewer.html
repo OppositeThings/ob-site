@@ -62,7 +62,7 @@
     var phone = function () { return window.matchMedia("(max-width: 767px)").matches; };
     var SLIDES = ".product-gallery-slides-item";
 
-    var dlg, track, count, live, prev, next, closeBtn, list = [], here = 0, opener = null, pushed = false, scrollT, loop = false, touching = false;
+    var dlg, track, count, live, prev, next, closeBtn, list = [], here = 0, opener = null, pushed = false, scrollT, loop = false, touching = false, anim = 0;
     /* with more than one photo the row is: a copy of the last, the photos, a copy of the first, so a swipe past either end carries on round */
     var posOf = function (i) { return loop ? i + 1 : i; };
     var realOf = function (p) { if (!loop) return p; var n = list.length; return (p - 1 + n) % n; };
@@ -141,7 +141,7 @@
         scrollT = setTimeout(function () {
           var w = track.clientWidth || 1;
           var p = Math.round(track.scrollLeft / w);
-          if (touching) return;
+          if (touching || anim) return;
           if (loop && (p === 0 || p === list.length + 1)) jump(p === 0 ? list.length : 1);
           else if (Math.abs(track.scrollLeft - p * w) > 1) jump(p);
           var i = realOf(p);
@@ -179,7 +179,19 @@
       var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       set((i + n) % n);
       if (reduce) { jump(posOf((i + n) % n)); return; }
-      track.scrollTo({ left: p * track.clientWidth, behavior: "smooth" });
+      /* our own short slide (the browser's smooth scroll and the snapping can cancel each other) */
+      cancelAnimationFrame(anim);
+      var from = track.scrollLeft, to = p * track.clientWidth, t0 = 0, ms = 380;
+      track.style.scrollSnapType = "none";
+      var step = function (ts) {
+        if (!t0) t0 = ts;
+        var k = Math.min(1, (ts - t0) / ms), e = 1 - Math.pow(1 - k, 3);
+        track.scrollLeft = from + (to - from) * e;
+        if (k < 1) { anim = requestAnimationFrame(step); return; }
+        anim = 0;
+        if (loop && (p === 0 || p === n + 1)) jump(p === 0 ? n : 1); else jump(p);
+      };
+      anim = requestAnimationFrame(step);
     };
 
     var open = function (start, from) {
