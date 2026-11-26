@@ -1,4 +1,4 @@
-<!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it opens full screen over the page, which shows through blurred. Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer the photo opens at three quarters of the screen width (scroll down to see the rest of a tall photo); no second zoom. v2: blurred page behind, photos loop, bigger straight away, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small circle (or rounded square: viewer.cursor in OB SETTINGS) with a frosted chip hanging off it that trails it slightly ([ENLARGE] on the page, [NEXT] on the big photo, where a click moves on to the next photo; a click beside it closes; no trail with reduced motion). On phones (up to 767px wide) the photos are already full width, so the viewer is off there and the page gallery swipes as before. The words, and blur: false for a plain background: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. -->
+<!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it opens full screen over the page, which shows through blurred. Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer the photo opens at three quarters of the screen width (scroll down to see the rest of a tall photo); no second zoom. v2: blurred page behind, photos loop, bigger straight away, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small circle (or rounded square: viewer.cursor in OB SETTINGS) with a frosted chip hanging off it that trails it slightly ([ENLARGE] on the page, [NEXT] on the big photo, where a click moves on to the next photo ([PREV] and back on its left third; the round arrows only show for keyboard users); a click beside it closes; no trail with reduced motion). On phones (up to 767px wide) the photos are already full width, so the viewer is off there and the page gallery swipes as before. The words, and blur: false for a plain background: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. -->
 <style>
 @media (min-width:768px){.product-gallery-slides-item,.product-gallery-slides-item img{cursor:pointer}}
 @media (hover:hover) and (pointer:fine){.product-gallery-slides-item,.product-gallery-slides-item img,.obPv:not(.obPvOne) .obPvSlide img{cursor:none!important}}
@@ -31,6 +31,7 @@
 .obPvClose:hover,.obPvClose:focus-visible{text-decoration:underline;text-underline-offset:3px}
 .obPvNav{position:absolute;top:50%;width:48px;height:48px;margin-top:-24px;display:flex;align-items:center;justify-content:center;border-radius:999px!important;background:rgba(230,228,222,.62)!important;font-size:18px!important;line-height:1}
 .obPvNav:hover{background:rgba(214,211,203,.8)!important}
+.obPvNav:not(:focus-visible){opacity:0;pointer-events:none}
 .obPvPrev{left:24px}
 .obPvNext{right:24px}
 .obPv button:focus-visible{outline:2px solid #111;outline-offset:3px}
@@ -59,6 +60,14 @@
     };
     WORDS.enlarge = { en: "[Enlarge]", it: "[Ingrandisci]" };
     WORDS.nextTip = { en: "[Next]", it: "[Avanti]" };
+    WORDS.prevTip = { en: "[Prev]", it: "[Indietro]" };
+    /* the left third of the big photo goes back, the rest goes on */
+    var leftThird = function (e) {
+      var im = document.elementFromPoint(e.clientX, e.clientY);
+      if (!im || im.tagName !== "IMG" || !im.closest(".obPvSlide")) return false;
+      var r = im.getBoundingClientRect();
+      return e.clientX < r.left + r.width / 3;
+    };
     var t = function (k) {
       var c = (window.OB_CONF || {}).viewer || {}, w = c[k] || WORDS[k];
       if (typeof w === "string") return w;
@@ -163,7 +172,7 @@
       track.addEventListener("click", function (e) {
         if (e.target.classList && e.target.classList.contains("obPvSlide")) { close(); return; }
         /* a click on the photo moves on to the next one */
-        if (e.target.tagName === "IMG" && list.length > 1) go(here + 1);
+        if (e.target.tagName === "IMG" && list.length > 1) go(here + (leftThird(e) ? -1 : 1));
       });
     };
 
@@ -310,7 +319,7 @@
     var sq = tip.firstChild, chip = tip.lastChild;
     var tipWord = function (el) {
       if (!el || !el.closest) return "";
-      if (el.closest(".obPvSlide img")) return list.length > 1 ? t("nextTip") : "";
+      if (el.closest(".obPvSlide img")) return list.length < 2 ? "" : (lastE && leftThird(lastE) ? t("prevTip") : t("nextTip"));
       if (!dlg || !dlg.open) { var it = el.closest(SLIDES); if (it && it.querySelector("img") && document.body.classList.contains("view-item")) return t("enlarge"); }
       return "";
     };
