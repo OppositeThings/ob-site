@@ -1,4 +1,5 @@
-/* OB SOLID SUITE v17.2 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.3 · ob-suite.js · Opposite Things
+   v17.3 = v17.2 + photo viewer: no flash on opening (the white background fades in from the first frame instead of popping in), the page photo steps aside while its copy flies, photos and blur only swap in once decoded, viewer made ready after the page loads.
    v17.2 = v17.1 + the Footer's own code (Footer v17.51): store page swap, perks chips, photo viewer and pointer
    chips, OTHER THINGS row. Moved here word for word from Footer v17.50; what the site does is unchanged.
    The Footer now holds: first photos early (must stay at the very top), the safety line, OB SETTINGS (OB_CONF),
@@ -255,7 +256,8 @@ try {
     var loadAt = function (p, i) {
       var im = track.children[p].querySelector("img");
       if (im && !im.getAttribute("src")) {
-        im.onload = function () { this.style.background = "none"; };
+        /* v17.3: the small copy behind stays until the big photo is decoded and painted (onload alone can leave a blank frame: a flash on the first open) */
+        im.onload = function () { var me = this, clear = function () { me.style.background = "none"; }; if (me.decode) me.decode().then(clear, clear); else clear(); };
         im.setAttribute("sizes", phone() ? "100vw" : "75vw");
         im.setAttribute("srcset", srcset(list[i]));
         im.setAttribute("src", list[i].src + "?format=1500w");
@@ -322,16 +324,27 @@ try {
     };
 
     /* behind the photo: the same photo (the small copy already loaded), heavily blurred under a white wash; two layers cross-fade */
+    var blurReady = {}, blurWant = "";
     var blurTo = function (i) {
       var lay = dlg.querySelectorAll(".obPvBlur i");
       if (lay.length < 2 || !list[i]) return;
       var url = list[i].now || (list[i].src + "?format=500w");
       var on = lay[0].classList.contains("obPvOn") ? 0 : 1, nx = 1 - on;
       if (lay[on].getAttribute("data-u") === url && lay[on].classList.contains("obPvOn")) return;
-      lay[nx].style.backgroundImage = 'url("' + url.replace(/"/g, "%22") + '")';
-      lay[nx].setAttribute("data-u", url);
-      lay[nx].classList.add("obPvOn");
-      lay[on].classList.remove("obPvOn");
+      blurWant = url;
+      var show = function () {
+        if (blurWant !== url || !dlg) return;
+        lay[nx].style.backgroundImage = 'url("' + url.replace(/"/g, "%22") + '")';
+        lay[nx].setAttribute("data-u", url);
+        lay[nx].classList.add("obPvOn");
+        lay[on].classList.remove("obPvOn");
+      };
+      /* v17.3: cross-fade only once the photo behind is decoded, so the blur never pops in half-drawn */
+      if (blurReady[url]) { show(); return; }
+      var pre = new Image();
+      pre.src = url;
+      var ok = function () { blurReady[url] = 1; show(); };
+      if (pre.decode) pre.decode().then(ok, ok); else { pre.onload = pre.onerror = ok; }
     };
     var jump = function (p) {
       track.style.scrollSnapType = "none";
@@ -388,6 +401,15 @@ try {
       im.style.transform = back ? "translate(" + dx + "px," + dy + "px) scale(" + sx + "," + sy + ")" : "none";
       return true;
     };
+    var ghostEl = null, ghostT = 0;
+    var ghost = function (el, ms) {
+      clearTimeout(ghostT);
+      if (ghostEl && ghostEl !== el) ghostEl.style.visibility = "";
+      ghostEl = el;
+      if (!el) return;
+      el.style.visibility = "hidden";
+      if (ms) ghostT = setTimeout(function () { ghost(null); }, ms);
+    };
     var pageImg = function (p) { return p && p.item && p.item.querySelector("img"); };
     var viewImg = function (i) { var sl = track.children[posOf(i)]; return sl && sl.querySelector("img"); };
 
@@ -413,6 +435,9 @@ try {
       document.documentElement.style.overflow = "hidden";
       dlg.classList.remove("obPvOutro");
       closing = false;
+      /* v17.3: the blurred background and the bar start see-through from the very first frame, then fade in (adding this after the viewer was already drawn made the white wash pop in at once: the flash) */
+      var intro = !still() && !phone();
+      if (intro) dlg.classList.add("obPvIntro");
       dlg.showModal();
       if (tip.classList.contains("obPvTipOn")) dlg.appendChild(tip);
       here = -1;
@@ -421,11 +446,11 @@ try {
       if (!still() && !phone()) {
         var src = pageImg(list[start]), im = viewImg(start);
         if (src && fly(im, src.getBoundingClientRect(), im.getBoundingClientRect(), false)) {
-          dlg.classList.add("obPvIntro");
-          void dlg.offsetWidth;
-          dlg.classList.remove("obPvIntro");
+          /* v17.3: the page photo steps aside while its copy flies out, so there are never two of it on screen */
+          ghost(src, FLY + 40);
         }
       }
+      if (intro) { void dlg.offsetWidth; dlg.classList.remove("obPvIntro"); }
       /* keyboard: focus on CLOSE; mouse: no focus ring anywhere */
       openedByKey = byKey;
       if (byKey) closeBtn.focus({ preventScroll: true });
@@ -445,6 +470,7 @@ try {
         if (r0.bottom < 80 || r0.top > window.innerHeight - 80) { try { window.scrollTo({ top: Math.max(0, window.pageYOffset + r0.top - 40), behavior: "instant" }); } catch (e) { window.scrollTo(0, Math.max(0, window.pageYOffset + r0.top - 40)); } }
       }
       var flew = !still() && !phone() && dst && im && fly(im, dst.getBoundingClientRect(), im.getBoundingClientRect(), true);
+      if (flew) ghost(dst, 0);
       dlg.classList.add("obPvOutro");
       setTimeout(function () { shut(fromHistory, last); }, flew || !still() ? FLY : 0);
     };
@@ -452,6 +478,7 @@ try {
       /* the pointer word stays put while the viewer goes, then changes over to [ENLARGE] */
       if (tip.parentNode === dlg) document.body.appendChild(tip);
       dlg.close();
+      ghost(null);
       /* the browser puts focus back on the photo that opened the viewer; after a mouse open, take it off straight away so no focus box shows */
       if (!openedByKey) { try { var ae = document.activeElement; if (ae && ae !== document.body && ae.blur) ae.blur(); } catch (e) {} }
       closing = false;
@@ -910,7 +937,17 @@ try {
     var tries = 0;
     var tick = function () { mark(); if (++tries < 12) setTimeout(tick, 500); };
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", tick); else tick();
-    window.addEventListener("load", function () { setTimeout(mark, 500); });
+    window.addEventListener("load", function () {
+      setTimeout(mark, 500);
+      /* v17.3: get the viewer ready (closed) and decode the photos behind it once the page has loaded, so the first open is as smooth as the next ones */
+      setTimeout(function () {
+        try {
+          if (dlg || phone() || !document.querySelector(SLIDES)) return;
+          build();
+          photos().forEach(function (p) { var u = p.now || (p.src + "?format=500w"), pre = new Image(); pre.src = u; if (pre.decode) pre.decode().then(function () { blurReady[u] = 1; }, function () {}); });
+        } catch (e) {}
+      }, 800);
+    });
   } catch (e) {}
 })();
 } catch (e) { if (window.console) console.error("[OB PHOTO VIEWER v2]", e); }
