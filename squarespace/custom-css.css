@@ -6,7 +6,7 @@
    notes below is ob-suite.js: the code that used to sit in the Footer.
 
    v17.3 — store grid: less space between rows of products on computers
-     and tablets (5.1, about 30% less; phones unchanged at 15px).
+     and tablets (5.1, about 15% less; phones unchanged at 15px).
 
    v17.2 — SOLD on product photos is a small solid chip in the chosen
      size chip's grey, set like the pointer's word chip, 12px in from the
@@ -1762,13 +1762,13 @@ body.collection-type-products .product-list .product-list-item .product-list-ite
 
 @media (min-width: 768px) {
   body.collection-type-products .product-list-layout-container[data-product-list-layout="grid"] {
-    row-gap: ~"min(var(--product-list-row-spacing, 9vh), 4vw)" !important; /* v17.3: was 5.625vw */
+    row-gap: ~"min(calc(var(--product-list-row-spacing, 9vh) * 0.85), 4.75vw)" !important; /* v17.3: was 5.625vw */
   }
 }
 
 @media (min-width: 431px) and (max-width: 767px) {
   body.collection-type-products .product-list-layout-container[data-product-list-layout="grid"] {
-    row-gap: ~"calc(15px + 15.7 / 337 * (100vw - 430px))" !important; /* v17.3: was 28.2 */
+    row-gap: ~"calc(15px + 21.4 / 337 * (100vw - 430px))" !important; /* v17.3: was 28.2 */
   }
 }
 
