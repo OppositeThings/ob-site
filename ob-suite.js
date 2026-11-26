@@ -1,6 +1,8 @@
 /* OB SOLID SUITE v17.1 · ob-suite.js · Opposite Things
-   v17.1 = v17.0 + store text swap (Footer v17.42): on phones the category line changes with a short slide and fade
-   instead of the letter scramble and product names no longer scramble; textSwap in OB_CONF picks per device.
+   v17.1 = v17.0 + store text swap (Footer v17.43): on phones the category line changes with a short slide and fade
+   instead of the letter scramble (textSwap phone/computer in OB_CONF). Product names scramble in their own text
+   (one copy on screen, never doubled), calmer (letters change at most every 50ms) and quicker to start; names: false
+   in textSwap turns the name scramble off.
    Served from GitHub through jsDelivr; the Squarespace Footer holds the settings block (OB_CONF) and one <script src> line.
    Pairs with Header v15.5 (stays in Squarespace), Custom CSS v17.0, ob-drawings.js v16.6 (Store page box, defer).
    v17.0 = v16.7, tidied. Under the hood only, except for keyboard users in the pop-up and the visible changes
@@ -2373,14 +2375,16 @@ try {
    }));
   } catch {}
  };
- const scrambleRun = (chars, cur, at, wait, alive, write, finish) => {
+ const scrambleRun = (chars, cur, at, wait, alive, write, finish, every = 0) => {
   const n = chars.length;
   const settled = chars.map(ch => !isShuffleLetter(ch));
-  let t0 = 0;
+  let t0 = 0, last = -1e9;
   const tick = ts => {
    if (!alive()) return;
    if (!t0) t0 = ts;
    const t = ts - t0;
+   const roll = t - last >= every;
+   if (roll) last = t;
    let done = true;
    for (let i = 0; i < n; i++) {
     if (settled[i]) continue;
@@ -2389,7 +2393,7 @@ try {
      settled[i] = true;
     } else {
      done = false;
-     if (t >= wait && Math.random() < .45) cur[i] = shuffleLetter();
+     if (roll && t >= wait && Math.random() < .45) cur[i] = shuffleLetter();
     }
    }
    if (done) {
@@ -2498,60 +2502,57 @@ try {
   }, finish);
   setTimeout(finish, dur + 2e3);
  };
+ /* v17.1: a name scrambles in its own text, so there is only ever one copy of it on screen (the old version drew
+    the scramble over a hidden copy, which on phones could show both at once). Any scramble still running on a name
+    is put back first. Letters change at most every 50ms, so it reads as a shuffle rather than noise. */
+ const nameRestore = title => {
+  const st = title.__obShuf;
+  if (!st) return;
+  title.__obShuf = null;
+  title.textContent = st.raw;
+  title.removeAttribute("aria-label");
+  if (!st.wg) title.removeAttribute("data-wg-notranslate");
+  title.classList.remove("obNameShuf");
+ };
  const nameShuffle = (title, wait) => {
-  if (title.__obShuf) return;
+  nameRestore(title);
   qsa(".obNameOv", title).forEach(x => x.remove());
-  const to = textOf(title);
+  if (title.children.length) return;
+  const raw = title.textContent, to = textOf(title);
   if (!to) return;
-  title.__obShuf = true;
-  const tcs = getComputedStyle(title);
-  const ink = tcs.color;
-  const ov = document.createElement("span");
-  ov.className = "obNameOv";
-  ov.setAttribute("aria-hidden", "true");
-  ov.setAttribute("data-wg-notranslate", "");
-  const slack = /center/.test(tcs.textAlign) ? "left:-3px;right:-3px;" : /right|end/.test(tcs.textAlign) ? "left:-6px;right:0;" : "left:0;right:-6px;";
-  ov.style.cssText = "position:absolute;top:0;bottom:0;" + slack + "pointer-events:none;";
-  ov.style.setProperty("color", ink, "important");
+  const st = {
+   raw,
+   wg: title.hasAttribute("data-wg-notranslate")
+  };
+  title.__obShuf = st;
+  title.setAttribute("data-wg-notranslate", "");
+  title.classList.add("obNameShuf");
+  title.setAttribute("aria-label", to);
   const chars = [ ...to ], n = chars.length, dur = SHUFFLE.namesMs;
   const cur = chars.map(ch => isShuffleLetter(ch) ? shuffleLetter() : ch);
-  ov.textContent = cur.join("");
-  const text = ov.firstChild;
-  title.style.position = "relative";
-  title.style.setProperty("color", "transparent", "important");
-  title.classList.add("obNameShuf");
-  title.appendChild(ov);
+  title.textContent = cur.join("");
+  const text = title.firstChild;
   const at = chars.map((_, i) => wait + i / n * dur * .65 + dur * .35 * Math.random());
+  const alive = () => title.__obShuf === st;
   const finish = () => {
-   if (!title.__obShuf) return;
-   title.__obShuf = false;
-   ov.remove();
-   qsa(".obNameOv", title).forEach(x => x.remove());
-   title.classList.remove("obNameShuf");
-   title.style.removeProperty("position");
-   title.style.removeProperty("color");
+   if (alive()) nameRestore(title);
   };
-  scrambleRun(chars, cur, at, wait, () => !!title.__obShuf, s => {
-   text.nodeValue = s;
-  }, finish);
+  scrambleRun(chars, cur, at, wait, alive, str => {
+   text.nodeValue = str;
+  }, finish, 50);
   setTimeout(finish, wait + dur + 2e3);
  };
  const namesSweep = force => {
-  if (force) qsa(".obNameShuf").forEach(t => {
-   t.__obShuf = false;
-  });
-  qsa(".obNameOv").forEach(ov => {
-   if (!ov.parentElement?.__obShuf) ov.remove();
-  });
+  qsa(".obNameOv").forEach(ov => ov.remove());
   qsa(".obNameShuf").forEach(t => {
-   if (t.__obShuf) return;
-   t.classList.remove("obNameShuf");
-   t.style.removeProperty("position");
-   t.style.removeProperty("color");
+   if (force || !t.__obShuf) {
+    if (t.__obShuf) nameRestore(t); else t.classList.remove("obNameShuf");
+   }
   });
  };
+ const namesOn = () => ((window.OB_CONF || {}).textSwap || {}).names !== false;
  const namesShuffleIn = (grid, base = 0) => {
-  if (!SHUFFLE.names || swapFade() || !grid || inEditor || prefersReducedMotion()) return;
+  if (!SHUFFLE.names || !namesOn() || !grid || inEditor || prefersReducedMotion()) return;
   setTimeout(namesSweep, base + 320 + SHUFFLE.namesMs + 2600);
   const vh = window.innerHeight;
   let i = 0;
@@ -2561,7 +2562,7 @@ try {
    if (!title) return;
    const r = title.getBoundingClientRect();
    if (!r.height || r.bottom < 0 || r.top > vh) return;
-   nameShuffle(title, base + Math.min(i++ * 40, 320));
+   nameShuffle(title, base + Math.min(i++ * 30, 180));
   });
  };
  const cameFromStore = (() => {
@@ -4104,7 +4105,7 @@ try {
   if (targets.length === 0) targets.push(document.body || document.documentElement);
   const ownScramble = m => {
    const t = m.target.nodeType === 1 ? m.target : m.target.parentElement;
-   if (t?.closest?.(".obNameOv")) return true;
+   if (t?.closest?.(".obNameOv, .obNameShuf")) return true;
    const nodes = [ ...m.addedNodes, ...m.removedNodes ];
    return nodes.length > 0 && nodes.every(n => n.nodeType === 1 && n.classList.contains("obNameOv"));
   };
