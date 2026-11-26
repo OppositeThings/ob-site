@@ -158,7 +158,7 @@ window.OB_CONF=window.OB_CONF||{};OB_CONF.otherThings={on:true,show:6,max:12,ski
       snapTo(row.scrollLeft - Math.max(-cap, Math.min(cap, g)));
     };
 
-    var bound = false;
+    var bound = false, kbTo = 0, kbAt = 0;
     var apply = function () {
       if (!find()) return;
       var on = MQ.matches;
@@ -185,10 +185,13 @@ window.OB_CONF=window.OB_CONF||{};OB_CONF.otherThings={on:true,show:6,max:12,ski
           row.addEventListener("keydown", function (e) {
             if (!document.documentElement.classList.contains("obOtOn") || e.altKey || e.ctrlKey || e.metaKey) return;
             var it = row.querySelector(".product-list-item"), step = it ? it.getBoundingClientRect().width + parseFloat(getComputedStyle(row).columnGap || 0) : 200;
-            var to = e.key === "ArrowRight" ? row.scrollLeft + step : e.key === "ArrowLeft" ? row.scrollLeft - step : e.key === "Home" ? 0 : e.key === "End" ? row.scrollWidth : null;
+            /* a key pressed again while the row is still moving carries on from where it was heading */
+            var from = kbAt && Date.now() - kbAt < 450 ? kbTo : row.scrollLeft;
+            var to = e.key === "ArrowRight" ? from + step : e.key === "ArrowLeft" ? from - step : e.key === "Home" ? 0 : e.key === "End" ? row.scrollWidth : null;
             if (to === null) return;
             e.preventDefault();
-            row.scrollTo({ left: to, behavior: still() ? "auto" : "smooth" });
+            kbTo = Math.max(0, Math.min(to, row.scrollWidth - row.clientWidth)); kbAt = Date.now();
+            row.scrollTo({ left: kbTo, behavior: still() ? "auto" : "smooth" });
           });
         }
       } else {
