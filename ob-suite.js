@@ -1,8 +1,7 @@
 /* OB SOLID SUITE v17.1 · ob-suite.js · Opposite Things
-   v17.1 = v17.0 + store text swap (Footer v17.43): on phones the category line changes with a short slide and fade
-   instead of the letter scramble (textSwap phone/computer in OB_CONF). Product names scramble in their own text
-   (one copy on screen, never doubled), calmer (letters change at most every 50ms) and quicker to start; names: false
-   in textSwap turns the name scramble off.
+   v17.1 = v17.0 + store text swap (Footer v17.44): product names scramble in their own text (one copy on screen,
+   never doubled), all in one animation loop, settling left to right in 0.4s; textSwap in OB_CONF: phone / computer
+   "scramble" (default) or "fade" for the category line, names: false turns the name scramble off.
    Served from GitHub through jsDelivr; the Squarespace Footer holds the settings block (OB_CONF) and one <script src> line.
    Pairs with Header v15.5 (stays in Squarespace), Custom CSS v17.0, ob-drawings.js v16.6 (Store page box, defer).
    v17.0 = v16.7, tidied. Under the hood only, except for keyboard users in the pop-up and the visible changes
@@ -2352,7 +2351,7 @@ try {
   key: "obCopyFrom",
   freshMs: 1e4,
   names: true,
-  namesMs: 450
+  namesMs: 400
  };
  const SHUFFLE_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
  const shuffleLetter = () => SHUFFLE_LETTERS[Math.floor(Math.random() * SHUFFLE_LETTERS.length)];
@@ -2406,11 +2405,10 @@ try {
   requestAnimationFrame(tick);
  };
  /* textSwap in OB SETTINGS: how the category line and product names change with the store chips.
-    "fade" = the line slides up and fades out, the new one rises in (names just come in with the photos);
-    "scramble" = the letter scramble. Defaults: phones "fade", computers "scramble". */
+    "fade" = the line slides up and fades out, the new one rises in; "scramble" = the letter scramble (default on both). */
  const swapStyle = () => {
   const o = (window.OB_CONF || {}).textSwap || {};
-  return MQ.mobile.matches ? o.phone || "fade" : o.computer || "scramble";
+  return MQ.mobile.matches ? o.phone || "scramble" : o.computer || "scramble";
  };
  const swapFade = () => swapStyle() === "fade";
  const copyFade = (p, from, to) => {
@@ -2503,8 +2501,16 @@ try {
   setTimeout(finish, dur + 2e3);
  };
  /* v17.1: a name scrambles in its own text, so there is only ever one copy of it on screen (the old version drew
-    the scramble over a hidden copy, which on phones could show both at once). Any scramble still running on a name
-    is put back first. Letters change at most every 50ms, so it reads as a shuffle rather than noise. */
+    the scramble over a hidden copy, which on phones could show both at once). All the names on screen run in one
+    animation loop: positions are read once at the start, then each frame only changes text. Letters settle left to
+    right; the ones not settled yet change every ~33ms. Each name takes SHUFFLE.namesMs, the next starts 25ms later
+    (at most 150ms). Off-screen names are left alone. A scramble still running is put back before a new one. */
+ const NAMES = {
+  stepMs: 33,
+  staggerMs: 25,
+  staggerMax: 150
+ };
+ let namesRun = null;
  const nameRestore = title => {
   const st = title.__obShuf;
   if (!st) return;
@@ -2513,34 +2519,98 @@ try {
   title.removeAttribute("aria-label");
   if (!st.wg) title.removeAttribute("data-wg-notranslate");
   title.classList.remove("obNameShuf");
+  title.style.removeProperty("white-space");
  };
- const nameShuffle = (title, wait) => {
+ const nameJob = (title, wait, dur) => {
   nameRestore(title);
   qsa(".obNameOv", title).forEach(x => x.remove());
-  if (title.children.length) return;
+  if (title.children.length) return null;
   const raw = title.textContent, to = textOf(title);
-  if (!to) return;
+  if (!to) return null;
   const st = {
    raw,
    wg: title.hasAttribute("data-wg-notranslate")
   };
-  title.__obShuf = st;
-  title.setAttribute("data-wg-notranslate", "");
-  title.classList.add("obNameShuf");
-  title.setAttribute("aria-label", to);
-  const chars = [ ...to ], n = chars.length, dur = SHUFFLE.namesMs;
+  const chars = [ ...to ], n = chars.length;
   const cur = chars.map(ch => isShuffleLetter(ch) ? shuffleLetter() : ch);
-  title.textContent = cur.join("");
-  const text = title.firstChild;
-  const at = chars.map((_, i) => wait + i / n * dur * .65 + dur * .35 * Math.random());
-  const alive = () => title.__obShuf === st;
-  const finish = () => {
-   if (alive()) nameRestore(title);
+  const at = chars.map((_, i) => wait + dur * .25 + (i + 1) / n * dur * .75);
+  return {
+   title,
+   st,
+   to,
+   chars,
+   cur,
+   at,
+   end: wait + dur,
+   single: false,
+   last: ""
   };
-  scrambleRun(chars, cur, at, wait, alive, str => {
-   text.nodeValue = str;
-  }, finish, 50);
-  setTimeout(finish, wait + dur + 2e3);
+ };
+ const namesStart = jobs => {
+  if (namesRun) {
+   namesRun.alive = false;
+   namesRun.jobs.forEach(j => nameRestore(j.title));
+  }
+  if (!jobs.length) {
+   namesRun = null;
+   return;
+  }
+  jobs.forEach(j => {
+   const t = j.title;
+   t.__obShuf = j.st;
+   t.setAttribute("data-wg-notranslate", "");
+   t.setAttribute("aria-label", j.to);
+   t.classList.add("obNameShuf");
+   if (j.single) t.style.whiteSpace = "nowrap";
+   j.last = j.cur.join("");
+   t.textContent = j.last;
+   j.text = t.firstChild;
+  });
+  const run = {
+   alive: true,
+   jobs
+  };
+  namesRun = run;
+  const endAll = Math.max(...jobs.map(j => j.end));
+  const done = () => {
+   if (!run.alive) return;
+   run.alive = false;
+   jobs.forEach(j => {
+    if (j.title.__obShuf === j.st) nameRestore(j.title);
+   });
+   if (namesRun === run) namesRun = null;
+  };
+  let t0 = 0, lastRoll = -1e9;
+  const tick = ts => {
+   if (!run.alive) return;
+   if (!t0) t0 = ts;
+   const t = ts - t0;
+   const roll = t - lastRoll >= NAMES.stepMs;
+   if (roll) lastRoll = t;
+   for (const j of jobs) {
+    if (j.title.__obShuf !== j.st) continue;
+    if (t >= j.end) {
+     nameRestore(j.title);
+     continue;
+    }
+    for (let i = 0; i < j.chars.length; i++) {
+     if (j.cur[i] === j.chars[i] && t >= j.at[i]) continue;
+     if (t >= j.at[i] || !isShuffleLetter(j.chars[i])) j.cur[i] = j.chars[i]; else if (roll) j.cur[i] = shuffleLetter();
+    }
+    const s = j.cur.join("");
+    if (s !== j.last) {
+     j.last = s;
+     j.text.nodeValue = s;
+    }
+   }
+   if (t >= endAll) {
+    done();
+    return;
+   }
+   requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+  setTimeout(done, endAll + 1500);
  };
  const namesSweep = force => {
   qsa(".obNameOv").forEach(ov => ov.remove());
@@ -2553,17 +2623,28 @@ try {
  const namesOn = () => ((window.OB_CONF || {}).textSwap || {}).names !== false;
  const namesShuffleIn = (grid, base = 0) => {
   if (!SHUFFLE.names || !namesOn() || !grid || inEditor || prefersReducedMotion()) return;
-  setTimeout(namesSweep, base + 320 + SHUFFLE.namesMs + 2600);
+  setTimeout(namesSweep, base + NAMES.staggerMax + SHUFFLE.namesMs + 2600);
   const vh = window.innerHeight;
-  let i = 0;
+  /* read every position first, then write */
+  const picks = [];
   Array.from(grid.children).forEach(tile => {
    if (!tile.classList.contains("product-list-item") || tile.classList.contains("obTileOff")) return;
    const title = tile.querySelector(".product-list-item-title");
    if (!title) return;
    const r = title.getBoundingClientRect();
    if (!r.height || r.bottom < 0 || r.top > vh) return;
-   nameShuffle(title, base + Math.min(i++ * 30, 180));
+   const lh = parseFloat(getComputedStyle(title).lineHeight) || r.height;
+   picks.push([ title, r.height < lh * 1.5 ]);
   });
+  const jobs = [];
+  picks.forEach(([title, single]) => {
+   const j = nameJob(title, base + Math.min(jobs.length * NAMES.staggerMs, NAMES.staggerMax), SHUFFLE.namesMs);
+   if (j) {
+    j.single = single;
+    jobs.push(j);
+   }
+  });
+  namesStart(jobs);
  };
  const cameFromStore = (() => {
   try {
