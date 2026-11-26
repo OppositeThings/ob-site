@@ -1,4 +1,4 @@
-<!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it opens full screen over the page, which shows through blurred. Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer the photo opens at three quarters of the screen width (scroll down to see the rest of a tall photo); no second zoom. v2: blurred page behind, photos loop, bigger straight away, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small circle (or rounded square: viewer.cursor in OB SETTINGS) with a frosted chip hanging off it that trails it slightly ([ENLARGE] on the page, [PREV] / [NEXT] on the left / right half of the big photo, where a click goes back / on, and [CLOSE] around it, where a click closes (the round arrows only show for keyboard users); no trail with reduced motion). On phones (up to 767px wide) the photos are already full width, so the viewer is off there and the page gallery swipes as before. The words, and blur: false for a plain background: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. -->
+<!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it opens full screen over a heavily blurred copy of the same photo. Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer the photo opens at three quarters of the screen width (scroll down to see the rest of a tall photo); no second zoom. v2: blurred page behind, photos loop, bigger straight away, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small circle (or rounded square: viewer.cursor in OB SETTINGS) with a frosted chip hanging off it that trails it slightly ([ENLARGE] on the page, [PREV] / [NEXT] on the left / right half of the big photo, where a click goes back / on, and [CLOSE] around it, where a click closes (the round arrows only show for keyboard users); no trail with reduced motion). On phones (up to 767px wide) the photos are already full width, so the viewer is off there and the page gallery swipes as before. The words, and blur: false for a plain background: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. -->
 <style>
 @media (min-width:768px){.product-gallery-slides-item,.product-gallery-slides-item img{cursor:pointer}}
 @media (hover:hover) and (pointer:fine){.product-gallery-slides-item,.product-gallery-slides-item img,.obPv .obPvSlide,.obPv:not(.obPvOne) .obPvSlide img{cursor:none!important}}
@@ -13,9 +13,11 @@
 .product-gallery-slides-item:focus:not(:focus-visible)::after{display:none}
 .obPv{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;color:#111;overflow:hidden;font-family:ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;z-index:2147483000}
 .obPv::backdrop{background:transparent}
-.obPvBlur{position:absolute;inset:0;background:rgba(255,255,250,.55);-webkit-backdrop-filter:blur(60px) saturate(1.1);backdrop-filter:blur(60px) saturate(1.1)}
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.obPvBlur{background:#fffffa}}
-.obPvSolid .obPvBlur{background:#fffffa;-webkit-backdrop-filter:none;backdrop-filter:none}
+.obPvBlur{position:absolute;inset:0;overflow:hidden;background:#fffffa}
+.obPvBlur i{position:absolute;inset:0;background:center / cover no-repeat;-webkit-filter:blur(60px) saturate(1.15);filter:blur(60px) saturate(1.15);transform:scale(1.25) translateZ(0);opacity:0;transition:opacity .5s ease;will-change:opacity}
+.obPvBlur i.obPvOn{opacity:1}
+.obPvBlur::after{content:"";position:absolute;inset:0;background:rgba(255,255,250,.5)}
+.obPvSolid .obPvBlur i{display:none}
 .obPv:not([open]){display:none}
 .obPv:focus,.obPv:focus-visible{outline:none}
 .obPv button:focus:not(:focus-visible){outline:none}
@@ -127,7 +129,7 @@
       dlg = document.createElement("dialog");
       dlg.className = "obPv";
       dlg.setAttribute("aria-label", "Photos");
-      dlg.innerHTML = '<div class="obPvBlur"></div><div class="obPvTrack"></div>' +
+      dlg.innerHTML = '<div class="obPvBlur"><i></i><i></i></div><div class="obPvTrack"></div>' +
         '<div class="obPvBar"><span class="obPvCount" aria-hidden="true"></span><button type="button" class="obPvClose"></button></div>' +
         '<button type="button" class="obPvNav obPvPrev">&larr;</button><button type="button" class="obPvNav obPvNext">&rarr;</button>' +
         '<div class="obPvLive" aria-live="polite"></div>';
@@ -182,6 +184,18 @@
       });
     };
 
+    /* behind the photo: the same photo (the small copy already loaded), heavily blurred under a white wash; two layers cross-fade */
+    var blurTo = function (i) {
+      var lay = dlg.querySelectorAll(".obPvBlur i");
+      if (lay.length < 2 || !list[i]) return;
+      var url = list[i].now || (list[i].src + "?format=500w");
+      var on = lay[0].classList.contains("obPvOn") ? 0 : 1, nx = 1 - on;
+      if (lay[on].getAttribute("data-u") === url && lay[on].classList.contains("obPvOn")) return;
+      lay[nx].style.backgroundImage = 'url("' + url.replace(/"/g, "%22") + '")';
+      lay[nx].setAttribute("data-u", url);
+      lay[nx].classList.add("obPvOn");
+      lay[on].classList.remove("obPvOn");
+    };
     var jump = function (p) {
       track.style.scrollSnapType = "none";
       track.scrollLeft = p * track.clientWidth;
@@ -192,6 +206,7 @@
       here = i;
       for (var k = 0; k < track.children.length; k++) { var on = k === posOf(i); if (on && !track.children[k].classList.contains("obPvHere")) track.children[k].scrollTop = 0; track.children[k].classList.toggle("obPvHere", on); }
       load(i); load(i + 1); load(i - 1);
+      blurTo(i);
       count.textContent = (i + 1) + " / " + list.length;
       live.textContent = (i + 1) + " " + t("of") + " " + list.length;
     };
