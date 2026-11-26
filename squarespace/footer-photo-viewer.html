@@ -1,4 +1,4 @@
-<!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it flies from the page into a full-screen view over a heavily blurred copy of the same photo, and flies back when it closes (no movement with reduced motion). Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer the photo opens at three quarters of the screen width (scroll down to see the rest of a tall photo); no second zoom. v2: blurred page behind, photos loop, bigger straight away, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small circle (or rounded square: viewer.cursor in OB SETTINGS) with a frosted chip hanging off it that trails it slightly ([ENLARGE] on the page, [PREV] / [NEXT] on the left / right half of the big photo, where a click goes back / on, and [CLOSE] around it, where a click closes (the round arrows only show for keyboard users); no trail with reduced motion). On phones (up to 767px wide) the photos are already full width, so the viewer is off there and the page gallery swipes as before. The words, and blur: false for a plain background: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. -->
+<!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it flies from the page into a full-screen view over a heavily blurred copy of the same photo, and flies back when it closes (no movement with reduced motion). Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer the photo opens at three quarters of the screen width (scroll down to see the rest of a tall photo); no second zoom. v2: blurred page behind, photos loop, bigger straight away, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small circle (or rounded square: viewer.cursor in OB SETTINGS) with a frosted chip hanging off it that trails it slightly ([ENLARGE] on the page, [PREV] / [NEXT] on the left / right half of the big photo, where a click goes back / on, and [CLOSE] around it, where a click closes (the round arrows only show for keyboard users); no trail with reduced motion). On phones (up to 767px wide) the photos are already full width, so the viewer is off there and the page gallery swipes as before. The words, and blur: false for a plain background: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. Also (v17.18): on the home page the same pointer shows [SHOP] over the hero photo and a click opens the store (all products); the hero's SHOP link is hidden on computers but stays for phones, tablets and keyboard users (heroShop in OB SETTINGS). Elsewhere, over a photo that links somewhere, the pointer is the same dot with no word (cursorDot: false in OB SETTINGS turns it off). -->
 <style>
 @media (min-width:768px){.product-gallery-slides-item,.product-gallery-slides-item img{cursor:pointer}}
 @media (hover:hover) and (pointer:fine){.product-gallery-slides-item,.product-gallery-slides-item img,.obPv .obPvSlide,.obPv:not(.obPvOne) .obPvSlide img{cursor:none!important}}
@@ -12,6 +12,8 @@
 .obPvTip b{position:absolute;left:14px;top:14px;display:block;padding:5px 9px;border-radius:5px;border:0;background:rgba(255,255,250,.5);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#111;font:500 12px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.obPvTip b{background:rgba(255,255,250,.92)}}
 .product-gallery-slides-item::after{pointer-events:none}
+@media (hover:hover) and (pointer:fine){.obHeroShopHide{opacity:0!important;pointer-events:none!important}.obHeroShopHide:focus-within{opacity:1!important}section.obHeroShopIn,section.obHeroShopIn *{cursor:none!important}section.obHeroShopIn a[href]:not(.obHeroShopLink),section.obHeroShopIn button,section.obHeroShopIn a[href]:not(.obHeroShopLink) *{cursor:pointer!important}.obDotIn,.obDotIn *{cursor:none!important}}
+.obPvTip.obPvDotOnly b{display:none}
 .product-gallery-slides-item:focus:not(:focus-visible)::after{display:none}
 .obPv{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;color:#111;overflow:hidden;font-family:ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;z-index:2147483000}
 .obPv::backdrop{background:transparent}
@@ -69,6 +71,7 @@
     WORDS.nextTip = { en: "[Next]", it: "[Avanti]" };
     WORDS.prevTip = { en: "[Prev]", it: "[Indietro]" };
     WORDS.closeTip = { en: "[Close]", it: "[Chiudi]" };
+    WORDS.shopTip = { en: "[Shop]", it: "[Negozio]" };
     /* in the viewer: the photo's left half goes back, its right half goes on, around the photo closes */
     var zone = function (e) {
       if (!e || !dlg || !dlg.open) return "";
@@ -81,8 +84,8 @@
       var r = im.getBoundingClientRect();
       return e.clientX < r.left + r.width / 2 ? "prev" : "next";
     };
-    var t = function (k) {
-      var c = (window.OB_CONF || {}).viewer || {}, w = c[k] || WORDS[k];
+    var t = function (k, own) {
+      var c = (window.OB_CONF || {}).viewer || {}, w = own || c[k] || WORDS[k];
       if (typeof w === "string") return w;
       return (w && (w[lang()] || w.en)) || WORDS[k].en;
     };
@@ -398,10 +401,96 @@
     tip.setAttribute("data-wg-notranslate", "");
     tip.innerHTML = "<i></i><b></b>";
     var sq = tip.firstChild, chip = tip.lastChild;
+    /* home page hero: on a computer the same pointer shows [SHOP] over the hero photo and a click anywhere on it opens the store (all products); the SHOP link laid over it is hidden there but stays for keyboard users (it shows when tabbed to) and on phones and tablets, where the hero is tappable too. heroShop in OB SETTINGS: href, word, on: false to switch it off, section: a section ID if the hero isn't the first section. */
+    var HC = function () { return (window.OB_CONF || {}).heroShop || {}; };
+    var heroHref = function () { return HC().href || "/store"; };
+    var fine = function () { return window.matchMedia("(hover: hover) and (pointer: fine)").matches; };
+    var heroSec = null, heroLink = null, heroIn = false;
+    var heroFind = function () {
+      if (HC().on === false || window.self !== window.top) return null;
+      var d = document.documentElement;
+      if (!(d.classList.contains("ob-page-home") || document.body.classList.contains("homepage") || location.pathname === "/")) return null;
+      if (heroSec && document.contains(heroSec)) return heroSec;
+      var id = HC().section;
+      heroSec = id ? document.querySelector('main section[data-section-id="' + id + '"]') : document.querySelector("main section.page-section");
+      if (!heroSec) return null;
+      var links = heroSec.querySelectorAll(".sqs-html-content a[href], .sqs-block-button a[href]");
+      heroLink = null;
+      for (var i = 0; i < links.length; i++) { if (/^\[?\s*shop\b/i.test((links[i].textContent || "").trim())) { heroLink = links[i]; break; } }
+      if (heroLink) {
+        heroLink.classList.add("obHeroShopLink");
+        heroLink.setAttribute("href", heroHref());
+        var blk = heroLink.closest(".fe-block") || heroLink.closest(".sqs-block");
+        var hide = blk && (blk.textContent || "").trim() === (heroLink.textContent || "").trim() ? blk : heroLink;
+        hide.classList.add("obHeroShopHide");
+      }
+      return heroSec;
+    };
+    /* the hero photo: the section's background photo or video, or else its image blocks */
+    var heroHit = function (x, y) {
+      var sec = heroFind();
+      if (!sec) return false;
+      var media = sec.querySelectorAll(".section-background img, .section-background video, .section-background .sqs-video-background-native");
+      if (!media.length) media = sec.querySelectorAll(".sqs-block-image .fluid-image-container, .sqs-block-image img, .sqs-block-video");
+      var sr = sec.getBoundingClientRect();
+      for (var i = 0; i < media.length; i++) {
+        var r = media[i].getBoundingClientRect();
+        if (!r.width) continue;
+        var l = Math.max(r.left, sr.left), tp = Math.max(r.top, sr.top), rt = Math.min(r.right, sr.right), bt = Math.min(r.bottom, sr.bottom);
+        if (x >= l && x <= rt && y >= tp && y <= bt) return true;
+      }
+      return false;
+    };
+    var heroWord = function (el, e) {
+      var hit = !!(e && el && el.closest && heroHit(e.clientX, e.clientY) && heroSec.contains(el));
+      if (hit) { var a = el.closest("a[href], button, input, select, textarea, label"); if (a && a !== heroLink) hit = false; }
+      if (hit !== heroIn) { heroIn = hit; if (heroSec) heroSec.classList.toggle("obHeroShopIn", hit); }
+      return hit ? t("shopTip", HC().word) : "";
+    };
+    var heroDown = null;
+    document.addEventListener("pointerdown", function (e) { heroDown = { x: e.clientX, y: e.clientY }; }, { capture: true, passive: true });
+    window.addEventListener("click", function (e) {
+      if (e.defaultPrevented || e.button !== 0) return;
+      var el = e.target;
+      if (!el || !el.closest || !heroFind() || !heroSec.contains(el)) return;
+      var a = el.closest("a[href], button, input, select, textarea, label");
+      if (a && a !== heroLink) return;
+      if (!a && !heroHit(e.clientX, e.clientY)) return;
+      if (heroDown && (Math.abs(e.clientX - heroDown.x) > 10 || Math.abs(e.clientY - heroDown.y) > 10)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var href = heroHref();
+      if (e.metaKey || e.ctrlKey) { window.open(href, "_blank", "noopener"); return; }
+      if (window.obLeaveTo) window.obLeaveTo(href); else location.href = href;
+    }, true);
+    var heroTries = 0;
+    var heroTick = function () { heroSec = null; heroFind(); if (++heroTries < 6) setTimeout(heroTick, 500); };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", heroTick); else heroTick();
+    /* the rest of the site: over a photo that links somewhere (store grid, product cards, Finds, home tiles) the pointer is the same dot, with no word. cursorDot: false in OB SETTINGS switches it off. */
+    var DOT = "\u00b7dot", dotEl = null;
+    var dotSet = function (a) {
+      if (a === dotEl) return;
+      if (dotEl) dotEl.classList.remove("obDotIn");
+      dotEl = a;
+      if (a) a.classList.add("obDotIn");
+    };
+    var dotWord = function (el) {
+      var a = null;
+      if ((window.OB_CONF || {}).cursorDot !== false && el && el.closest && !el.closest(".obPv, " + SLIDES)) {
+        var pic = el.tagName === "IMG" || el.tagName === "VIDEO" ? el : el.closest(".grid-image, .grid-item-image, .product-list-image-wrapper, .product-list-item-image, .fluid-image-container, .image-container, .image-block-wrapper, .summary-thumbnail-container");
+        if (pic && pic.closest("main, footer, #footer-sections")) {
+          a = pic.closest("a[href]");
+          if (!a) { var blk = pic.closest(".sqs-block-image, .sqs-block-product"); a = blk && blk.querySelector("a[href]") && pic.closest(".sqs-block-image, .sqs-block-product") ? blk : null; }
+        }
+      }
+      dotSet(a);
+      return a ? DOT : "";
+    };
     var tipWord = function (el) {
       if (!el || !el.closest) return "";
       if (el.closest(".obPvSlide")) { var z = zone(lastE); return z ? t(z + "Tip") : ""; }
       if (!dlg || !dlg.open) { var it = el.closest(SLIDES); if (it && it.querySelector("img") && document.body.classList.contains("view-item")) return t("enlarge"); }
+      if (!dlg || !dlg.open) { var hw = heroWord(el, lastE); if (hw) { dotSet(null); return hw; } return dotWord(el); }
       return "";
     };
     var mx = 0, my = 0, cx = 0, cy = 0, on = false, raf = 0, lastE = null, word = "", swapT = 0;
@@ -424,13 +513,14 @@
     var tipAt = function (e) {
       if (!e) return;
       lastE = { clientX: e.clientX, clientY: e.clientY, pointerType: e.pointerType };
-      if (e.pointerType && e.pointerType !== "mouse") { tip.classList.remove("obPvTipOn"); on = false; return; }
+      if (e.pointerType && e.pointerType !== "mouse") { tip.classList.remove("obPvTipOn"); on = false; dotSet(null); return; }
       var home = dlg && dlg.open && !closing ? dlg : (closing ? tip.parentNode || document.body : document.body);
       if (tip.parentNode !== home) home.appendChild(tip);
       /* while the photos slide or the viewer closes, keep the word as it was */
       var w = (closing || Date.now() < navUntil) && on && word ? word : tipWord(document.elementFromPoint(e.clientX, e.clientY));
       if (!w) { tip.classList.remove("obPvTipOn"); on = false; return; }
-      setWord(w);
+      tip.classList.toggle("obPvDotOnly", w === DOT);
+      if (w !== DOT) setWord(w); else word = "";
       var shape = String(((window.OB_CONF || {}).viewer || {}).cursor || "circle");
       if (tip.getAttribute("data-shape") !== shape) tip.setAttribute("data-shape", shape);
       mx = e.clientX; my = e.clientY;
@@ -444,7 +534,7 @@
     document.addEventListener("pointerup", tipAgain, { passive: true });
     document.addEventListener("keyup", tipAgain, { passive: true });
     window.addEventListener("scroll", tipAgain, { passive: true });
-    document.documentElement.addEventListener("pointerleave", function () { tip.classList.remove("obPvTipOn"); on = false; });
+    document.documentElement.addEventListener("pointerleave", function () { tip.classList.remove("obPvTipOn"); on = false; dotSet(null); });
 
     /* keyboard: each photo on the page can be reached with Tab and opened with Enter or Space */
     var mark = function () {
