@@ -537,7 +537,11 @@
               var sc = same ? 1e6 : kin ? 1e5 : (ov > 0 && pr.top <= lr.top + 4 ? ov - Math.abs(lr.top - pr.bottom) / 10 : -1);
               if (sc > bestS) { bestS = sc; best = P; }
             }
-            if (!best || bestS < 0) continue;
+            if (!best || bestS < 0) {
+              /* a SHOP… word that couldn't be matched to a photo, in a section with linked photos: still hidden on computers (v17.38) */
+              if (/^\[?\s*shop\b/i.test(txt) && pics.some(function (x) { return x.tagName === "A"; })) { L.classList.add("obTileLink", "obHeroShopHide"); }
+              continue;
+            }
             /* a photo with no link of its own (Finds) keeps its button as it is (Ben, v17.35) */
             if (best.tagName !== "A") continue;
             L.classList.add("obTileLink");
