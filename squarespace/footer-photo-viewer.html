@@ -536,7 +536,11 @@
         var under = document.elementFromPoint(e.clientX, e.clientY);
         if (!under || (under.closest && under.closest(NATIVE))) { tip.classList.remove("obPvTipOn"); on = false; return; }
         if (!w || w === DOT) { grow = w === DOT || !!(under.closest && under.closest(CLICK)); w = DOT; }
-      } else if (document.documentElement.classList.contains("obDotCursor")) document.documentElement.classList.remove("obDotCursor");
+      } else {
+        if (document.documentElement.classList.contains("obDotCursor")) document.documentElement.classList.remove("obDotCursor");
+        /* arrow mode: the dot only shows over photos that link somewhere, at its hover size */
+        if (w === DOT) grow = true;
+      }
       if (!w) { tip.classList.remove("obPvTipOn"); on = false; return; }
       /* a word beside the dot: the dot is at its hover size too */
       if (w !== DOT) grow = true;
