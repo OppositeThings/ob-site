@@ -1,0 +1,373 @@
+<!-- OB first photos early v2 · starts the photos at the top of the page loading straight away, instead of waiting for Squarespace's own script (about 1 second later). Same files Squarespace asks for, so nothing downloads twice. v2: on product pages the first photo also gets its address straight away, so the page's short wait (Header, up to 0.8s) ends as soon as that photo is ready. -->
+<!-- OB PHONE PHOTO v1 · phones: the product photo frame has the photos' own shape (A-paper, like the store tiles) and the photo fills it from the first moment, so it never shows big and cropped while loading, or stays that way -->
+<style>@media (max-width:767px){.product-gallery-slides{aspect-ratio:2480/3508!important;height:auto!important}.product-gallery-slides-item img{width:100%!important;height:100%!important;object-fit:cover!important}}</style>
+<script>
+(function () {
+  try {
+    if (!document.querySelector || /[?&]ob-popup=/.test(location.search)) return;
+    var STEPS = [100, 300, 500, 750, 1000, 1500, 2500];
+    var MAX = 4;
+    var dpr = Math.min(window.devicePixelRatio || 1, 3);
+    var vh = window.innerHeight || 800;
+    var done = {};
+    var count = 0;
+
+    var boxOf = function (img) {
+      var el = img;
+      for (var i = 0; el && i < 4; i++, el = el.parentElement) {
+        var r = el.getBoundingClientRect();
+        if (r.width > 0) return r;
+      }
+      return null;
+    };
+
+    var pick = function (img, w) {
+      var need = w * dpr;
+      var set = img.getAttribute("srcset");
+      if (set && /\d+w/.test(set)) {
+        var best = null, biggest = null;
+        set.split(/,\s+/).forEach(function (part) {
+          var m = /^(\S+)\s+(\d+)w$/.exec(part.trim());
+          if (!m) return;
+          var c = { url: m[1], w: +m[2] };
+          if (!biggest || c.w > biggest.w) biggest = c;
+          if (c.w >= need && (!best || c.w < best.w)) best = c;
+        });
+        return (best || biggest || {}).url || null;
+      }
+      var src = img.getAttribute("data-src");
+      if (!src || /\?/.test(src)) return null;
+      for (var i = 0; i < STEPS.length; i++) {
+        if (STEPS[i] >= need) return src + "?format=" + STEPS[i] + "w";
+      }
+      return src + "?format=" + STEPS[STEPS.length - 1] + "w";
+    };
+
+    var start = function (url) {
+      if (!url || done[url]) return;
+      done[url] = true;
+      count++;
+      var l = document.createElement("link");
+      l.rel = "preload";
+      l.as = "image";
+      l.href = url;
+      l.setAttribute("fetchpriority", "high");
+      document.head.appendChild(l);
+    };
+
+    var sel = ".product-gallery-slides-item img, main .product-list-item img.grid-item-image, main .sqs-block-image img";
+    var imgs = document.querySelectorAll(sel);
+    var gallery = false;
+    for (var i = 0; i < imgs.length && count < MAX; i++) {
+      var img = imgs[i];
+      var inGallery = !!img.closest(".product-gallery-slides-item");
+      if (inGallery) {
+        if (gallery) continue;
+        gallery = true;
+      }
+      var r = boxOf(img);
+      if (!r || r.height <= 0) continue;
+      if (!inGallery && (r.top >= vh || r.bottom <= 0)) continue;
+      var url = pick(img, r.width);
+      start(url);
+      if (inGallery && url && !img.getAttribute("src")) img.setAttribute("src", url);
+    }
+  } catch (e) {}
+})();
+</script>
+<!-- OB SOLID SUITE Footer v17.51 · same site as v17.50, tidied: the code now lives on GitHub (OppositeThings/ob-site, ob-suite.js v17.2) and loads through jsDelivr by its commit ID, with jsDelivr's backup server if the first does not answer. This box keeps: first photos early (above, must stay at the very top), a safety line, OB SETTINGS (words and lists: edit and save, no GitHub step), the styles, and the last line. A code change comes as a new last line to paste. Rollback: Footer v17.50. -->
+<script>setTimeout(function () { if (!window.__obSolidSuiteV7) document.documentElement.classList.remove("obHashLanding"); }, 5000);</script>
+<script>
+/* OB SETTINGS · the words and lists the site uses.
+   \n inside the words starts a new line. Keep the quotes, commas and brackets as they are.
+   If anything here has a mistake, the site quietly uses the copies inside ob-suite.js instead. */
+window.OB_CONF = {
+
+  /* The line above the products on each store page: English, then Italian. */
+  copy: {
+    all: {
+      en: "New and old, designed and found,\nmade to be mixed.",
+      it: "Nuovo e vecchio, disegnato e trovato,\nfatto per essere mescolato."
+    },
+    rugs: {
+      en: "Drawn in the studio, hand-tufted in wool,\nmade to order. Shoes off.",
+      it: "Disegnati in studio, taftati a mano in lana,\nrealizzati su ordinazione. Via le scarpe."
+    },
+    prints: {
+      en: "Shapes we couldn’t stop looking at.\nMinimal on paper. Less so once they’re up.",
+      it: "Forme di Palermo\nche non riuscivamo a smettere di guardare.\nMinimali sulla carta.\nMeno, una volta appese."
+    },
+    finds: {
+      en: "Picked up along the way,\nfor someone else to keep.\nOne of each, then gone.",
+      it: "Raccolti lungo la strada,\nperché qualcun altro li tenga.\nPezzi unici, poi spariscono."
+    },
+    objects: {
+      en: "Small things for the house.\nUseful, mostly. Good company, always.",
+      it: "Piccole cose per la casa.\nUtili, quasi sempre.\nBuona compagnia, sempre."
+    }
+  },
+
+  /* The store chips, in this order.
+     key: a short name (the copy above uses the same name). label: the chip. path: where it goes.
+     match: words in a Squarespace category's address or name that belong to this chip.
+     page: true for a chip that opens a single product page. */
+  categories: [
+    { key: "all",     label: "ALL",        path: "/store",              match: ["all"] },
+    { key: "rugs",    label: "RUGS",       path: "/store/rugs",         match: ["rug"] },
+    { key: "prints",  label: "PRINTS",     path: "/store/prints",       match: ["print"] },
+    { key: "finds",   label: "FINDS",      path: "/store/finds",        match: ["find"] },
+    { key: "objects", label: "OBJECTS",    path: "/store/objects",      match: ["object", "home", "homeware", "everyday", "merch"] },
+    { key: "slot",    label: "SLOT CHAIR", path: "/store/p/slot-chair", match: ["slot"], page: true }
+  ],
+
+  /* SELECT COLOUR chips on product pages: one entry per design, one chip per product page.
+     design: the design's name (rugs: the same name as its drawing, so the SIZES panel finds it).
+     dot: the colour of the dot before the word (leave it out for no dot).
+     label: a heading other than SELECT COLOUR: (optional). */
+  colourLinks: [
+    { design: "Rosalia", colours: [
+      { name: "Lilac", path: "/store/p/rosalia-lilac", dot: "#b9a8d6" },
+      { name: "Khaki", path: "/store/p/rosalia-khaki", dot: "#a89f72" } ] },
+    { design: "Petals", colours: [
+      { name: "Sand",  path: "/store/p/petals-sand",  dot: "#d5bba8" },
+      { name: "Blush", path: "/store/p/petals-blush", dot: "#e5cac8" } ] },
+    { design: "Bloom", colours: [
+      { name: "Chocolate", path: "/store/p/bloom-chocolate", dot: "#4a342d" },
+      { name: "Moss",      path: "/store/p/bloom-moss",      dot: "#4b4d33" } ] },
+    { design: "Stretch", colours: [
+      { name: "Rose", path: "/store/p/stretch-rose", dot: "#e4bab8" },
+      { name: "Sky",  path: "/store/p/stretch-sky",  dot: "#b7c5d4" } ] },
+    { design: "Cartone", colours: [
+      { name: "Tan",   path: "/store/p/cartone-tan",   dot: "#84684c" },
+      { name: "Olive", path: "/store/p/cartone-olive", dot: "#645b44" } ] },
+    { design: "Eindhoven", colours: [
+      { name: "Original", path: "/store/p/eindhoven",        dot: "#c9a3a6" },
+      { name: "Invert",   path: "/store/p/eindhoven-invert", dot: "#7a6fc4" } ] },
+    { design: "Marcel and Breuer", label: "THE SET:", colours: [
+      { name: "Marcel", path: "/store/p/marcel" },
+      { name: "Breuer", path: "/store/p/breuer" } ] },
+    { design: "Pretoria and Vergogna", label: "THE SET:", colours: [
+      { name: "Pretoria", path: "/store/p/pretoria" },
+      { name: "Vergogna", path: "/store/p/vergogna" } ] }
+  ],
+
+  /* PERKS: three chips under the SIZES panel on product pages, one set per kind of product.
+     The first set that fits the page is used:
+       sizes: the page's sizes are all in this list (prints: A0–A5), or
+       paths: the page's address starts with one of these (rugs: each design's address start).
+     label: the big words. sub: the small line under them. it: the Italian (optional).
+     place: "panel" (under the SIZES panel), "button" (under ADD TO BAG) or "size" (between the sizes and ADD TO BAG). */
+  /* PERKS on phones: "1-2" = the first chip full width, the other two side by side below; "row" = all three in one row */
+  perksLayout: "1-2",
+  perks: [
+    { name: "prints",
+      sizes: ["A0", "A1", "A2", "A3", "A4", "A5"],
+      place: "panel",
+      chips: [
+        { label: { en: "Museum standard", it: "Qualità museale" },     sub: { en: "Archival Print", it: "Stampa d'Archivio" } },
+        { label: { en: "Shipping included", it: "Spedizione inclusa" }, sub: { en: "Worldwide", it: "In Tutto il Mondo" } },
+        { label: { en: "Duties paid",     it: "Dazi inclusi" },        sub: { en: "UK, EU, US, AU", it: "UK, UE, USA, AU" } }
+      ] },
+    { name: "rugs",
+      paths: ["/store/p/rosalia", "/store/p/petals", "/store/p/bloom", "/store/p/stretch", "/store/p/cartone"],
+      place: "panel",
+      chips: [
+        { label: { en: "Hand-tufted",   it: "Taftato a mano" },   sub: { en: "100% New Zealand Wool", it: "100% Lana Neozelandese" } },
+        { label: { en: "Shipping included", it: "Spedizione inclusa" }, sub: { en: "UK, EU, US", it: "UK, UE, USA" } },
+        { label: { en: "Duties paid",   it: "Dazi inclusi" },     sub: { en: "UK, EU, US", it: "UK, UE, USA" } }
+      ] }
+  ],
+
+  /* PHOTO VIEWER words. enlarge: the chip by the pointer over a product photo (computers; the viewer is off on phones).
+     nextTip / prevTip / closeTip: the chip by the pointer in the viewer: right half of the photo (next), left half (back), around the photo (close).
+     close: the button at the top right of the full-screen photos.
+     blur: true shows the same photo, heavily blurred, behind it; false gives a plain background.
+     cursor: the little shape at the pointer over a product photo: "circle", "rounded" (square with soft corners, like the chips) or "square". */
+  /* home hero: [SHOP] beside the pointer over the hero photo; a click opens href (the store, all products). on: false switches it off; section: "<section ID>" if the hero isn't the first section */
+  heroShop: {
+    on: true,
+    href: "/store",
+    word: { en: "Shop", it: "Negozio" }
+  },
+  /* over any other photo that links somewhere, the pointer becomes the same dot (no word). false = normal pointer */
+  cursorDot: true,
+  /* computers: "dot" = a small circle instead of the arrow everywhere, bigger over anything clickable (form fields keep their text cursor). "arrow" = the normal arrow back, with the dot over photos. "plain" = the normal arrow everywhere, only the words (ENLARGE, SHOP, PREV, NEXT, CLOSE) trail beside it over photos */
+  cursor: "plain",
+  /* home page tiles on computers: the photo shows its SHOP button's words as the chip and clicks through; the SHOP buttons are hidden and names/prices are not links (phones unchanged). false = off */
+  tiles: true,
+  /* home page: the SHOP words under the hero and tile photos stay visible until the pointer is on the photo, then the chip takes over. false = always hidden on computers */
+  ctaRest: false,
+  /* store: how the category line changes when a chip is picked: "scramble" = the letter scramble, "fade" = a short slide and fade.
+     names: how the product names and prices come in: "fade" = they rise and fade in, one after another, "header" = the same scramble as the category line, "scramble" = a calmer scramble, left to right in 0.4s, false = they just arrive with the photos */
+  textSwap: { phone: "scramble", computer: "scramble", names: "header" },
+  /* store chips: "images" = only the photos fade out and in while the names and prices switch straight away; "all" = the whole grid fades out and in */
+  chipSwap: "images",
+  /* over photos: the dot becomes a circle, square or triangle at random, a new one each time. false = always the circle */
+  cursorShapes: true,
+  /* the shapes over photos: "glass" = frosted inside a thin black line, "solid" = solid black with a thin white line */
+  shapeStyle: "glass",
+  /* the dot's size in px: normal, and over anything clickable (hover can be smaller than normal if you prefer it to shrink) */
+  cursorSize: { normal: 10, hover: 16 },
+  viewer: {
+    blur: true,
+    cursor: "circle",
+    enlarge: { en: "Enlarge", it: "Ingrandisci" },
+    nextTip: { en: "Next",    it: "Avanti" },
+    prevTip: { en: "Prev",    it: "Indietro" },
+    closeTip: { en: "Close",  it: "Chiudi" },
+    close:   { en: "Close",     it: "Chiudi" }
+  },
+
+  /* SIZE GUIDE link next to SELECT SIZE:, the bag page's title, and the print size chosen first. */
+  sizeGuide: { en: "SIZE GUIDE", it: "GUIDA ALLE MISURE" },
+  cartTitle: "BAG",
+  defaultSize: "A2",
+
+  /* OTHER THINGS (the products row at the bottom of each product page), computers only: one row you can drag or scroll sideways.
+     The row runs to the right edge of the screen, so the next product hangs off the page and says it scrolls.
+     show: how many products fit across (4 = the size they always were). peek: how much of the next one shows at the screen edge (0.25 = a quarter).
+     max: how many products in the row in all (Squarespace gives 5; any more are added from the store, same kind first). skipFree: true leaves out €0 products (placeholders).
+     skip: product addresses never to add, e.g. ["/store/p/cup"]. view: the chip over a product. drag: the chip over the gaps and while dragging.
+     on: false = the row as Squarespace makes it (four across). Phones are unchanged. */
+  otherThings: {
+    on: true,
+    show: 4,
+    peek: 0.25,
+    max: 6,
+    skipFree: true,
+    skip: [],
+    view: { en: "View", it: "Vedi" },
+    drag: { en: "Drag", it: "Trascina" }
+  }
+};
+</script>
+<!-- OB STYLES · phones: no double-tap zoom; store chip photo fade (chipSwap "images") -->
+<style>html,body{touch-action:manipulation}</style>
+<style>
+html .product-list-container.obSwapOut img:not(.grid-image-hover){opacity:0!important;transition:opacity .2s ease!important}
+html .product-list-container.obSwapIn img:not(.grid-image-hover){transition:opacity .3s cubic-bezier(.25,.1,.25,1)!important}
+</style>
+<!-- OB PERKS v2 styles · chips under SIZES on product pages (perks in OB SETTINGS) -->
+<style>
+.obPerks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--obChipGap,8px);margin:20px 0 0;padding:0;list-style:none;text-transform:none}
+.obPerks li{display:flex;flex-direction:column;justify-content:center;gap:4px;min-height:72px;margin:0;padding:12px 8px;border-radius:var(--obChipCorner,5px);background:rgba(230,228,222,.62);color:#111;text-align:center;box-sizing:border-box}
+.obPerks li::before{content:none!important;display:none!important}
+.obPerks b{display:block;font-weight:500;font-size:13px;line-height:1.25;letter-spacing:.02em;text-transform:uppercase}
+.obPerks span{display:block;font-size:11px;line-height:1.3;color:#5f5d58;text-transform:uppercase}
+.obPerks.obPerksAtSize{margin:16px 0 24px}
+#obDims .obPerks.obPerksPanel{gap:var(--obChipGap,8px);margin:var(--obChipGap,8px) 0 0}
+.obPerks.obPerksPanel li{min-height:112px;padding:20px 16px;gap:4px;background:rgba(230,228,222,.62);color:#111}
+.obPerks.obPerksPanel b{font-size:20px;font-weight:400;letter-spacing:0}
+.obPerks.obPerksPanel span{font-size:12px;color:#5f5d58;text-transform:none}
+@media (max-width:767px){
+.obPerks{gap:6px;margin-top:16px}
+.obPerks li{min-height:60px;padding:10px 4px}
+.obPerks b{font-size:11px}
+.obPerks span{font-size:10px}
+.obPerks.obPerksPanel{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.obPerks.obPerksPanel li{min-height:84px;padding:12px 6px;gap:2px}
+.obPerks.obPerksPanel b{font-size:13px}
+.obPerks.obPerksPanel span{font-size:11px}
+.obPerks.obPerks12,.obPerks.obPerksPanel.obPerks12{grid-template-columns:repeat(2,minmax(0,1fr))}
+.obPerks.obPerks12 li:first-child{grid-column:1/-1}
+}
+@media (max-width:379px){
+.obPerks.obPerksPanel li{padding:12px 3px}
+.obPerks.obPerksPanel span{font-size:10px}
+}
+</style>
+<!-- OB PHOTO VIEWER v2 styles · full-screen photo viewer and the word chip by the pointer (viewer in OB SETTINGS) -->
+<style>
+@media (hover:hover) and (pointer:fine){.obInfoLink{pointer-events:none!important;cursor:default!important}.obTilePic,.obTilePic *{cursor:none!important}html.obPlainCursor :is(.obTilePic,.obTilePic *){cursor:pointer!important}html.obTileOver main *{cursor:none!important}html.obPlainCursor.obTileOver main *{cursor:pointer!important}html.obPlainCursor .obPvTip i{display:none!important}html.obPlainCursor .obPvTip b{left:18px;top:14px}html.obPlainCursor :is(.product-gallery-slides-item,.product-gallery-slides-item *,.obPv .obPvSlide,.obPv .obPvSlide *,section.obHeroShopIn,section.obHeroShopIn *,.obDotIn,.obDotIn *){cursor:pointer!important}}
+@media (hover:hover) and (pointer:fine){body{cursor:default}main :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption){cursor:default}main a[href] :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption),main :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption) :is(a[href],a[href] *,button,button *){cursor:pointer}:is(input:not([type=submit]):not([type=button]):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=image]):not([type=color]):not([type=file]),textarea,[contenteditable=""],[contenteditable=true]){cursor:text}}
+@media (min-width:768px){.product-gallery-slides-item,.product-gallery-slides-item img{cursor:pointer}}
+@media (hover:hover) and (pointer:fine){.product-gallery-slides-item,.product-gallery-slides-item img,.obPv .obPvSlide,.obPv .obPvSlide img{cursor:none!important}}
+.obPvTip{position:fixed;left:0;top:0;z-index:2147483001;pointer-events:none;opacity:0;transition:opacity .08s ease-out}
+.obPvTip.obPvTipOn{opacity:1;transition:opacity .2s ease}
+.obPvTip b{justify-items:start;overflow:hidden;box-sizing:border-box;transition:width .24s cubic-bezier(.2,.7,.2,1)}
+.obPvTip b>span{grid-area:1/1;display:block;transition:opacity .18s ease,transform .24s cubic-bezier(.2,.7,.2,1)}
+.obPvTip b>span.obPvOut{opacity:0;transform:translateY(-80%)}
+.obPvTip b>span.obPvIn{opacity:0;transform:translateY(80%);transition:none}
+@media (prefers-reduced-motion:reduce){.obPvTip b,.obPvTip b>span{transition:none}}
+.obPvTip i{position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:3px;background:#111}
+.obPvTip[data-shape="circle"] i{border-radius:50%}
+.obPvTip[data-shape="square"] i{border-radius:3px}
+.obPvTip b{position:absolute;left:14px;top:14px;display:grid;padding:5px 9px;border-radius:5px;border:0;background:rgba(255,255,250,.5);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#111;font:400 12px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.obPvTip b{background:rgba(255,255,250,.92)}}
+.product-gallery-slides-item::after{pointer-events:none}
+@media (hover:hover) and (pointer:fine){.obHeroShopHide{pointer-events:none!important;transition:opacity .18s ease}.obHeroShopHide.obCtaAway,html.obCtaHidden .obHeroShopHide{opacity:0!important}.obHeroShopHide:focus-within{opacity:1!important}section.obHeroShopIn,section.obHeroShopIn *{cursor:none!important}section.obHeroShopIn a[href]:not(.obHeroShopLink),section.obHeroShopIn button,section.obHeroShopIn a[href]:not(.obHeroShopLink) *{cursor:pointer!important}.obDotIn,.obDotIn *{cursor:none!important}}
+.obPvTip.obPvDotOnly b{display:none}
+.obPvTip i{background:transparent!important}
+.obPvTip i::before{content:"";position:absolute;left:50%;top:50%;width:var(--obDot,10px);height:var(--obDot,10px);border-radius:inherit;background:#111;box-shadow:0 0 0 1px #fffffa;transform:translate(-50%,-50%) scale(.4);-webkit-clip-path:polygon(-3px -3px,calc(100% + 3px) -3px,calc(100% + 3px) calc(100% + 3px),-3px calc(100% + 3px));clip-path:polygon(-3px -3px,calc(100% + 3px) -3px,calc(100% + 3px) calc(100% + 3px),-3px calc(100% + 3px));transition:width .2s ease,height .2s ease,border-radius .2s ease,clip-path .2s ease,-webkit-clip-path .2s ease,transform .1s ease-in}
+.obPvTip.obPvTipOn i::before{transform:translate(-50%,-50%) scale(1);transition:width .2s ease,height .2s ease,border-radius .2s ease,clip-path .2s ease,-webkit-clip-path .2s ease,transform .2s cubic-bezier(.2,.7,.2,1)}
+.obPvTip.obPvGrow i::before{width:var(--obDotHover,16px);height:var(--obDotHover,16px)}
+.obPvTip[data-shape="petal"] i,.obPvTip[data-shape="triangle"] i{border-radius:0;-webkit-filter:drop-shadow(1px 0 0 #fffffa) drop-shadow(-1px 0 0 #fffffa) drop-shadow(0 1px 0 #fffffa) drop-shadow(0 -1px 0 #fffffa);filter:drop-shadow(1px 0 0 #fffffa) drop-shadow(-1px 0 0 #fffffa) drop-shadow(0 1px 0 #fffffa) drop-shadow(0 -1px 0 #fffffa)}
+.obPvTip[data-shape="triangle"] i::before{width:calc(var(--obDotHover,16px) + 4px);height:calc(var(--obDotHover,16px) + 2px);border-radius:0;box-shadow:none;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 18'%3E%3Cpath d='M10 2.2 18.2 16H1.8Z' fill='%23000' stroke='%23000' stroke-width='3' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 18'%3E%3Cpath d='M10 2.2 18.2 16H1.8Z' fill='%23000' stroke='%23000' stroke-width='3' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat}
+.obPvTip[data-shape="petal"] i::before{width:calc(var(--obDotHover,16px) + 4px);height:calc(var(--obDotHover,16px) + 4px);border-radius:0;box-shadow:none;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 951 873'%3E%3Cpath d='M167.8,615.1A178.2,178.2 0 0,0 475.8,793A178.4,178.4 0 0,0 783.8,614.3A178.6,178.6 0 0,0 783.2,257.9A178.2,178.2 0 0,0 475.2,80.1A178.3,178.3 0 0,0 167.2,258.6A178.6,178.6 0 0,0 167.8,615.1Z'/%3E%3C/svg%3E") center / contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 951 873'%3E%3Cpath d='M167.8,615.1A178.2,178.2 0 0,0 475.8,793A178.4,178.4 0 0,0 783.8,614.3A178.6,178.6 0 0,0 783.2,257.9A178.2,178.2 0 0,0 475.2,80.1A178.3,178.3 0 0,0 167.2,258.6A178.6,178.6 0 0,0 167.8,615.1Z'/%3E%3C/svg%3E") center / contain no-repeat}
+.obPvTip i::after{content:"";display:none;position:absolute;left:50%;top:50%;background:#111;pointer-events:none;transform:translate(-50%,-50%) scale(.4);transition:transform .1s ease-in}
+.obPvTip.obPvTipOn i::after{transform:translate(-50%,-50%) scale(1);transition:transform .2s cubic-bezier(.2,.7,.2,1)}
+.obPvTip[data-style="glass"].obPvGrow i::before{width:calc(var(--obDotHover,16px) + 6px);height:calc(var(--obDotHover,16px) + 6px);background:rgba(255,255,250,.16);-webkit-backdrop-filter:blur(5px) saturate(1.2);backdrop-filter:blur(5px) saturate(1.2);box-shadow:inset 0 0 0 1.5px #111}
+.obPvTip[data-style="glass"][data-shape="triangle"] i,.obPvTip[data-style="glass"][data-shape="petal"] i{-webkit-filter:none;filter:none}
+.obPvTip[data-style="glass"][data-shape="triangle"].obPvGrow i::before,.obPvTip[data-style="glass"][data-shape="triangle"] i::after{width:calc(var(--obDotHover,16px) + 10px);height:calc((var(--obDotHover,16px) + 10px) * .909);box-shadow:none;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-1 -1 22 20'%3E%3Cpath d='M10 2.2 18.2 16H1.8Z' fill='%23000' stroke='%23000' stroke-width='3' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-1 -1 22 20'%3E%3Cpath d='M10 2.2 18.2 16H1.8Z' fill='%23000' stroke='%23000' stroke-width='3' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat}
+.obPvTip[data-style="glass"][data-shape="triangle"] i::after{display:block;-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-1 -1 22 20'%3E%3Cdefs%3E%3Cmask id='m' maskUnits='userSpaceOnUse' x='-1' y='-1' width='22' height='20'%3E%3Crect x='-1' y='-1' width='22' height='20' fill='%23fff'/%3E%3Cpath d='M10 2.2 18.2 16H1.8Z' fill='%23000' stroke='%23000' stroke-width='3' stroke-linejoin='round'/%3E%3C/mask%3E%3C/defs%3E%3Cpath d='M10 2.2 18.2 16H1.8Z' fill='%23000' stroke='%23000' stroke-width='5.6' stroke-linejoin='round' mask='url(%23m)'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-1 -1 22 20'%3E%3Cdefs%3E%3Cmask id='m' maskUnits='userSpaceOnUse' x='-1' y='-1' width='22' height='20'%3E%3Crect x='-1' y='-1' width='22' height='20' fill='%23fff'/%3E%3Cpath d='M10 2.2 18.2 16H1.8Z' fill='%23000' stroke='%23000' stroke-width='3' stroke-linejoin='round'/%3E%3C/mask%3E%3C/defs%3E%3Cpath d='M10 2.2 18.2 16H1.8Z' fill='%23000' stroke='%23000' stroke-width='5.6' stroke-linejoin='round' mask='url(%23m)'/%3E%3C/svg%3E")}
+.obPvTip[data-style="glass"][data-shape="petal"].obPvGrow i::before,.obPvTip[data-style="glass"][data-shape="petal"] i::after{width:calc(var(--obDotHover,16px) + 10px);height:calc((var(--obDotHover,16px) + 10px) * .93);box-shadow:none;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-80 -80 1111 1033'%3E%3Cpath d='M167.8,615.1A178.2,178.2 0 0,0 475.8,793A178.4,178.4 0 0,0 783.8,614.3A178.6,178.6 0 0,0 783.2,257.9A178.2,178.2 0 0,0 475.2,80.1A178.3,178.3 0 0,0 167.2,258.6A178.6,178.6 0 0,0 167.8,615.1Z' fill='%23000'/%3E%3C/svg%3E") center / 100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-80 -80 1111 1033'%3E%3Cpath d='M167.8,615.1A178.2,178.2 0 0,0 475.8,793A178.4,178.4 0 0,0 783.8,614.3A178.6,178.6 0 0,0 783.2,257.9A178.2,178.2 0 0,0 475.2,80.1A178.3,178.3 0 0,0 167.2,258.6A178.6,178.6 0 0,0 167.8,615.1Z' fill='%23000'/%3E%3C/svg%3E") center / 100% 100% no-repeat}
+.obPvTip[data-style="glass"][data-shape="petal"] i::after{display:block;-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-80 -80 1111 1033'%3E%3Cdefs%3E%3Cmask id='m' maskUnits='userSpaceOnUse' x='-80' y='-80' width='1111' height='1033'%3E%3Crect x='-80' y='-80' width='1111' height='1033' fill='%23fff'/%3E%3Cpath d='M167.8,615.1A178.2,178.2 0 0,0 475.8,793A178.4,178.4 0 0,0 783.8,614.3A178.6,178.6 0 0,0 783.2,257.9A178.2,178.2 0 0,0 475.2,80.1A178.3,178.3 0 0,0 167.2,258.6A178.6,178.6 0 0,0 167.8,615.1Z' fill='%23000'/%3E%3C/mask%3E%3C/defs%3E%3Cpath d='M167.8,615.1A178.2,178.2 0 0,0 475.8,793A178.4,178.4 0 0,0 783.8,614.3A178.6,178.6 0 0,0 783.2,257.9A178.2,178.2 0 0,0 475.2,80.1A178.3,178.3 0 0,0 167.2,258.6A178.6,178.6 0 0,0 167.8,615.1Z' fill='%23000' stroke='%23000' stroke-width='130' stroke-linejoin='round' mask='url(%23m)'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-80 -80 1111 1033'%3E%3Cdefs%3E%3Cmask id='m' maskUnits='userSpaceOnUse' x='-80' y='-80' width='1111' height='1033'%3E%3Crect x='-80' y='-80' width='1111' height='1033' fill='%23fff'/%3E%3Cpath d='M167.8,615.1A178.2,178.2 0 0,0 475.8,793A178.4,178.4 0 0,0 783.8,614.3A178.6,178.6 0 0,0 783.2,257.9A178.2,178.2 0 0,0 475.2,80.1A178.3,178.3 0 0,0 167.2,258.6A178.6,178.6 0 0,0 167.8,615.1Z' fill='%23000'/%3E%3C/mask%3E%3C/defs%3E%3Cpath d='M167.8,615.1A178.2,178.2 0 0,0 475.8,793A178.4,178.4 0 0,0 783.8,614.3A178.6,178.6 0 0,0 783.2,257.9A178.2,178.2 0 0,0 475.2,80.1A178.3,178.3 0 0,0 167.2,258.6A178.6,178.6 0 0,0 167.8,615.1Z' fill='%23000' stroke='%23000' stroke-width='130' stroke-linejoin='round' mask='url(%23m)'/%3E%3C/svg%3E")}
+@media (prefers-reduced-motion:reduce){.obHeroShopHide{transition:none!important}.obPvTip i::before,.obPvTip.obPvTipOn i::before,.obPvTip i::after,.obPvTip.obPvTipOn i::after{transition:none}}
+@media (hover:hover) and (pointer:fine){html.obDotCursor,html.obDotCursor *{cursor:none!important}html.obDotCursor :is(input:not([type=submit]):not([type=button]):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=image]),textarea,select,[contenteditable=""],[contenteditable=true],iframe),html.obDotCursor :is(textarea,select,[contenteditable=""],[contenteditable=true]) *{cursor:auto!important}}
+.product-gallery-slides-item:focus:not(:focus-visible)::after{display:none}
+.obPv{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;color:#111;overflow:hidden;font-family:ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;z-index:2147483000}
+.obPv::backdrop{background:transparent}
+.obPvBlur{position:absolute;inset:0;overflow:hidden;background:#fffffa}
+.obPvBlur i{position:absolute;inset:0;background:center / cover no-repeat;-webkit-filter:blur(60px) saturate(1.15);filter:blur(60px) saturate(1.15);transform:scale(1.25) translateZ(0);opacity:0;transition:opacity .5s ease;will-change:opacity}
+.obPvBlur i.obPvOn{opacity:1}
+.obPvBlur,.obPvBar{transition:opacity .3s ease}
+.obPv.obPvIntro .obPvBlur,.obPv.obPvIntro .obPvBar,.obPv.obPvOutro .obPvBlur,.obPv.obPvOutro .obPvBar{opacity:0}
+.obPv.obPvOutro{pointer-events:none}
+.obPvBlur::after{content:"";position:absolute;inset:0;background:rgba(255,255,250,.5)}
+.obPvSolid .obPvBlur i{display:none}
+.obPv:not([open]){display:none}
+.obPv:focus,.obPv:focus-visible{outline:none}
+.obPv button:focus:not(:focus-visible){outline:none}
+.obPvTrack{position:absolute;inset:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.obPvTrack::-webkit-scrollbar{display:none}
+.obPvSlide{flex:0 0 100%;width:100%;height:100%;margin:0;scroll-snap-align:center;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;padding:64px 24px 56px;box-sizing:border-box;overflow:hidden}
+.obPvSlide img{display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;cursor:default}
+.obPvBar{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;justify-content:space-between;padding:16px 24px;pointer-events:none;font-size:14px;line-height:1;letter-spacing:0;text-transform:uppercase}
+.obPvBar>*{pointer-events:auto}
+.obPvCount{font-variant-numeric:tabular-nums}
+.obPv button{appearance:none;-webkit-appearance:none;margin:0;border:0;background:none;color:inherit;font:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.obPvClose{padding:8px 0 8px 16px}
+.obPvClose:hover,.obPvClose:focus-visible{text-decoration:underline;text-underline-offset:3px}
+.obPvNav{position:absolute;top:50%;width:48px;height:48px;margin-top:-24px;display:flex;align-items:center;justify-content:center;border-radius:999px!important;background:rgba(230,228,222,.62)!important;font-size:18px!important;line-height:1}
+.obPvNav:hover{background:rgba(214,211,203,.8)!important}
+.obPvNav:not(:focus-visible){opacity:0;pointer-events:none}
+.obPvPrev{left:24px}
+.obPvNext{right:24px}
+.obPv button:focus-visible{outline:2px solid #111;outline-offset:3px}
+.obPv.obPvOne .obPvNav,.obPv.obPvOne .obPvCount{visibility:hidden}
+.obPvLive{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (min-width:768px){
+.obPvSlide{flex-direction:column;align-items:center;justify-content:flex-start;padding:64px 0 48px;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+.obPvSlide::-webkit-scrollbar{display:none}
+.obPvSlide img{flex:none;width:75vw;height:auto;margin:auto 0;object-fit:fill;border-radius:var(--obChipCorner,5px)}
+}
+@media (max-width:767px){
+.obPvBar{padding:10px 16px;font-size:13px}
+.obPvSlide{padding:56px 0 40px}
+.obPvNav{display:none}
+}
+</style>
+<!-- OB OTHER THINGS v1 styles · sideways row on product pages, computers (otherThings in OB SETTINGS) -->
+<style>
+html.obOtOn .related-products-section .product-list-container.obOtRow{display:flex!important;grid-template-columns:none!important;gap:var(--product-list-column-spacing,1.5vw)!important;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-user-select:none;user-select:none;outline:none}
+html.obOtOn .obOtRow::-webkit-scrollbar{display:none}
+html.obOtOn .obOtRow:focus-visible{outline:2px solid #111;outline-offset:6px}
+html.obOtOn body .related-products-section .product-list-container.obOtRow>.product-list-item:nth-child(n){display:flex!important;flex:0 0 calc((100% - var(--product-list-column-spacing,1.5vw) * var(--obOtShow,4)) / (var(--obOtShow,4) + var(--obOtPeek,.25)));min-width:0;scroll-snap-align:start}
+html.obOtOn .obOtRow::after{content:"";flex:0 0 var(--obOtEnd,0px);height:1px}
+html.obOtOn .obOtRow.obOtDragging{scroll-snap-type:none}
+html.obOtOn .obOtRow.obOtDragging a{pointer-events:none}
+html.obOtOn .obOtRow img{-webkit-user-drag:none}
+.obOtExtra{display:none!important}
+.obOtExtra .grid-item-image{width:100%;height:100%;object-fit:cover}
+</style>
+<script src="https://cdn.jsdelivr.net/gh/OppositeThings/ob-site@d0a87a13204d7fdcc58dc086b31d10a07c410a34/ob-suite.min.js" onerror="var s=document.createElement('script');s.src=this.src.replace('//cdn.','//fastly.');document.head.appendChild(s)"></script>
