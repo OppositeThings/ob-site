@@ -14,7 +14,7 @@
 .obPvTip b{position:absolute;left:14px;top:14px;display:block;padding:5px 9px;border-radius:5px;border:0;background:rgba(255,255,250,.5);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#111;font:400 12px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.obPvTip b{background:rgba(255,255,250,.92)}}
 .product-gallery-slides-item::after{pointer-events:none}
-@media (hover:hover) and (pointer:fine){.obHeroShopHide{opacity:0!important;pointer-events:none!important}.obHeroShopHide:focus-within{opacity:1!important}section.obHeroShopIn,section.obHeroShopIn *{cursor:none!important}section.obHeroShopIn a[href]:not(.obHeroShopLink),section.obHeroShopIn button,section.obHeroShopIn a[href]:not(.obHeroShopLink) *{cursor:pointer!important}.obDotIn,.obDotIn *{cursor:none!important}}
+@media (hover:hover) and (pointer:fine){.obHeroShopHide{pointer-events:none!important;transition:opacity .18s ease}.obHeroShopHide.obCtaAway,html.obCtaHidden .obHeroShopHide{opacity:0!important}.obHeroShopHide:focus-within{opacity:1!important}section.obHeroShopIn,section.obHeroShopIn *{cursor:none!important}section.obHeroShopIn a[href]:not(.obHeroShopLink),section.obHeroShopIn button,section.obHeroShopIn a[href]:not(.obHeroShopLink) *{cursor:pointer!important}.obDotIn,.obDotIn *{cursor:none!important}}
 .obPvTip.obPvDotOnly b{display:none}
 .obPvTip i{background:transparent!important}
 .obPvTip i::before{content:"";position:absolute;left:50%;top:50%;width:var(--obDot,10px);height:var(--obDot,10px);border-radius:inherit;background:#111;box-shadow:0 0 0 1px #fffffa;transform:translate(-50%,-50%) scale(.4);-webkit-clip-path:polygon(-3px -3px,calc(100% + 3px) -3px,calc(100% + 3px) calc(100% + 3px),-3px calc(100% + 3px));clip-path:polygon(-3px -3px,calc(100% + 3px) -3px,calc(100% + 3px) calc(100% + 3px),-3px calc(100% + 3px));transition:width .2s ease,height .2s ease,border-radius .2s ease,clip-path .2s ease,-webkit-clip-path .2s ease,transform .1s ease-in}
@@ -31,7 +31,7 @@
 .obPvTip[data-style="glass"][data-shape="triangle"] i::after{display:block;-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-1 -1 22 20'%3E%3Cdefs%3E%3Cmask id='m' maskUnits='userSpaceOnUse' x='-1' y='-1' width='22' height='20'%3E%3Crect x='-1' y='-1' width='22' height='20' fill='%23fff'/%3E%3Cpath d='M10 2.2 18.2 16H1.8Z' fill='%23000' stroke='%23000' stroke-width='3' stroke-linejoin='round'/%3E%3C/mask%3E%3C/defs%3E%3Cpath d='M10 2.2 18.2 16H1.8Z' fill='%23000' stroke='%23000' stroke-width='5.6' stroke-linejoin='round' mask='url(%23m)'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-1 -1 22 20'%3E%3Cdefs%3E%3Cmask id='m' maskUnits='userSpaceOnUse' x='-1' y='-1' width='22' height='20'%3E%3Crect x='-1' y='-1' width='22' height='20' fill='%23fff'/%3E%3Cpath d='M10 2.2 18.2 16H1.8Z' fill='%23000' stroke='%23000' stroke-width='3' stroke-linejoin='round'/%3E%3C/mask%3E%3C/defs%3E%3Cpath d='M10 2.2 18.2 16H1.8Z' fill='%23000' stroke='%23000' stroke-width='5.6' stroke-linejoin='round' mask='url(%23m)'/%3E%3C/svg%3E")}
 .obPvTip[data-style="glass"][data-shape="petal"].obPvGrow i::before,.obPvTip[data-style="glass"][data-shape="petal"] i::after{width:calc(var(--obDotHover,16px) + 10px);height:calc((var(--obDotHover,16px) + 10px) * .93);box-shadow:none;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-80 -80 1111 1033'%3E%3Cpath d='M167.8,615.1A178.2,178.2 0 0,0 475.8,793A178.4,178.4 0 0,0 783.8,614.3A178.6,178.6 0 0,0 783.2,257.9A178.2,178.2 0 0,0 475.2,80.1A178.3,178.3 0 0,0 167.2,258.6A178.6,178.6 0 0,0 167.8,615.1Z' fill='%23000'/%3E%3C/svg%3E") center / 100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-80 -80 1111 1033'%3E%3Cpath d='M167.8,615.1A178.2,178.2 0 0,0 475.8,793A178.4,178.4 0 0,0 783.8,614.3A178.6,178.6 0 0,0 783.2,257.9A178.2,178.2 0 0,0 475.2,80.1A178.3,178.3 0 0,0 167.2,258.6A178.6,178.6 0 0,0 167.8,615.1Z' fill='%23000'/%3E%3C/svg%3E") center / 100% 100% no-repeat}
 .obPvTip[data-style="glass"][data-shape="petal"] i::after{display:block;-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-80 -80 1111 1033'%3E%3Cdefs%3E%3Cmask id='m' maskUnits='userSpaceOnUse' x='-80' y='-80' width='1111' height='1033'%3E%3Crect x='-80' y='-80' width='1111' height='1033' fill='%23fff'/%3E%3Cpath d='M167.8,615.1A178.2,178.2 0 0,0 475.8,793A178.4,178.4 0 0,0 783.8,614.3A178.6,178.6 0 0,0 783.2,257.9A178.2,178.2 0 0,0 475.2,80.1A178.3,178.3 0 0,0 167.2,258.6A178.6,178.6 0 0,0 167.8,615.1Z' fill='%23000'/%3E%3C/mask%3E%3C/defs%3E%3Cpath d='M167.8,615.1A178.2,178.2 0 0,0 475.8,793A178.4,178.4 0 0,0 783.8,614.3A178.6,178.6 0 0,0 783.2,257.9A178.2,178.2 0 0,0 475.2,80.1A178.3,178.3 0 0,0 167.2,258.6A178.6,178.6 0 0,0 167.8,615.1Z' fill='%23000' stroke='%23000' stroke-width='130' stroke-linejoin='round' mask='url(%23m)'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-80 -80 1111 1033'%3E%3Cdefs%3E%3Cmask id='m' maskUnits='userSpaceOnUse' x='-80' y='-80' width='1111' height='1033'%3E%3Crect x='-80' y='-80' width='1111' height='1033' fill='%23fff'/%3E%3Cpath d='M167.8,615.1A178.2,178.2 0 0,0 475.8,793A178.4,178.4 0 0,0 783.8,614.3A178.6,178.6 0 0,0 783.2,257.9A178.2,178.2 0 0,0 475.2,80.1A178.3,178.3 0 0,0 167.2,258.6A178.6,178.6 0 0,0 167.8,615.1Z' fill='%23000'/%3E%3C/mask%3E%3C/defs%3E%3Cpath d='M167.8,615.1A178.2,178.2 0 0,0 475.8,793A178.4,178.4 0 0,0 783.8,614.3A178.6,178.6 0 0,0 783.2,257.9A178.2,178.2 0 0,0 475.2,80.1A178.3,178.3 0 0,0 167.2,258.6A178.6,178.6 0 0,0 167.8,615.1Z' fill='%23000' stroke='%23000' stroke-width='130' stroke-linejoin='round' mask='url(%23m)'/%3E%3C/svg%3E")}
-@media (prefers-reduced-motion:reduce){.obPvTip i::before,.obPvTip.obPvTipOn i::before,.obPvTip i::after,.obPvTip.obPvTipOn i::after{transition:none}}
+@media (prefers-reduced-motion:reduce){.obHeroShopHide{transition:none!important}.obPvTip i::before,.obPvTip.obPvTipOn i::before,.obPvTip i::after,.obPvTip.obPvTipOn i::after{transition:none}}
 @media (hover:hover) and (pointer:fine){html.obDotCursor,html.obDotCursor *{cursor:none!important}html.obDotCursor :is(input:not([type=submit]):not([type=button]):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=image]),textarea,select,[contenteditable=""],[contenteditable=true],iframe),html.obDotCursor :is(textarea,select,[contenteditable=""],[contenteditable=true]) *{cursor:auto!important}}
 .product-gallery-slides-item:focus:not(:focus-visible)::after{display:none}
 .obPv{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;color:#111;overflow:hidden;font-family:ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;z-index:2147483000}
@@ -451,6 +451,7 @@
         var blk = heroLink.closest(".fe-block") || heroLink.closest(".sqs-block");
         var hide = blk && (blk.textContent || "").trim() === (heroLink.textContent || "").trim() ? blk : heroLink;
         hide.classList.add("obHeroShopHide");
+        heroCta = [hide];
       }
       return heroSec;
     };
@@ -476,6 +477,7 @@
       var hit = !!(e && el && el.closest && heroHit(e.clientX, e.clientY) && heroSec.contains(el));
       if (hit) { var a = el.closest("a[href], button, input, select, textarea, label"); if (a && a !== heroLink) hit = false; }
       if (hit !== heroIn) { heroIn = hit; if (heroSec) heroSec.classList.toggle("obHeroShopIn", hit); }
+      if (hit) ctaNow = heroCta;
       return hit ? t("shopTip", HC().word) : "";
     };
     var heroDown = null;
@@ -539,7 +541,9 @@
             if (/^\[?\s*shop\b/i.test(txt)) {
               if (!best.getAttribute("data-ob-word")) best.setAttribute("data-ob-word", txt.replace(/[\[\]]/g, "").trim());
               var blk = L.closest(".fe-block") || L.closest(".sqs-block");
-              (blk && (blk.textContent || "").replace(/\s+/g, " ").trim() === txt && !blk.querySelector("img") ? blk : L).classList.add("obHeroShopHide");
+              var hEl = blk && (blk.textContent || "").replace(/\s+/g, " ").trim() === txt && !blk.querySelector("img") ? blk : L;
+              hEl.classList.add("obHeroShopHide");
+              (best.__obCta = best.__obCta || []).push(hEl);
             } else {
               L.classList.add("obInfoLink");
             }
@@ -568,6 +572,7 @@
       var p = lastE ? tileAt(el, lastE.clientX, lastE.clientY) : null;
       document.documentElement.classList.toggle("obTileOver", !!p && !(el.closest && el.closest(".obTilePic")));
       if (!p) return "";
+      ctaNow = p.__obCta || null;
       return p.getAttribute("data-ob-word") || t("shopTip", HC().word);
     };
     window.addEventListener("click", function (e) {
@@ -607,7 +612,17 @@
       dotSet(a);
       return a ? DOT : "";
     };
-    var tipWord = function (el) {
+    /* v17.37: the SHOP… words under each photo stay visible at rest and fade out while the pointer is on that photo, where the chip takes over (ctaRest: false in OB SETTINGS hides them all the time) */
+    var heroCta, ctaNow = null, ctaOn = [];
+    if ((window.OB_CONF || {}).ctaRest === false) document.documentElement.classList.add("obCtaHidden");
+    var ctaSet = function (list) {
+      list = list || [];
+      ctaOn.forEach(function (x) { if (list.indexOf(x) < 0) x.classList.remove("obCtaAway"); });
+      list.forEach(function (x) { x.classList.add("obCtaAway"); });
+      ctaOn = list.slice();
+    };
+    var tipWord = function (el) { ctaNow = null; var w = tipWord0(el); ctaSet(ctaNow); return w; };
+    var tipWord0 = function (el) {
       if (!el || !el.closest) return "";
       if (el.closest(".obPvSlide")) { var z = zone(lastE); return z ? t(z + "Tip") : ""; }
       if (!dlg || !dlg.open) { var it = el.closest(SLIDES); if (it && it.querySelector("img") && document.body.classList.contains("view-item")) return t("enlarge"); }
@@ -714,7 +729,7 @@
     document.addEventListener("pointerup", tipAgain, { passive: true });
     document.addEventListener("keyup", tipAgain, { passive: true });
     window.addEventListener("scroll", tipAgain, { passive: true });
-    document.documentElement.addEventListener("pointerleave", function () { tip.classList.remove("obPvTipOn"); on = false; dotSet(null); document.documentElement.classList.remove("obTileOver"); });
+    document.documentElement.addEventListener("pointerleave", function () { tip.classList.remove("obPvTipOn"); on = false; dotSet(null); document.documentElement.classList.remove("obTileOver"); ctaSet(null); });
     /* the pointer went into an embedded frame (card fields, maps, videos) or off the window */
     document.addEventListener("pointerover", function (e) { if (e.target && e.target.tagName === "IFRAME") { tip.classList.remove("obPvTipOn"); on = false; } }, { passive: true });
     window.addEventListener("blur", function () { tip.classList.remove("obPvTipOn"); on = false; });
