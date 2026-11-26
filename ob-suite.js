@@ -3009,7 +3009,18 @@ try {
   copyTo(key);
   filterWarm(key);
   const d = document.documentElement;
-  const out = d.classList.contains("obFilterWait") ? filterFade(box, 0, 0, 0) : filterFade(box, null, 0, FILTER.outMs);
+  /* chipSwap in OB_CONF: "images" (default) = only the photos fade out and in, the names and prices switch at
+     once; "all" = the whole grid fades out and in */
+  const imgsOnly = String((window.OB_CONF || {}).chipSwap || "images") !== "all" && !d.classList.contains("obFilterWait") && !inEditor && !prefersReducedMotion();
+  let out;
+  if (imgsOnly) {
+   box.__obFade?.cancel();
+   box.__obFade = null;
+   box.style.removeProperty("opacity");
+   box.classList.remove("obSwapIn");
+   box.classList.add("obSwapOut");
+   out = new Promise(r => setTimeout(r, FILTER.outMs));
+  } else out = d.classList.contains("obFilterWait") ? filterFade(box, 0, 0, 0) : filterFade(box, null, 0, FILTER.outMs);
   d.classList.remove("obFilterWait");
   const slowDone = filterSlow(token);
   Promise.all([ out, filterNeed(key) ]).then(([, ok]) => {
@@ -3017,6 +3028,21 @@ try {
    slowDone();
    if (!ok || !filterComplete(key)) {
     filterGiveUp(key);
+    return;
+   }
+   if (imgsOnly) {
+    filterToTop();
+    filterShow(key);
+    namesShuffleIn(filterGrid());
+    void box.offsetWidth;
+    requestAnimationFrame(() => {
+     if (token !== filterState.token) return;
+     box.classList.remove("obSwapOut");
+     box.classList.add("obSwapIn");
+     setTimeout(() => {
+      if (token === filterState.token) box.classList.remove("obSwapIn");
+     }, FILTER.inMs + 100);
+    });
     return;
    }
    /* v17.1: the old products are put fully out of sight before the new ones go in, a frame apart, so the two
