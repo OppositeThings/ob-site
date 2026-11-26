@@ -1,4 +1,4 @@
-<!-- OB PHOTO VIEWER v1 · product pages: click or tap a photo and it opens full screen. Swipe (phones), arrows or the arrow keys move between the photos; CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer, a click on the big photo zooms in to see the detail (move the mouse to look around), a second click zooms out. Only the photo on screen and its neighbours load, at full size. -->
+<!-- OB PHOTO VIEWER v1 · product pages: click or tap a photo and it opens full screen. Swipe (phones), arrows or the arrow keys move between the photos; CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer, a click on the big photo zooms in to see the detail (move the mouse to look around), a second click zooms out. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. -->
 <style>
 .product-gallery-slides-item img{cursor:zoom-in}
 .obPv{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:#fffffa;color:#111;overflow:hidden;font-family:ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;z-index:2147483000}
@@ -59,7 +59,7 @@
         var src = im.getAttribute("data-image") || im.getAttribute("data-src") || "";
         if (!src) { src = (im.currentSrc || im.getAttribute("src") || "").split("?")[0]; }
         if (!src) continue;
-        out.push({ src: src.split("?")[0], alt: im.getAttribute("alt") || "", dims: im.getAttribute("data-image-dimensions") || "", item: items[i] });
+        out.push({ src: src.split("?")[0], now: im.currentSrc || "", alt: im.getAttribute("alt") || "", dims: im.getAttribute("data-image-dimensions") || "", item: items[i] });
       }
       return out;
     };
@@ -76,6 +76,7 @@
       if (!sl) return;
       var im = sl.querySelector("img");
       if (im && !im.getAttribute("src")) {
+        im.onload = function () { this.style.background = "none"; };
         im.setAttribute("sizes", "100vw");
         im.setAttribute("srcset", srcset(list[i]));
         im.setAttribute("src", list[i].src + "?format=1500w");
@@ -175,7 +176,7 @@
       var html = "";
       for (var i = 0; i < list.length; i++) {
         var d = /^(\d+)x(\d+)$/.exec(list[i].dims);
-        html += '<figure class="obPvSlide" role="group" aria-roledescription="slide" aria-label="' + (i + 1) + " " + t("of") + " " + list.length + '"><img alt="' + list[i].alt.replace(/"/g, "&quot;") + '"' + (d ? ' width="' + d[1] + '" height="' + d[2] + '"' : "") + ' decoding="async" draggable="false"></figure>';
+        html += '<figure class="obPvSlide" role="group" aria-roledescription="slide" aria-label="' + (i + 1) + " " + t("of") + " " + list.length + '"><img alt="' + list[i].alt.replace(/"/g, "&quot;") + '"' + (d ? ' width="' + d[1] + '" height="' + d[2] + '"' : "") + ' decoding="async" draggable="false"' + (list[i].now ? ' style="background:url(&quot;' + list[i].now.replace(/"/g, "%22") + '&quot;) center / contain no-repeat"' : "") + '></figure>';
       }
       track.innerHTML = html;
       dlg.classList.toggle("obPvOne", list.length < 2);
