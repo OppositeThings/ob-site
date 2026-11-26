@@ -1,4 +1,4 @@
-<!-- OB EARLY DOT v1 · goes at the very top of the Header (Header v15.7 = v15.6 + this block). Computers only: on arrival from another page of the site, the arrow is hidden at once and the black dot is drawn where the mouse was, so the arrow doesn't flash in while the page loads. The Footer's dot takes over when the mouse moves. If the Footer code hasn't started within 2.5 seconds, the normal arrow comes back. Form fields keep their text cursor. Nothing happens on a first visit, on phones, or with cursor: "arrow" in OB SETTINGS. -->
+<!-- OB EARLY DOT v2 · goes at the very top of the Header (Header v15.8 = v15.6 + this block; v2: the fail-safe waits until the page has been read, so a slow page no longer brings the arrow back early). Computers only: on arrival from another page of the site, the arrow is hidden at once and the black dot is drawn where the mouse was, so the arrow doesn't flash in while the page loads. The Footer's dot takes over when the mouse moves. If the Footer code isn't running once the page has been read, the normal arrow comes back. Form fields keep their text cursor. Nothing happens on a first visit, on phones, or with cursor: "arrow" in OB SETTINGS. -->
 <style>
 @media (hover:hover) and (pointer:fine){
 html.obDotEarly,html.obDotEarly *{cursor:none!important}
@@ -17,7 +17,9 @@ html.obDotEarly::after{content:"";position:fixed;left:0;top:0;width:var(--obDotS
     d.style.setProperty("--obDotY", p.y + "px");
     if (p.s) d.style.setProperty("--obDotS", p.s + "px");
     d.classList.add("obDotEarly");
-    setTimeout(function () { if (!window.__obPvTipAgain) d.classList.remove("obDotEarly"); }, 2500);
+    /* fail-safe: once the page has been read, the Footer code should be running; if not, bring the arrow back */
+    var check = function () { setTimeout(function () { if (!window.__obPvTipAgain) d.classList.remove("obDotEarly"); }, 500); };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", check); else check();
   } catch (e) {}
 })();
 </script>

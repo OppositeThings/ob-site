@@ -564,6 +564,16 @@
       } catch (e) {}
     };
     window.addEventListener("pagehide", dotSave);
+    /* arriving from another page: take over from the Header's early dot straight away, at the same spot (no wait for the mouse to move) */
+    try {
+      if (document.documentElement.classList.contains("obDotEarly") && dotMode()) {
+        var p0 = JSON.parse(sessionStorage.getItem("obDot") || "null");
+        if (p0 && typeof p0.x === "number") {
+          var hand = function () { if (!lastE) tipAt({ clientX: p0.x, clientY: p0.y, pointerType: "mouse" }); };
+          if (document.body) hand(); else document.addEventListener("DOMContentLoaded", hand);
+        }
+      }
+    } catch (e) {}
     document.addEventListener("pointerdown", dotSave, { capture: true, passive: true });
     window.__obPvTipAgain = tipAgain;
     document.addEventListener("pointermove", tipAt, { passive: true });
