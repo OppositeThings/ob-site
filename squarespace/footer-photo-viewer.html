@@ -529,9 +529,12 @@
             var best = null, bestS = -1;
             for (k = 0; k < pics.length; k++) {
               var P = pics[k], pr = picIm[k].getBoundingClientRect();
-              var same = P.tagName === "A" && P.getAttribute("href") === L.getAttribute("href");
+              var ph = P.tagName === "A" ? (P.getAttribute("href") || "").replace(/\/$/, "") : "", lh = (L.getAttribute("href") || "").replace(/\/$/, "");
+              var same = !!ph && ph === lh;
+              /* the same product in another colour (bloom / bloom-moss, rosalia / rosalia-lilac) counts as the same (v17.38) */
+              var kin = !!ph && /\/p\//.test(ph) && lh.indexOf(ph + "-") === 0;
               var ov = Math.min(pr.right, lr.right) - Math.max(pr.left, lr.left);
-              var sc = same ? 1e6 : (ov > 0 && pr.top <= lr.top + 4 ? ov - Math.abs(lr.top - pr.bottom) / 10 : -1);
+              var sc = same ? 1e6 : kin ? 1e5 : (ov > 0 && pr.top <= lr.top + 4 ? ov - Math.abs(lr.top - pr.bottom) / 10 : -1);
               if (sc > bestS) { bestS = sc; best = P; }
             }
             if (!best || bestS < 0) continue;
