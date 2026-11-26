@@ -1,8 +1,8 @@
 /* OB SOLID SUITE v17.1 · ob-suite.js · Opposite Things
    v17.1 = v17.0 + store text swap (Footer v17.44): product names scramble in their own text (one copy on screen,
    never doubled), all in one animation loop; textSwap in OB_CONF: phone / computer "scramble" (default) or "fade"
-   for the category line; names: "header" (same scramble as the line, default), "scramble" (calmer, left to right in
-   0.4s) or false.
+   for the category line; names: "fade" (rise and fade in, default), "header" (same scramble as the line),
+   "scramble" (calmer, left to right in 0.4s) or false.
    Served from GitHub through jsDelivr; the Squarespace Footer holds the settings block (OB_CONF) and one <script src> line.
    Pairs with Header v15.5 (stays in Squarespace), Custom CSS v17.0, ob-drawings.js v16.6 (Store page box, defer).
    v17.0 = v16.7, tidied. Under the hood only, except for keyboard users in the pop-up and the visible changes
@@ -2623,11 +2623,38 @@ try {
    }
   });
  };
- /* textSwap.names in OB_CONF: "header" = the same scramble as the category line (default), "scramble" = calmer,
-    left to right in 0.4s, false = no scramble */
+ /* textSwap.names in OB_CONF: "fade" = each name and price rise in and fade up, one after another (default), "header" = the
+    same scramble as the category line, "scramble" = calmer, left to right in 0.4s, false = nothing extra */
  const namesMode = () => {
   const v = ((window.OB_CONF || {}).textSwap || {}).names;
-  return v === false ? "" : v === "scramble" ? "scramble" : "header";
+  return v === false ? "" : v === "scramble" || v === "header" ? v : "fade";
+ };
+ const namesFade = (titles, base = 0) => {
+  titles.forEach((title, i) => {
+   if (!title.animate) return;
+   title.__obNameFade?.cancel();
+   const a = title.animate([ {
+    opacity: 0,
+    transform: "translateY(.4em)"
+   }, {
+    opacity: 1,
+    transform: "none"
+   } ], {
+    duration: 320,
+    delay: base + Math.min(i * NAMES.staggerMs, NAMES.staggerMax),
+    easing: "cubic-bezier(.2,.7,.2,1)",
+    fill: "backwards"
+   });
+   title.__obNameFade = a;
+   const end = () => {
+    if (title.__obNameFade === a) {
+     a.cancel();
+     title.__obNameFade = null;
+    }
+   };
+   a.onfinish = end;
+   setTimeout(end, base + 320 + NAMES.staggerMax + 400);
+  });
  };
  const namesOn = () => !!namesMode();
  const namesShuffleIn = (grid, base = 0) => {
@@ -2645,6 +2672,11 @@ try {
    const lh = parseFloat(getComputedStyle(title).lineHeight) || r.height;
    picks.push([ title, r.height < lh * 1.5 ]);
   });
+  if (namesMode() === "fade") {
+   namesStart([]);
+   namesFade(picks.map(p => p[0].closest(".product-list-title-price") || p[0]), base);
+   return;
+  }
   const jobs = [];
   picks.forEach(([title, single]) => {
    const header = namesMode() === "header";
