@@ -510,9 +510,10 @@
           if (sec === heroSec) continue;
           var pics = [], picIm = [], links = sec.querySelectorAll("a[href]"), j, k;
           sec.querySelectorAll("img").forEach(function (im) {
-            var r = im.getBoundingClientRect();
-            if (r.width < 40 || r.height < 40) return;
             var box = im.closest("a[href]") || im.closest(".sqs-block-image, .sqs-block-product, .fe-block");
+            /* a photo not loaded yet can have no size: use its block's outline then (v17.36) */
+            var r = im.getBoundingClientRect();
+            if (r.width < 40 || r.height < 40) { var bb = im.closest(".sqs-block, .fe-block"); r = bb ? bb.getBoundingClientRect() : r; if (r.width < 40 || r.height < 40) return; im = bb; }
             if (box && pics.indexOf(box) < 0) { pics.push(box); picIm.push(im); }
           });
           if (!pics.length) continue;
@@ -558,6 +559,7 @@
       for (var i = 0; i < ps.length; i++) {
         var im = ps[i].querySelector("img");
         var r = (im || ps[i]).getBoundingClientRect();
+        if (r.width < 40 || r.height < 40) { var bb = ps[i].closest(".sqs-block, .fe-block"); if (bb) r = bb.getBoundingClientRect(); }
         if (r.width && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return ps[i];
       }
       return null;
@@ -581,7 +583,8 @@
     var tileTick = function () { tileMark(); if (++tileTries < 6) setTimeout(tileTick, 500); };
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", tileTick); else tileTick();
     window.addEventListener("load", function () { setTimeout(tileMark, 300); });
-    /* photos further down can get their size late: check again while scrolling */
+    /* photos further down can get their size late: check again as each photo arrives and while scrolling */
+    document.addEventListener("load", function (e) { if (e.target && e.target.tagName === "IMG" && !tileScrollT) tileScrollT = setTimeout(function () { tileScrollT = 0; tileMark(); }, 100); }, true);
     var tileScrollT = 0;
     window.addEventListener("scroll", function () { if (tileScrollT) return; tileScrollT = setTimeout(function () { tileScrollT = 0; tileMark(); }, 250); }, { passive: true });
     /* the rest of the site: over a photo that links somewhere (store grid, product cards, Finds, home tiles) the pointer is the same dot, with no word. cursorDot: false in OB SETTINGS switches it off. */
