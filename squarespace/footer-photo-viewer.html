@@ -1,6 +1,6 @@
 <!-- OB PHOTO VIEWER v2 · product pages: click or tap a photo and it flies from the page into a full-screen view over a heavily blurred copy of the same photo, and flies back when it closes (no movement with reduced motion). Swipe (phones), arrows or the arrow keys move between the photos, round and round (after the last comes the first); CLOSE, Escape or the browser's back gesture closes it, back on the photo you were looking at. On a computer the photo opens at three quarters of the screen width (scroll down to see the rest of a tall photo); no second zoom. v2: blurred page behind, photos loop, bigger straight away, and the page photos keep their hover label after closing. On a computer the pointer over a photo becomes a small circle (or rounded square: viewer.cursor in OB SETTINGS) with a frosted chip hanging off it that trails it slightly ([ENLARGE] on the page, [PREV] / [NEXT] on the left / right half of the big photo, where a click goes back / on, and [CLOSE] around it, where a click closes (the round arrows only show for keyboard users); no trail with reduced motion). On phones (up to 767px wide) the photos are already full width, so the viewer is off there and the page gallery swipes as before. The words, and blur: false for a plain background: viewer in OB SETTINGS. Only the photo on screen and its neighbours load, at full size; the smaller copy already on the page shows until then. Also (v17.18): on the home page the same pointer shows [SHOP] over the hero photo and a click opens the store (all products); the hero's SHOP link is hidden on computers but stays for phones, tablets and keyboard users (heroShop in OB SETTINGS). Elsewhere, over a photo that links somewhere, the pointer is the same dot with no word (cursorDot: false in OB SETTINGS turns it off). v17.19: on computers the arrow is gone: a small circle follows the mouse everywhere and grows over anything clickable (v17.27: over photos the dot becomes a circle, square, triangle or the PETALS rug's outline at random, solid or frosted glass (shapeStyle), cursorShapes in OB SETTINGS) (v17.22: one solid black dot with a thin white keyline that only changes size, cursorSize in OB SETTINGS; v17.23: remembers where the mouse was for the Header's early dot, so the arrow doesn't flash in on a new page); form fields keep their text cursor (cursor: "arrow" in OB SETTINGS brings the arrow back). -->
 <style>
-@media (hover:hover) and (pointer:fine){html.obPlainCursor .obPvTip i{display:none!important}html.obPlainCursor .obPvTip b{left:18px;top:14px}html.obPlainCursor :is(.product-gallery-slides-item,.product-gallery-slides-item *,.obPv .obPvSlide,.obPv .obPvSlide *,section.obHeroShopIn,section.obHeroShopIn *,.obDotIn,.obDotIn *){cursor:default!important}}
+@media (hover:hover) and (pointer:fine){.obInfoLink{pointer-events:none!important;cursor:default!important}.obTilePic,.obTilePic *{cursor:none!important}html.obPlainCursor :is(.obTilePic,.obTilePic *){cursor:pointer!important}html.obPlainCursor .obPvTip i{display:none!important}html.obPlainCursor .obPvTip b{left:18px;top:14px}html.obPlainCursor :is(.product-gallery-slides-item,.product-gallery-slides-item *,.obPv .obPvSlide,.obPv .obPvSlide *,section.obHeroShopIn,section.obHeroShopIn *,.obDotIn,.obDotIn *){cursor:pointer!important}}
 @media (hover:hover) and (pointer:fine){body{cursor:default}main :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption){cursor:default}main a[href] :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption),main :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption) :is(a[href],a[href] *,button,button *){cursor:pointer}:is(input:not([type=submit]):not([type=button]):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=image]):not([type=color]):not([type=file]),textarea,[contenteditable=""],[contenteditable=true]){cursor:text}}
 @media (min-width:768px){.product-gallery-slides-item,.product-gallery-slides-item img{cursor:pointer}}
 @media (hover:hover) and (pointer:fine){.product-gallery-slides-item,.product-gallery-slides-item img,.obPv .obPvSlide,.obPv .obPvSlide img{cursor:none!important}}
@@ -499,6 +499,73 @@
     var heroTries = 0;
     var heroTick = function () { heroSec = null; heroFind(); if (++heroTries < 6) setTimeout(heroTick, 500); };
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", heroTick); else heroTick();
+
+    /* home page tiles (v17.32): on a computer every linked photo below the hero shows the word chip (its SHOP… button's words, or Shop) and the whole photo clicks through; the SHOP… buttons under the photos are hidden (they stay for phones, tablets and keyboard users) and the names, prices and SOLD labels are not links there. A photo with no link of its own (Finds) takes its button's link. tiles: false in OB SETTINGS switches this off. */
+    var tileTries = 0;
+    var tileMark = function () {
+      try {
+        if (!fine() || (window.OB_CONF || {}).tiles === false || !heroFind()) return;
+        var secs = document.querySelectorAll("main section.page-section");
+        for (var i = 0; i < secs.length; i++) {
+          var sec = secs[i];
+          if (sec === heroSec) continue;
+          var pics = [], picIm = [], links = sec.querySelectorAll("a[href]"), j, k;
+          sec.querySelectorAll("img").forEach(function (im) {
+            var r = im.getBoundingClientRect();
+            if (r.width < 40 || r.height < 40) return;
+            var box = im.closest("a[href]") || im.closest(".sqs-block-image, .sqs-block-product, .fe-block");
+            if (box && pics.indexOf(box) < 0) { pics.push(box); picIm.push(im); }
+          });
+          if (!pics.length) continue;
+          for (j = 0; j < links.length; j++) {
+            var L = links[j];
+            if (L.querySelector("img") || L.classList.contains("obTileLink")) continue;
+            var txt = (L.textContent || "").replace(/\s+/g, " ").trim();
+            var lr = L.getBoundingClientRect();
+            if (!lr.width) continue;
+            /* the photo this text belongs to: same link, or the photo above it that overlaps it most */
+            var best = null, bestS = -1;
+            for (k = 0; k < pics.length; k++) {
+              var P = pics[k], pr = picIm[k].getBoundingClientRect();
+              var same = P.tagName === "A" && P.getAttribute("href") === L.getAttribute("href");
+              var ov = Math.min(pr.right, lr.right) - Math.max(pr.left, lr.left);
+              var sc = same ? 1e6 : (ov > 0 && pr.top <= lr.top + 4 ? ov - Math.abs(lr.top - pr.bottom) / 10 : -1);
+              if (sc > bestS) { bestS = sc; best = P; }
+            }
+            if (!best || bestS < 0) continue;
+            L.classList.add("obTileLink");
+            if (/^\[?\s*shop\b/i.test(txt)) {
+              if (!best.getAttribute("data-ob-word")) best.setAttribute("data-ob-word", txt.replace(/[\[\]]/g, "").trim());
+              if (best.tagName !== "A" && !best.getAttribute("data-ob-href")) best.setAttribute("data-ob-href", L.getAttribute("href"));
+              var blk = L.closest(".fe-block") || L.closest(".sqs-block");
+              (blk && (blk.textContent || "").replace(/\s+/g, " ").trim() === txt && !blk.querySelector("img") ? blk : L).classList.add("obHeroShopHide");
+            } else {
+              L.classList.add("obInfoLink");
+            }
+          }
+          for (k = 0; k < pics.length; k++) {
+            if (pics[k].tagName === "A" || pics[k].getAttribute("data-ob-href")) pics[k].classList.add("obTilePic");
+          }
+        }
+      } catch (e) {}
+    };
+    var tileWord = function (el) {
+      var p = el.closest && el.closest(".obTilePic");
+      if (!p || !el.closest("img, .fluid-image-container, .image-block-wrapper, .grid-image, .product-list-image-wrapper, .summary-thumbnail-container") && el !== p) return "";
+      return p.getAttribute("data-ob-word") || t("shopTip", HC().word);
+    };
+    window.addEventListener("click", function (e) {
+      if (e.defaultPrevented || e.button !== 0 || !fine()) return;
+      var p = e.target && e.target.closest && e.target.closest(".obTilePic[data-ob-href]");
+      if (!p || e.target.closest("a[href], button")) return;
+      e.preventDefault();
+      var href = p.getAttribute("data-ob-href");
+      if (e.metaKey || e.ctrlKey) { window.open(href, "_blank", "noopener"); return; }
+      if (window.obLeaveTo) window.obLeaveTo(href); else location.href = href;
+    }, true);
+    var tileTick = function () { tileMark(); if (++tileTries < 6) setTimeout(tileTick, 500); };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", tileTick); else tileTick();
+    window.addEventListener("load", function () { setTimeout(tileMark, 300); });
     /* the rest of the site: over a photo that links somewhere (store grid, product cards, Finds, home tiles) the pointer is the same dot, with no word. cursorDot: false in OB SETTINGS switches it off. */
     var DOT = "\u00b7dot", dotEl = null;
     var dotSet = function (a) {
@@ -523,7 +590,7 @@
       if (!el || !el.closest) return "";
       if (el.closest(".obPvSlide")) { var z = zone(lastE); return z ? t(z + "Tip") : ""; }
       if (!dlg || !dlg.open) { var it = el.closest(SLIDES); if (it && it.querySelector("img") && document.body.classList.contains("view-item")) return t("enlarge"); }
-      if (!dlg || !dlg.open) { var hw = heroWord(el, lastE); if (hw) { dotSet(null); return hw; } return dotWord(el); }
+      if (!dlg || !dlg.open) { var hw = heroWord(el, lastE); if (hw) { dotSet(null); return hw; } var tw = tileWord(el); if (tw) { dotSet(null); return tw; } return dotWord(el); }
       return "";
     };
     var SHAPES = ["circle", "square", "triangle", "petal"], picShape = "circle", onPic = false;
