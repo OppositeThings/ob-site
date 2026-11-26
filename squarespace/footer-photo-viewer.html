@@ -5,15 +5,16 @@
 .obPvTip{position:fixed;left:0;top:0;z-index:2147483001;pointer-events:none;opacity:0;transition:opacity .2s}
 .obPvTip.obPvTipOn{opacity:1}
 .obPvTip i{position:absolute;left:-5px;top:-5px;width:10px;height:10px;background:#111;border:1px solid rgba(255,255,250,.7);box-sizing:border-box}
-.obPvTip b{position:absolute;left:12px;top:12px;display:block;padding:5px 9px;border-radius:5px;border:1px solid rgba(17,17,17,.08);background:rgba(255,255,250,.45);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#111;font:500 12px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap}
+.obPvTip b{position:absolute;left:14px;top:14px;display:block;padding:5px 9px;border-radius:5px;border:1px solid rgba(17,17,17,.08);background:rgba(255,255,250,.45);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#111;font:500 12px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.obPvTip b{background:rgba(255,255,250,.92)}}
 .obPvTag{display:none}
 @media (hover:none){.obPvTag{display:block;position:absolute;right:8px;bottom:8px;z-index:2;pointer-events:none;padding:5px 7px;border-radius:5px;background:rgba(255,255,250,.88);color:#111;font:11px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase}}
 .product-gallery-slides-item::after{pointer-events:none}
 .product-gallery-slides-item:focus:not(:focus-visible)::after{display:none}
 .obPv{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;color:#111;overflow:hidden;font-family:ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;z-index:2147483000}
-.obPv::backdrop{background:rgba(255,255,250,.7);-webkit-backdrop-filter:blur(28px);backdrop-filter:blur(28px)}
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.obPv::backdrop{background:#fffffa}}
+.obPv::backdrop{background:transparent}
+.obPvBlur{position:absolute;inset:0;background:rgba(255,255,250,.55);-webkit-backdrop-filter:blur(60px) saturate(1.1);backdrop-filter:blur(60px) saturate(1.1)}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.obPvBlur{background:#fffffa}}
 .obPv:not([open]){display:none}
 .obPvTrack{position:absolute;inset:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .obPvTrack::-webkit-scrollbar{display:none}
@@ -107,7 +108,7 @@
       dlg = document.createElement("dialog");
       dlg.className = "obPv";
       dlg.setAttribute("aria-label", "Photos");
-      dlg.innerHTML = '<div class="obPvTrack"></div>' +
+      dlg.innerHTML = '<div class="obPvBlur"></div><div class="obPvTrack"></div>' +
         '<div class="obPvBar"><span class="obPvCount" aria-hidden="true"></span><button type="button" class="obPvClose"></button></div>' +
         '<button type="button" class="obPvNav obPvPrev">&larr;</button><button type="button" class="obPvNav obPvNext">&rarr;</button>' +
         '<div class="obPvLive" aria-live="polite"></div>';
@@ -297,7 +298,7 @@
     var still = function () { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; };
     var draw = function () {
       raf = 0;
-      if (still()) { cx = mx; cy = my; } else { cx += (mx - cx) * 0.22; cy += (my - cy) * 0.22; }
+      if (still()) { cx = mx; cy = my; } else { cx += (mx - cx) * 0.09; cy += (my - cy) * 0.09; }
       sq.style.transform = "translate(" + mx + "px," + my + "px)";
       chip.style.transform = "translate(" + cx.toFixed(1) + "px," + cy.toFixed(1) + "px)";
       if (Math.abs(mx - cx) > 0.3 || Math.abs(my - cy) > 0.3) raf = requestAnimationFrame(draw);
