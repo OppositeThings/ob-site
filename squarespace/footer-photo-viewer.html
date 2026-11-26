@@ -72,11 +72,11 @@
       try { var w = localStorage.getItem("wglang"); if (w) return w.slice(0, 2).toLowerCase(); } catch (e) {}
       return (document.documentElement.lang || "en").slice(0, 2).toLowerCase();
     };
-    WORDS.enlarge = { en: "[Enlarge]", it: "[Ingrandisci]" };
-    WORDS.nextTip = { en: "[Next]", it: "[Avanti]" };
-    WORDS.prevTip = { en: "[Prev]", it: "[Indietro]" };
-    WORDS.closeTip = { en: "[Close]", it: "[Chiudi]" };
-    WORDS.shopTip = { en: "[Shop]", it: "[Negozio]" };
+    WORDS.enlarge = { en: "Enlarge", it: "Ingrandisci" };
+    WORDS.nextTip = { en: "Next", it: "Avanti" };
+    WORDS.prevTip = { en: "Prev", it: "Indietro" };
+    WORDS.closeTip = { en: "Close", it: "Chiudi" };
+    WORDS.shopTip = { en: "Shop", it: "Negozio" };
     /* in the viewer: the photo's left half goes back, its right half goes on, around the photo closes */
     var zone = function (e) {
       if (!e || !dlg || !dlg.open) return "";
@@ -538,6 +538,8 @@
         if (!w || w === DOT) { grow = w === DOT || !!(under.closest && under.closest(CLICK)); w = DOT; }
       } else if (document.documentElement.classList.contains("obDotCursor")) document.documentElement.classList.remove("obDotCursor");
       if (!w) { tip.classList.remove("obPvTipOn"); on = false; return; }
+      /* a word beside the dot: the dot is at its hover size too */
+      if (w !== DOT) grow = true;
       tip.classList.toggle("obPvDotOnly", w === DOT);
       tip.classList.toggle("obPvGrow", grow);
       if (w !== DOT) setWord(w); else word = "";
