@@ -1,14 +1,13 @@
 /* ======================================================================
-   OB SHOP CSS — Squarespace 7.1 — v17.11
+   OB SHOP CSS — Squarespace 7.1 — v17.12
    Opposite Things · Website → Pages → Custom Code → Custom CSS.
    Pairs with Header v15.5, the Footer (OB SETTINGS + ob-suite.js v17.0
    from GitHub) and the Store page's ob-drawings.js. "The suite" in the
    notes below is ob-suite.js: the code that used to sit in the Footer.
 
-   v17.11 — phones: BLOOM and ROSALIA touch again, as on computers
-     (v17.9 had put 48px between them); MORE ON INSTAGRAM stays 48px
-     under ROSALIA. Category captions 24px under their photo (was 16px).
-     Includes v17.10.
+   v17.12 — phones: category captions 24px under their photo (was
+     16px). BLOOM and ROSALIA keep their 48px gap (v17.11 had them
+     touching instead). Includes v17.10.
 
    v17.10 — fix for v17.9 on iPhone: the category photos and the FINDS
      lettering ran off the side of the screen (Safari sized them from
@@ -18,7 +17,7 @@
 
    v17.9 — home page on phones (9.6b): one spacing rhythm instead of the
      builder's: 48px between every part of the page (category tiles,
-     SLOT, FINDS, the products row, BLOOM + ROSALIA, MORE ON INSTAGRAM),
+     SLOT, FINDS, the products row, BLOOM, ROSALIA, MORE ON INSTAGRAM),
      16px from a photo to its caption, tiles 6vw in from the sides.
      INTRODUCING SLOT, BLOOM RUG and ROSALIA RUG at the statement's
      size. Computers and iPads unchanged.
@@ -4172,14 +4171,15 @@ section[data-section-id="6ad932d919eb524248a93d6f"] .fluid-engine {
     padding-bottom: 48px !important;
   }
 
-  /* BLOOM and ROSALIA touch, as on computers (v17.11). MORE ON
-     INSTAGRAM: 48px under ROSALIA (the BLOOM section ends with 72px of
-     empty rows; the Instagram section is pulled up 24px over them) */
-  html.ob-page-home section[data-section-id="6964314968acfb6b448c5793"] {
-    margin-top: -24px !important;
-  }
+  /* BLOOM and ROSALIA: 48px apart (two 24px rows), ROSALIA's words
+     move down with it */
+  html.ob-page-home .fe-block-4e315091882e66ce87b1 { grid-row: ~"21 / 39" !important; }
+  html.ob-page-home .fe-block-1b4d5e03887c736b10d9 { grid-row: ~"29 / 32" !important; }
+
+  /* MORE ON INSTAGRAM: 48px under ROSALIA (24px row left in the BLOOM
+     section + 24px here) */
   html.ob-page-home section[data-section-id="6964314968acfb6b448c5793"] .content-wrapper {
-    padding-top: 0 !important;
+    padding-top: 24px !important;
   }
 
   /* INTRODUCING SLOT, BLOOM RUG, ROSALIA RUG at the statement's size
