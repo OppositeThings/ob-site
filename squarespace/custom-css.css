@@ -1,9 +1,14 @@
 /* ======================================================================
-   OB SHOP CSS — Squarespace 7.1 — v17.7
+   OB SHOP CSS — Squarespace 7.1 — v17.8
    Opposite Things · Website → Pages → Custom Code → Custom CSS.
    Pairs with Header v15.5, the Footer (OB SETTINGS + ob-suite.js v17.0
    from GitHub) and the Store page's ob-drawings.js. "The suite" in the
    notes below is ob-suite.js: the code that used to sit in the Footer.
+
+   v17.8 — home page on phones (9.6): the hero's height follows the
+     statement's size, so the first screen always ends just under the
+     statement's first line (EVERY ROOM NEEDS), never through the second,
+     on any phone (as it looked on the iPhone 17 Pro Max).
 
    v17.7 — home statement on phones (9.6) grows with the screen: its
      longest line runs 16px from each edge (about 25px on a 390px phone,
@@ -4009,10 +4014,16 @@ section[data-section-id="6ad932d919eb524248a93d6f"] .fluid-engine {
     height: ~"calc(100svh - 204px)" !important;
   }
 }
+/* Phones (v17.8): the screen ends just under the statement's first
+   line. The statement starts 50px into its section (its padding) and its
+   size is min(7.1vw - 2.3px, 36px) (below); 1.04 times that puts the
+   screen's edge halfway between line one's letters and line two's. If
+   the statement's size changes, change these numbers to 1.04 times it:
+   7.384vw = 1.04 x 7.1vw, 2.392px = 1.04 x 2.3px, 37.44px = 1.04 x 36px. */
 @media (max-width: 767px) {
   section[data-section-id="6ad932d919eb524248a93d6f"] {
-    height: ~"calc(100vh - 80px)" !important;
-    height: ~"calc(100svh - 80px)" !important;
+    height: ~"calc(100vh - 50px - min(7.384vw - 2.392px, 37.44px))" !important;
+    height: ~"calc(100svh - 50px - min(7.384vw - 2.392px, 37.44px))" !important;
   }
 }
 
