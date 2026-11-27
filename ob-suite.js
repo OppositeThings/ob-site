@@ -1,4 +1,5 @@
-/* OB SOLID SUITE v17.11 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.12 · ob-suite.js · Opposite Things
+   v17.12 = v17.11 + black: "mono" in OB SETTINGS: the old white difference header and video words, made pure greyscale by a copy on top with mix-blend-mode: saturation (html.obMono, [data-ob-mono]); styles in the Footer. monoHero: false = header only, monoPhotos: false = words over photos stay plain white.
    v17.11 = v17.10 + black: "snap" in OB SETTINGS: logo/nav and the words over the home video go pure black or pure white depending on what's behind them (html.obSnap, .obNavLight, .obHeroLight); styles in the Footer.
    v17.10 = v17.9 + the logo shrinks gradually with the scroll (100% → logoShrink over the first logoShrinkOver px, default 260) instead of all at once.
    v17.9 = v17.8 + black logo, nav, hero words and words over photos (black: true in OB SETTINGS; "auto" = nav turns white only over dark photos / video frames, html.obNavLight; false = old look) and the logo shrinking on scroll (html.obScrolled; logoShrink in OB SETTINGS). Styles in the Footer.
@@ -1112,6 +1113,39 @@ try {
     /* black: true = logo, nav, BAG, hero words and words over photos all black, always (Ben, 27 Nov: placeholders, try it). "auto" = nav black but white over dark photos / video frames, words over photos stay white. false = the old white, flipping look. */
     var B = C.black === undefined ? true : C.black;
     if (B === false) { d.classList.add("obNavOff"); return; }
+    /* "mono" (v17.12, Ben 27 Nov: "we want difference as black and white"): the old white difference look (obNavOff), plus an identical copy of the header and of the words over the home video laid on top with mix-blend-mode: saturation, so the difference result loses its colour and stays pure greyscale, pixel by pixel, with no flashing. The copies are inert, hidden from screen readers and take no clicks; they are rebuilt when the original changes (BAG count, Squarespace classes). Styles (html.obMono [data-ob-mono]) in the Footer. */
+    if (B === "mono") {
+      d.classList.add("obNavOff", "obMono");
+      var monoOf = function (src) {
+        var cl = null, raf = 0;
+        var build = function () {
+          raf = 0;
+          if (!src.isConnected) return;
+          var n = src.cloneNode(true);
+          n.setAttribute("data-ob-mono", ""); n.setAttribute("aria-hidden", "true"); n.inert = true;
+          n.querySelectorAll("video,iframe,script,noscript").forEach(function (x) { x.remove(); });
+          if (cl && cl.parentNode) cl.replaceWith(n); else src.after(n);
+          cl = n;
+        };
+        build();
+        new MutationObserver(function () { if (!raf) raf = requestAnimationFrame(build); }).observe(src, { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ["class", "style", "src", "srcset", "href"] });
+      };
+      var monoGo = function () {
+        var hd = document.querySelector("#header:not([data-ob-mono])");
+        if (hd) monoOf(hd);
+        if (C.monoHero !== false) document.querySelectorAll("section.page-section").forEach(function (sec) {
+          if (!sec.querySelector(".section-background video, .section-background .sqs-video-background-native")) return;
+          sec.querySelectorAll(".fe-block").forEach(function (b) { if (b.querySelector(".sqs-html-content") && !b.hasAttribute("data-ob-mono") && !b.hasAttribute("data-ob-mono-src")) { b.setAttribute("data-ob-mono-src", ""); monoOf(b); } });
+        });
+        /* monoPhotos: the white words over photos (INTRODUCING SLOT, BLOOM, ROSALIA) get the same greyscale difference (html.obMonoPhotos; the Footer sets their difference) */
+        if (C.monoPhotos !== false) {
+          d.classList.add("obMonoPhotos");
+          document.querySelectorAll("main .fe-block").forEach(function (b) { if (b.querySelector(".sqsrte-text-color--white") && !b.hasAttribute("data-ob-mono") && !b.hasAttribute("data-ob-mono-src")) { b.setAttribute("data-ob-mono-src", ""); monoOf(b); } });
+        }
+      };
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", monoGo); else monoGo();
+      return;
+    }
     /* "snap" (v17.11): logo/nav and the words over the home video are pure black or pure white, whichever reads better on what's behind them right now (never the muddy grey of the old flip); words over photos stay black. */
     if (B !== "auto" && B !== "snap") return;
     var SNAP = B === "snap";
