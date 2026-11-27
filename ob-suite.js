@@ -1181,7 +1181,7 @@ try {
 (function () {
   try {
     var LIST = /^\/store(\/(?!p\/)[^\/]+)?\/?$/i, KEY = "obLastStore";
-    var DELTA = 10, HIDE_MS = 80, GRACE_MS = 600, FOOT_SHARE = .5;
+    var DELTA = 10, HIDE_MS = 80, GRACE_MS = 800, FOOT_SHARE = .5;
     var conf = function () { var o = window.OB_CONF || {}; return o.backChip === false ? { show: false } : (o.backChip || {}); };
     var lang = function () {
       try { if (window.Weglot && Weglot.initialized && Weglot.getCurrentLang) return Weglot.getCurrentLang(); } catch (e) {}
