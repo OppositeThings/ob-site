@@ -1,4 +1,5 @@
-/* OB SOLID SUITE v17.6 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.7 · ob-suite.js · Opposite Things
+   v17.7 = v17.6 + the statement's A goes up to the end of the fourth line: … / TO KEEP YOUR PLACE A / LITTLE LESS EXPECTED. (break before LITTLE instead of A).
    v17.6 = v17.5 + home page, phones: the statement under the hero (EVERY ROOM NEEDS SOMETHING SLIGHTLY OFF…) breaks on Ben's five lines: EVERY ROOM NEEDS / SOMETHING SLIGHTLY OFF. / THINGS MADE AND FOUND / TO KEEP YOUR PLACE, / A LITTLE LESS EXPECTED. The suite adds <br class="obBr"> before SOMETHING, THINGS, TO and A, only while the words are exactly these (any copy change or another language: left alone). Custom CSS hides them from 768px up and sets the size. statementLines: false in OB_CONF switches it off.
    v17.5 = v17.4 + home page, phones and tablets: the SHOP… words under the hero and tile photos become chips like the computer pointer chip, where they are now (frosted over a photo, a faint tint on the page; shopChips: false in OB_CONF switches it off).
    v17.4 = v17.3 + product pages: a frosted ‹ SHOP chip pops in under the header when you scroll back up and goes when you scroll down, like the store chips; it goes back to the store page you came from, same category and place (backChip in OB_CONF: show "both" | "phone" | "computer" | false).
@@ -1027,12 +1028,12 @@ try {
   var rz; window.addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(mark, 200); }, { passive: true });
 })();
 
-/* ---- OB STATEMENT LINES v1 (v17.6) · home page: the statement under the hero gets line breaks before SOMETHING, THINGS, TO and A (EVERY ROOM NEEDS / SOMETHING SLIGHTLY OFF. / THINGS MADE AND FOUND / TO KEEP YOUR PLACE, / A LITTLE LESS EXPECTED.). Only while the words are exactly these, in English; commas may sit anywhere. The breaks are <br class="obBr">: Custom CSS 9.6 shows them on phones only. statementLines: false in OB SETTINGS switches it off. ---- */
+/* ---- OB STATEMENT LINES v1 (v17.6) · home page: the statement under the hero gets line breaks before SOMETHING, THINGS, TO and LITTLE (EVERY ROOM NEEDS / SOMETHING SLIGHTLY OFF. / THINGS MADE AND FOUND / TO KEEP YOUR PLACE, A / LITTLE LESS EXPECTED.). Only while the words are exactly these, in English; commas may sit anywhere. The breaks are <br class="obBr">: Custom CSS 9.6 shows them on phones only. statementLines: false in OB SETTINGS switches it off. ---- */
 (function () {
   try {
     if ((window.OB_CONF || {}).statementLines === false) return;
     var WORDS = "every room needs something slightly off things made and found to keep your place a little less expected";
-    var BEFORE = { 3: 1, 6: 1, 10: 1, 14: 1 };
+    var BEFORE = { 3: 1, 6: 1, 10: 1, 15: 1 };
     var run = function () {
       try {
         var d = document.documentElement;

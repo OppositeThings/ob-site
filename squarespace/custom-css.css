@@ -1,9 +1,13 @@
 /* ======================================================================
-   OB SHOP CSS — Squarespace 7.1 — v17.5
+   OB SHOP CSS — Squarespace 7.1 — v17.6
    Opposite Things · Website → Pages → Custom Code → Custom CSS.
    Pairs with Header v15.5, the Footer (OB SETTINGS + ob-suite.js v17.0
    from GitHub) and the Store page's ob-drawings.js. "The suite" in the
    notes below is ob-suite.js: the code that used to sit in the Footer.
+
+   v17.6 — home page on phones (9.6): the hero over the photo back to
+     v17.4's 17px (still three lines); the statement under it bigger,
+     26px, reaching 7px further out on each side.
 
    v17.5 — home page on phones (9.6), replaces v17.4's sizes: the hero
      statement is 20px on three lines (A Palermo Studio. / Rugs, Prints,
@@ -4010,14 +4014,14 @@ section[data-section-id="6ad932d919eb524248a93d6f"] .fluid-engine {
 /* v17.5 phones: the hero statement on three lines, the SHOP chip 22px
    under it, and the statement under the hero bigger, on five lines.
    Hero: 24.5ch wide (the font is monospaced, so this always breaks
-   before "& Finds."); 5.2vw keeps it inside narrow phones, 20px from
-   385px up. The SHOP chip follows the hidden link in the second
+   before "& Finds."), 17px (v17.6; 4.4vw below 387px). The SHOP chip follows the hidden link in the second
    paragraph (suite), so moving the paragraph moves the chip; lifted
    16px to stay in the middle of the photo. More room above SHOP: raise
    22px.
    Statement (block 9ab85bbd3fe12bad781b): the suite adds the line
-   breaks (<br class="obBr">). 24px is the most that fits its longest
-   line (SOMETHING SLIGHTLY OFF.) on a 390px phone; 6vw below 400px.
+   breaks (<br class="obBr">). It reaches 7px past the block on each
+   side (v17.6), so 26px fits its longest line (SOMETHING SLIGHTLY OFF.)
+   from 400px up; 6.5vw below.
    white-space: normal drops the space before each break so the lines
    stay centred. */
 @media (max-width: 767px) {
@@ -4026,7 +4030,7 @@ section[data-section-id="6ad932d919eb524248a93d6f"] .fluid-engine {
     top: -16px;
   }
   html.ob-page-home #block-833ae6fe237abe3ab55d .sqs-html-content > p.sqsrte-large {
-    font-size: ~"min(5.2vw, 20px)" !important;
+    font-size: ~"min(4.4vw, 17px)" !important;
     line-height: 1.35 !important;
     max-width: 24.5ch;
     margin-left: auto !important;
@@ -4037,8 +4041,10 @@ section[data-section-id="6ad932d919eb524248a93d6f"] .fluid-engine {
     margin-top: 22px !important;
   }
   html.ob-page-home #block-9ab85bbd3fe12bad781b h1 {
-    font-size: ~"min(6vw, 24px)" !important;
+    font-size: ~"min(6.5vw, 26px)" !important;
     line-height: 1.05 !important;
+    margin-left: -7px !important;
+    margin-right: -7px !important;
     white-space: normal !important;
   }
 }
