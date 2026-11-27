@@ -1,4 +1,5 @@
-/* OB SOLID SUITE v17.12 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.13 · ob-suite.js · Opposite Things
+   v17.13 = v17.12 + phoneTileWord in OB SETTINGS ("VIEW"): the RUGS / PRINTS / OBJECTS chips get data-ob-phone-word, and the Footer shows just that word on phones.
    v17.12 = v17.11 + black: "mono" in OB SETTINGS: the old white difference header and video words, made pure greyscale by a copy on top with mix-blend-mode: saturation (html.obMono, [data-ob-mono]); styles in the Footer. monoHero: false = header only, monoPhotos: false = words over photos stay plain white.
    v17.11 = v17.10 + black: "snap" in OB SETTINGS: logo/nav and the words over the home video go pure black or pure white depending on what's behind them (html.obSnap, .obNavLight, .obHeroLight); styles in the Footer.
    v17.10 = v17.9 + the logo shrinks gradually with the scroll (100% → logoShrink over the first logoShrinkOver px, default 260) instead of all at once.
@@ -236,9 +237,26 @@ try {
         }
       } catch (e) {}
     };
-    run();
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
-    window.OB_homeWords = run;
+    /* v17.13: phoneTileWord (OB SETTINGS, "VIEW"): the chips that sit on a tile's title line on phones (RUGS / PRINTS / OBJECTS: a block with a lone bold large title) carry data-ob-phone-word; the Footer shows that word on phones instead of the full words (screen readers and the computer pointer chip keep VIEW RUGS etc.). false = full words. */
+    var PW = (window.OB_CONF || {}).phoneTileWord;
+    var tag = function () {
+      try {
+        if (!PW) return;
+        var cs = document.querySelectorAll("main .sqs-html-content");
+        for (var i = 0; i < cs.length; i++) {
+          var c = cs[i], t = null, a = null;
+          for (var k = 0; k < c.children.length; k++) {
+            var ch = c.children[k];
+            if (!t && ch.tagName === "P" && ch.classList.contains("sqsrte-large") && ch.children.length === 1 && ch.children[0].tagName === "STRONG" && !ch.querySelector("br")) t = ch;
+            if (!a && ch.tagName === "P") { var l = ch.querySelector(":scope > a[href]"); if (l && CTA.test((l.textContent || "").trim())) a = l; }
+          }
+          if (t && a) a.setAttribute("data-ob-phone-word", String(PW));
+        }
+      } catch (e) {}
+    };
+    run(); tag();
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { run(); tag(); });
+    window.OB_homeWords = function () { run(); tag(); };
   } catch (e) {}
 })();
 /* ---- footer: OB PHOTO VIEWER v2 · product pages: full-screen photo viewer (computers), word chip that trails the pointer over photos (ENLARGE, PREV/NEXT/CLOSE, SHOP over the home hero and tiles), cursor, home tile links and linkFix (viewer, heroShop, tiles, linkFix, cursor… in OB SETTINGS). Styles stay in the Footer. ---- */
