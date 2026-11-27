@@ -5,9 +5,10 @@
    from GitHub) and the Store page's ob-drawings.js. "The suite" in the
    notes below is ob-suite.js: the code that used to sit in the Footer.
 
-   v17.11 — BLOOM and ROSALIA touch again on phones, as on computers
+   v17.11 — phones: BLOOM and ROSALIA touch again, as on computers
      (v17.9 had put 48px between them); MORE ON INSTAGRAM stays 48px
-     under ROSALIA. Includes v17.10.
+     under ROSALIA. Category captions 24px under their photo (was 16px).
+     Includes v17.10.
 
    v17.10 — fix for v17.9 on iPhone: the category photos and the FINDS
      lettering ran off the side of the screen (Safari sized them from
@@ -4093,7 +4094,7 @@ section[data-section-id="6ad932d919eb524248a93d6f"] .fluid-engine {
 /* ----------------------------------------------------------------------
    9.6b HOME PAGE SPACING ON PHONES (v17.9)
    One rhythm in place of the builder's mobile layout: 48px between
-   every part of the page, 16px from a category photo to its caption,
+   every part of the page, 24px from a category photo to its caption,
    category tiles 6vw in from the sides (the same as the text). Up to
    767px only; the builder's layout still runs iPads and computers.
    Found by section and block IDs: if a block is rebuilt in Squarespace,
@@ -4130,7 +4131,7 @@ section[data-section-id="6ad932d919eb524248a93d6f"] .fluid-engine {
   html.ob-page-home .fe-block-8326b38ce646e1c03e54,
   html.ob-page-home .fe-block-a073f63a503a9ff24deb,
   html.ob-page-home .fe-block-fb1605df33397ee45c0c {
-    margin-top: 16px;
+    margin-top: 24px;
   }
 
   /* FINDS: 48px under SLOT, the lettering, then the text overlapping
