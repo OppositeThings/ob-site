@@ -1,4 +1,5 @@
-/* OB SOLID SUITE v17.3 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.4 · ob-suite.js · Opposite Things
+   v17.4 = v17.3 + product pages: a frosted ‹ SHOP chip pops in under the header when you scroll back up and goes when you scroll down, like the store chips; it goes back to the store page you came from, same category and place (backChip in OB_CONF: show "both" | "phone" | "computer" | false).
    v17.3 = v17.2 + photo viewer: no flash on opening (the white background fades in from the first frame instead of popping in), the page photo steps aside while its copy flies, photos and blur only swap in once decoded, viewer made ready after the page loads.
    v17.2 = v17.1 + the Footer's own code (Footer v17.51): store page swap, perks chips, photo viewer and pointer
    chips, OTHER THINGS row. Moved here word for word from Footer v17.50; what the site does is unchanged.
@@ -1175,6 +1176,120 @@ try {
   } catch (e) {}
 })();
 } catch (e) { if (window.console) console.error("[OB OTHER THINGS v1]", e); }
+/* ---- footer: OB BACK CHIP v1 · product pages: a frosted ‹ SHOP chip under the header that pops in when you scroll back up and away when you scroll down (the store chips' rule), back to the store page you came from, same category and place (backChip in OB SETTINGS). Styles stay in the Footer. ---- */
+try {
+(function () {
+  try {
+    var LIST = /^\/store(\/(?!p\/)[^\/]+)?\/?$/i, KEY = "obLastStore";
+    var DELTA = 10, HIDE_MS = 80, GRACE_MS = 600, FOOT_SHARE = .5;
+    var conf = function () { var o = window.OB_CONF || {}; return o.backChip === false ? { show: false } : (o.backChip || {}); };
+    var lang = function () {
+      try { if (window.Weglot && Weglot.initialized && Weglot.getCurrentLang) return Weglot.getCurrentLang(); } catch (e) {}
+      try { var w = localStorage.getItem("wglang"); if (w) return w.slice(0, 2).toLowerCase(); } catch (e) {}
+      return (document.documentElement.lang || "en").slice(0, 2).toLowerCase();
+    };
+    var words = function (w, d) { if (!w) return d; if (typeof w === "string") return w; return w[lang()] || w.en || d; };
+    /* store pages remember themselves (address and category), so the chip goes back to the same one */
+    var remember = function () {
+      if (!LIST.test(location.pathname)) return;
+      try { sessionStorage.setItem(KEY, location.pathname + location.search); } catch (e) {}
+    };
+    var lastStore = function () { try { return sessionStorage.getItem(KEY) || ""; } catch (e) { return ""; } };
+    var isDetail = function () { var b = document.body; return !!b && /collection-type-(products|shop)/.test(b.className) && b.classList.contains("view-item"); };
+    var phone = function () { return document.documentElement.classList.contains("ob-compact") || window.matchMedia("(max-width: 767px)").matches; };
+    var wanted = function () {
+      var s = conf().show; if (s === undefined) s = "both";
+      if (!s || !isDetail()) return false;
+      if (s === "phone") return phone();
+      if (s === "computer") return !phone();
+      return true;
+    };
+    var a = null, lastY = null, hideT = 0, graceUntil = 0, raf = 0;
+    var target = function () { return lastStore() || conf().href || "/store"; };
+    var build = function () {
+      a = document.createElement("a");
+      a.className = "obBack obBackHidden";
+      a.href = target();
+      a.setAttribute("tabindex", "-1");
+      a.setAttribute("aria-hidden", "true");
+      a.innerHTML = '<b><svg viewBox="0 0 6 10" width="6" height="10" aria-hidden="true" focusable="false"><path d="M5 1 1 5l4 4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span></span></b>';
+      a.querySelector("span").textContent = words(conf().word, "Shop");
+      a.setAttribute("aria-label", words(conf().label, "Back to shop"));
+      /* back to the store page we came from: the browser's own Back, so the category, the place on the page and the photos already loaded all come back as they were */
+      a.addEventListener("click", function (e) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
+        var last = lastStore(), ref = "";
+        try { var r = new URL(document.referrer); if (r.origin === location.origin) ref = r.pathname + r.search; } catch (x) {}
+        if (last && ref && ref.replace(/\/+$/, "") === last.replace(/\/+$/, "") && history.length > 1 && !(history.state && history.state.obPv)) {
+          e.preventDefault();
+          var here = location.href;
+          history.back();
+          /* if Back didn't leave the page (e.g. the history was cut), go by address instead */
+          setTimeout(function () { if (location.href === here) location.href = last; }, 700);
+        }
+      });
+      a.addEventListener("focus", function () { show(); });
+      document.body.appendChild(a);
+      place();
+    };
+    /* line the chip up with the left edge of the product (gallery), not the screen edge */
+    var place = function () {
+      if (!a) return;
+      var g = document.querySelector(".product-detail .product-gallery, .ProductItem-gallery, .product-gallery, .product-detail");
+      var x = g ? Math.round(g.getBoundingClientRect().left) : 0;
+      if (x > 0 && x < window.innerWidth / 2) a.style.setProperty("--obBackX", x + "px"); else a.style.removeProperty("--obBackX");
+    };
+    var hidden = function () { return !a || a.classList.contains("obBackHidden"); };
+    var show = function () {
+      if (!a || !hidden()) return;
+      a.href = target();
+      a.classList.remove("obBackHidden");
+      a.removeAttribute("aria-hidden");
+      a.removeAttribute("tabindex");
+    };
+    var hide = function () {
+      if (!a || hidden()) return;
+      if (document.activeElement === a) return;
+      a.classList.add("obBackHidden");
+      a.setAttribute("aria-hidden", "true");
+      a.setAttribute("tabindex", "-1");
+    };
+    var update = function () {
+      raf = 0;
+      if (!wanted()) { if (a) { a.remove(); a = null; } return; }
+      if (!a) { build(); lastY = null; graceUntil = Date.now() + GRACE_MS; }
+      var y = window.scrollY || window.pageYOffset || 0;
+      var vh = window.innerHeight;
+      var footer = document.querySelector("#footer-sections, footer.sections");
+      var atFooter = !!footer && footer.getBoundingClientRect().top < vh * FOOT_SHARE;
+      var menu = document.body.classList.contains("header--menu-open");
+      var startY = vh * (conf().startShare != null ? +conf().startShare : .5);
+      if (y < startY || atFooter || menu || Date.now() < graceUntil) { clearTimeout(hideT); hideT = 0; lastY = y; hide(); return; }
+      if (lastY === null) { lastY = y; return; }
+      var d = y - lastY;
+      if (Math.abs(d) < DELTA) return;
+      lastY = y;
+      if (d > 0) {
+        if (!hideT) hideT = setTimeout(function () { hideT = 0; hide(); }, HIDE_MS);
+      } else {
+        clearTimeout(hideT); hideT = 0;
+        show();
+      }
+    };
+    var queue = function () { if (!raf) raf = requestAnimationFrame(update); };
+    var start = function () {
+      remember();
+      queue();
+      window.addEventListener("scroll", queue, { passive: true });
+      window.addEventListener("resize", function () { place(); queue(); }, { passive: true });
+      window.addEventListener("pageshow", function (e) { remember(); if (e.persisted && a) { hide(); lastY = null; graceUntil = Date.now() + GRACE_MS; } queue(); });
+      window.addEventListener("popstate", function () { remember(); queue(); });
+      setTimeout(place, 1200);
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+  } catch (e) {}
+})();
+} catch (e) { if (window.console) console.error("[OB BACK CHIP v1]", e); }
 /* ---- main suite ---- */
 try {
 (() => {
