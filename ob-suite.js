@@ -1,4 +1,7 @@
-/* OB SOLID SUITE v17.14 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.15 · ob-suite.js · Opposite Things
+   v17.15 = v17.14 + phones: the home products row (FINDS) scrolls freely (no snap) and runs from page margin to page margin;
+   the greyscale header copy (black: "mono") stays in step with the header's fade-in and fade-out (tapping the logo to reload made
+   it flicker over the logo and menu); product pages: an accordion section tapped open is brought fully into view (accordion reveal).
    v17.14 = v17.13, tidied (Footer v17.74): the Footer's styles now live in ob-suite.css (same commit, loaded just before this
    file) and the few rules that shape the page before any script runs moved into Custom CSS v17.14, so nothing moves after the
    first paint (the phone logo used to drop 1px and the menu shift 6px when the Footer styles arrived). Taken out: the logo
@@ -1083,7 +1086,20 @@ try {
         n.querySelectorAll("video,iframe,script,noscript").forEach(function (x) { var k = document.createElement("i"); k.hidden = true; x.replaceWith(k); });
         if (cl && cl.parentNode) cl.replaceWith(n); else src.after(n);
         cl = n;
+        sync();
       };
+      /* v17.15: a copy made while the header is fading in or out (page arrival, tapping the logo to reload) starts its own fade from the beginning, out of step with the header: the greyscale layer then flickers over the logo and menu. Each of the copy's animations is put at the same moment as the original's. */
+      var sync = function () {
+        try {
+          if (!cl || !src.getAnimations) return;
+          var a = src.getAnimations({ subtree: true }), b = cl.getAnimations({ subtree: true });
+          for (var i = 0; i < a.length && i < b.length; i++) {
+            if (a[i].animationName && a[i].animationName !== b[i].animationName) continue;
+            b[i].currentTime = a[i].currentTime;
+          }
+        } catch (e) {}
+      };
+      if (src.addEventListener) ["animationstart", "transitionrun"].forEach(function (ev) { src.addEventListener(ev, function () { requestAnimationFrame(sync); }); });
       var twin = function (el) {
         var path = [];
         while (el && el !== src) { var p = el.parentNode; if (!p) return null; path.unshift(Array.prototype.indexOf.call(p.children, el)); el = p; }
@@ -6160,16 +6176,27 @@ try {
       obPadTop = Math.max(0, Math.round(obFirst));
       obPadBottom = Math.max(0, Math.round(container.offsetHeight - obLast));
      }
-     container.style.cssText = [ "display:flex", "flex-direction:row", "flex-wrap:nowrap", "overflow-x:auto", "overflow-y:hidden", "-webkit-overflow-scrolling:touch", "scroll-snap-type:x mandatory", "scroll-padding-left:20px", "gap:12px", "padding-left:20px", "padding-right:30vw", "scrollbar-width:none", "padding-top:" + obPadTop + "px", "padding-bottom:" + obPadBottom + "px" ].join(";");
+     /* v17.15: free scrolling (no snap, Ben 27 Nov); the row runs edge to edge of the screen and its first and last cards sit on the page margins (6vw, the same edges as the photos) */
+     container.style.cssText = [ "display:flex", "flex-direction:row", "flex-wrap:nowrap", "overflow-x:auto", "overflow-y:hidden", "-webkit-overflow-scrolling:touch", "overscroll-behavior-x:contain", "gap:12px", "padding-left:6vw", "padding-right:0", "scrollbar-width:none", "box-sizing:border-box", "padding-top:" + obPadTop + "px", "padding-bottom:" + obPadBottom + "px" ].join(";");
+     var obBleed = function () {
+      container.style.marginLeft = "0px"; container.style.marginRight = "0px"; container.style.width = "";
+      var r = container.getBoundingClientRect(), vw = document.documentElement.clientWidth || window.innerWidth;
+      container.style.marginLeft = (-r.left) + "px";
+      container.style.marginRight = (-(vw - r.right)) + "px";
+      container.style.width = vw + "px";
+      container.style.maxWidth = "none";
+     };
+     obBleed();
+     window.addEventListener("resize", obBleed, { passive: true });
      if (!document.getElementById("obSwipeStyle")) {
       var style = document.createElement("style");
       style.id = "obSwipeStyle";
-      style.textContent = ".obSwipeContainer::-webkit-scrollbar{display:none!important}";
+      style.textContent = ".obSwipeContainer::-webkit-scrollbar{display:none!important}.obSwipeContainer::after{content:\"\";flex:0 0 calc(6vw - 12px);height:1px}";
       document.head.appendChild(style);
      }
      container.classList.add("obSwipeContainer");
      items.forEach(function(child) {
-      child.style.cssText = [ "flex:0 0 70vw", "max-width:70vw", "min-width:70vw", "width:70vw", "scroll-snap-align:start", "padding-left:0", "padding-right:0" ].join(";");
+      child.style.cssText = [ "flex:0 0 70vw", "max-width:70vw", "min-width:70vw", "width:70vw", "padding-left:0", "padding-right:0" ].join(";");
      });
     });
     if (didWork) hasRun = true;
@@ -6376,3 +6403,48 @@ try {
   bind();
 })();
 } catch (e) { if (window.console) console.error("[OB meta fit]", e); }
+
+/* ---- OB ACCORDION REVEAL v1 (v17.15) · product pages, phones: a tapped-open accordion section (DETAILS, SHIPPING…) ends fully on screen. While the sections animate, the opened one is held where it was (so one closing above it doesn't throw it upwards); once they settle, the page glides just enough to show all of it, its title kept under the header. ---- */
+try {
+(function () {
+  var d = document.documentElement;
+  if (!(d.classList.contains("ob-page-product") || /^\/store\/p\//i.test(location.pathname))) return;
+  var phone = function () { return window.matchMedia("(max-width: 767px)").matches; };
+  var still = function () { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; };
+  var headerBottom = function () {
+    var h = document.querySelector("#header:not([data-ob-mono])");
+    var b = h ? Math.max(0, h.getBoundingClientRect().bottom) : 0;
+    return Math.min(b, 120);
+  };
+  var run = 0;
+  document.addEventListener("click", function (e) {
+    if (!phone()) return;
+    var btn = e.target.closest && e.target.closest("button.accordion-item__click-target");
+    if (!btn) return;
+    var item = btn.closest("li.accordion-item, .accordion-item");
+    if (!item) return;
+    var my = ++run, top0 = item.getBoundingClientRect().top, t0 = performance.now(), quiet = 0, lastH = -1;
+    var prevAnchor = d.style.overflowAnchor;
+    d.style.overflowAnchor = "none";
+    var hold = function () {
+      if (my !== run) return;
+      if (btn.getAttribute("aria-expanded") !== "true") { d.style.overflowAnchor = prevAnchor; return; }
+      var r = item.getBoundingClientRect();
+      /* keep the opened section's title where it was tapped (something closing above it would move it) */
+      var dy = r.top - top0;
+      if (Math.abs(dy) > 0.5) window.scrollBy(0, dy);
+      quiet = Math.abs(r.height - lastH) < 0.5 ? quiet + 1 : 0;
+      lastH = r.height;
+      if (quiet < 6 && performance.now() - t0 < 1200) { requestAnimationFrame(hold); return; }
+      d.style.overflowAnchor = prevAnchor;
+      /* settled: show the whole section if it runs off the bottom, never pushing its title under the header */
+      r = item.getBoundingClientRect();
+      var topLimit = headerBottom() + 16, bottomLimit = window.innerHeight - 24, by = 0;
+      if (r.bottom > bottomLimit) by = Math.min(r.bottom - bottomLimit, r.top - topLimit);
+      else if (r.top < topLimit) by = r.top - topLimit;
+      if (Math.abs(by) > 2) window.scrollBy({ top: by, behavior: still() ? "auto" : "smooth" });
+    };
+    requestAnimationFrame(hold);
+  }, false);
+})();
+} catch (e) { if (window.console) console.error("[OB accordion reveal v1]", e); }
