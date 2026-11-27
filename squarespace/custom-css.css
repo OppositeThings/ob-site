@@ -1,9 +1,15 @@
 /* ======================================================================
-   OB SHOP CSS — Squarespace 7.1 — v17.9
+   OB SHOP CSS — Squarespace 7.1 — v17.10
    Opposite Things · Website → Pages → Custom Code → Custom CSS.
    Pairs with Header v15.5, the Footer (OB SETTINGS + ob-suite.js v17.0
    from GitHub) and the Store page's ob-drawings.js. "The suite" in the
    notes below is ob-suite.js: the code that used to sit in the Footer.
+
+   v17.10 — fix for v17.9 on iPhone: the category photos and the FINDS
+     lettering ran off the side of the screen (Safari sized them from
+     their shape instead of the screen). They now get fixed sizes from
+     the screen width (no aspect-ratio), and the two stacked parts can't
+     spill sideways.
 
    v17.9 — home page on phones (9.6b): one spacing rhythm instead of the
      builder's: 48px between every part of the page (category tiles,
@@ -4095,19 +4101,28 @@ section[data-section-id="6ad932d919eb524248a93d6f"] .fluid-engine {
   html.ob-page-home .fe-69638ad590cd5d323dc96210 {
     display: flex !important;
     flex-direction: column;
+    align-items: flex-start !important;
     padding-bottom: 48px !important;
+    overflow: hidden;
   }
   html.ob-page-home .fe-69638ad590cd5d323dc96210 > .fe-block {
     grid-area: auto !important;
+    box-sizing: border-box;
+    flex: none !important;
+    width: 88vw !important;
+    max-width: 88vw !important;
+    min-width: 0 !important;
     margin-left: 6vw;
-    margin-right: 6vw;
+    margin-right: 0;
   }
   html.ob-page-home .fe-69638ad590cd5d323dc96210 .sqs-html-content > *:last-child {
     margin-bottom: 0 !important;
   }
-  html.ob-page-home .fe-block-3c5fc76fa4cbc7808641 { aspect-ratio: ~"344 / 288"; }
-  html.ob-page-home .fe-block-d11d34447d813ded12c4 { aspect-ratio: ~"344 / 408"; margin-top: 48px; }
-  html.ob-page-home .fe-block-f06ac52c79d105b7c7eb { aspect-ratio: ~"344 / 456"; margin-top: 48px; }
+  /* heights = the builder's shapes at 88vw wide: 288/344, 408/344 and
+     456/344 of 88vw */
+  html.ob-page-home .fe-block-3c5fc76fa4cbc7808641 { height: 73.67vw !important; }
+  html.ob-page-home .fe-block-d11d34447d813ded12c4 { height: 104.37vw !important; margin-top: 48px; }
+  html.ob-page-home .fe-block-f06ac52c79d105b7c7eb { height: 116.65vw !important; margin-top: 48px; }
   html.ob-page-home .fe-block-8326b38ce646e1c03e54,
   html.ob-page-home .fe-block-a073f63a503a9ff24deb,
   html.ob-page-home .fe-block-fb1605df33397ee45c0c {
@@ -4119,18 +4134,30 @@ section[data-section-id="6ad932d919eb524248a93d6f"] .fluid-engine {
   html.ob-page-home .fe-6aeadbe7a168f43c24d66f62 {
     display: flex !important;
     flex-direction: column;
+    align-items: flex-start !important;
     padding-top: 48px !important;
     padding-bottom: 48px !important;
+    overflow: hidden;
   }
   html.ob-page-home .fe-6aeadbe7a168f43c24d66f62 > .fe-block {
     grid-area: auto !important;
+    box-sizing: border-box;
+    flex: none !important;
+    min-width: 0 !important;
   }
   html.ob-page-home .fe-6aeadbe7a168f43c24d66f62 .sqs-html-content > *:last-child {
     margin-bottom: 0 !important;
   }
-  html.ob-page-home .fe-block-f2c6bc69b5f82ee4e229 { aspect-ratio: ~"390 / 142"; }
+  /* the lettering: full width, 142/390 of it high */
+  html.ob-page-home .fe-block-f2c6bc69b5f82ee4e229 {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 36.41vw !important;
+  }
   html.ob-page-home .fe-block-ff929d0658904be80d16 {
-    margin: -16px 6vw 0;
+    width: 88vw !important;
+    max-width: 88vw !important;
+    margin: -16px 0 0 6vw;
     position: relative;
     z-index: 1;
   }
