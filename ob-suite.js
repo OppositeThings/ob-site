@@ -1,5 +1,5 @@
 /* OB SOLID SUITE v17.8 · ob-suite.js · Opposite Things
-   v17.8 = v17.7 + home page: each tile's words come from homeWords in OB SETTINGS (VIEW RUGS, VIEW PRINTS, VIEW OBJECTS, BROWSE FINDS, EXPLORE SLOT; hero, Bloom and Rosalia stay SHOP), on the phone chips and the computer pointer chip; on computers SHOP FINDS (now BROWSE FINDS) becomes a fixed chip where it is, like the phone chips; over the FINDS chrome letters (a .png) the chip keeps the page tint, frosted, instead of the see-through photo look (shopChips: "phone" keeps computers as before). The words view / browse / explore count as SHOP words everywhere.
+   v17.8 = v17.7 + home page: each tile's words come from homeWords in OB SETTINGS (VIEW RUGS, VIEW PRINTS, VIEW OBJECTS, BROWSE FINDS, EXPLORE SLOT; hero, Bloom and Rosalia stay SHOP), on the phone chips and the computer pointer chip; on computers SHOP FINDS (now BROWSE FINDS) becomes a fixed chip where it is, like the phone chips; over the FINDS chrome letters (an image block set to fit) the chip keeps the page tint, frosted, instead of the see-through photo look (shopChips: "phone" keeps computers as before). The words view / browse / explore count as SHOP words everywhere.
    v17.7 = v17.6 + the statement's A goes up to the end of the fourth line: … / TO KEEP YOUR PLACE A / LITTLE LESS EXPECTED. (break before LITTLE instead of A).
    v17.6 = v17.5 + home page, phones: the statement under the hero (EVERY ROOM NEEDS SOMETHING SLIGHTLY OFF…) breaks on Ben's five lines: EVERY ROOM NEEDS / SOMETHING SLIGHTLY OFF. / THINGS MADE AND FOUND / TO KEEP YOUR PLACE, / A LITTLE LESS EXPECTED. The suite adds <br class="obBr"> before SOMETHING, THINGS, TO and A, only while the words are exactly these (any copy change or another language: left alone). Custom CSS hides them from 768px up and sets the size. statementLines: false in OB_CONF switches it off.
    v17.5 = v17.4 + home page, phones and tablets: the SHOP… words under the hero and tile photos become chips like the computer pointer chip, where they are now (frosted over a photo, a faint tint on the page; shopChips: false in OB_CONF switches it off).
@@ -1025,9 +1025,8 @@ try {
     for (var i = 0; i < media.length; i++) {
       var m = media[i].getBoundingClientRect();
       if (!(m.width && x >= m.left && x <= m.right && y >= m.top && y <= m.bottom)) continue;
-      /* v17.8: a .png in an image block is lettering on the page (the FINDS chrome letters), not a photo: the chip keeps the page tint there, frosted over the letters */
-      var src = media[i].tagName === "IMG" ? (media[i].currentSrc || media[i].src || "") : "";
-      if (/\.png(\?|#|$)/i.test(src.split("?")[0] + "") && !media[i].closest(".section-background")) { art = true; continue; }
+      /* v17.8: an image block shown whole ("fit", not "fill") is lettering on the page (the FINDS chrome letters), not a photo: the chip keeps the page tint there, frosted over the letters */
+      if (media[i].tagName === "IMG" && !media[i].closest(".section-background") && /contain|scale-down|none/.test(getComputedStyle(media[i]).objectFit || "")) { art = true; continue; }
       return true;
     }
     L.classList.toggle("obShopChipOnArt", art);
