@@ -1,4 +1,5 @@
-/* OB SOLID SUITE v17.15 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.16 · ob-suite.js · Opposite Things
+   v17.16 = v17.15 + computers: the OTHER THINGS row on product pages runs off the left edge of the screen too (products scrolled past slide off the left); it still starts with the first product on the page margin.
    v17.15 = v17.14 + phones: the home products row (FINDS) scrolls freely (no snap) and runs from page margin to page margin;
    the greyscale header copy (black: "mono") stays in step with the header's fade-in and fade-out (tapping the logo to reload made
    it flicker over the logo and menu); product pages: an accordion section tapped open is brought fully into view (accordion reveal).
@@ -1296,7 +1297,8 @@ try {
     /* dragging with the mouse: the row follows the pointer, glides a little on release (not with reduced motion) and settles on a product's edge */
     var down = null, dragged = false, glideRaf = 0, settleT = 0;
     var snapTo = function (target) {
-      var items = row.querySelectorAll(".product-list-item"), best = target, bd = Infinity, base = row.getBoundingClientRect().left - row.scrollLeft;
+      var pad = parseFloat(row.style.paddingLeft) || 0;
+      var items = row.querySelectorAll(".product-list-item"), best = target, bd = Infinity, base = row.getBoundingClientRect().left - row.scrollLeft + pad;
       for (var i = 0; i < items.length; i++) {
         if (!items[i].offsetWidth) continue;
         var x = items[i].getBoundingClientRect().left - base;
@@ -1336,14 +1338,19 @@ try {
     };
 
     var bound = false, kbTo = 0, kbAt = 0;
-    /* the row runs on to the right edge of the screen (the next product hangs off the page); at the far end the last product stops at the page margin */
+    /* the row runs to both edges of the screen: the next product hangs off the right, products scrolled past slide off the left (v17.16). It starts with the first product on the page margin, and at the far end the last product stops at the page margin */
     var bleed = function () {
       if (!row) return;
-      row.style.marginRight = "";
+      row.style.marginRight = ""; row.style.marginLeft = ""; row.style.paddingLeft = ""; row.style.scrollPaddingLeft = "";
       row.style.removeProperty("--obOtEnd");
       if (!document.documentElement.classList.contains("obOtOn")) return;
-      var gap = parseFloat(getComputedStyle(row).columnGap) || 0;
-      var b = Math.max(0, Math.round(document.documentElement.clientWidth - row.getBoundingClientRect().right));
+      var gap = parseFloat(getComputedStyle(row).columnGap) || 0, r = row.getBoundingClientRect();
+      var b = Math.max(0, Math.round(document.documentElement.clientWidth - r.right)), a = Math.max(0, Math.round(r.left));
+      if (a) {
+        row.style.marginLeft = -a + "px";
+        row.style.paddingLeft = a + "px";
+        row.style.scrollPaddingLeft = a + "px";
+      }
       if (!b) return;
       row.style.marginRight = -b + "px";
       row.style.setProperty("--obOtEnd", Math.max(0, b - gap) + "px");
