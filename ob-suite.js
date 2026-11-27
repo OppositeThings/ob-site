@@ -1,4 +1,5 @@
-/* OB SOLID SUITE v17.8 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.9 · ob-suite.js · Opposite Things
+   v17.9 = v17.8 + black logo, nav, hero words and words over photos (black: true in OB SETTINGS; "auto" = nav turns white only over dark photos / video frames, html.obNavLight; false = old look) and the logo shrinking on scroll (html.obScrolled; logoShrink in OB SETTINGS). Styles in the Footer.
    v17.8 = v17.7 + home page: each tile's words come from homeWords in OB SETTINGS (VIEW RUGS, VIEW PRINTS, VIEW OBJECTS, BROWSE FINDS, EXPLORE SLOT; hero, Bloom and Rosalia stay SHOP), on the phone chips and the computer pointer chip; on computers SHOP FINDS (now BROWSE FINDS) becomes a fixed chip where it is, like the phone chips; over the FINDS chrome letters (an image block set to fit) the chip keeps the page tint, frosted, instead of the see-through photo look (shopChips: "phone" keeps computers as before). The words view / browse / explore count as SHOP words everywhere.
    v17.7 = v17.6 + the statement's A goes up to the end of the fourth line: … / TO KEEP YOUR PLACE A / LITTLE LESS EXPECTED. (break before LITTLE instead of A).
    v17.6 = v17.5 + home page, phones: the statement under the hero (EVERY ROOM NEEDS SOMETHING SLIGHTLY OFF…) breaks on Ben's five lines: EVERY ROOM NEEDS / SOMETHING SLIGHTLY OFF. / THINGS MADE AND FOUND / TO KEEP YOUR PLACE, / A LITTLE LESS EXPECTED. The suite adds <br class="obBr"> before SOMETHING, THINGS, TO and A, only while the words are exactly these (any copy change or another language: left alone). Custom CSS hides them from 768px up and sets the size. statementLines: false in OB_CONF switches it off.
@@ -1086,6 +1087,87 @@ try {
   window.addEventListener("load", mark);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(mark);
   var rz; window.addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(mark, 200); }, { passive: true });
+})();
+
+/* ---- OB NAV TONE v1 (v17.9) · every page: the logo, nav and BAG are black (styles in the Footer). While the strip under the header lies on a dark photo or a dark moment of the video (SLOT, the darker video frames), html gets .obNavLight and they go back to white (the old flip). The photo is read from a small copy of the image (Squarespace's image server allows it), the video from its current frame. black in OB SETTINGS: true = all black always (default), "auto" = this dark-photo flip (html.obTextWhite, words over photos stay white), false = off (html.obNavOff). Also the logo shrinking on scroll: html.obScrolled once you're more than 60px down; the Footer scales the logo (logoShrink in OB SETTINGS: 0.75, false = off). ---- */
+(function () {
+  try {
+    var C = window.OB_CONF || {}, d = document.documentElement;
+    if (C.logoShrink !== false) {
+      d.style.setProperty("--obLogoScale", String(typeof C.logoShrink === "number" ? C.logoShrink : 0.75));
+      var sc = function () { d.classList.toggle("obScrolled", (window.scrollY || 0) > 60); };
+      sc(); window.addEventListener("scroll", sc, { passive: true });
+    }
+    /* black: true = logo, nav, BAG, hero words and words over photos all black, always (Ben, 27 Nov: placeholders, try it). "auto" = nav black but white over dark photos / video frames, words over photos stay white. false = the old white, flipping look. */
+    var B = C.black === undefined ? true : C.black;
+    if (B === false) { d.classList.add("obNavOff"); return; }
+    if (B !== "auto") return;
+    d.classList.add("obTextWhite");
+    var LIMIT = typeof C.navLightBelow === "number" ? C.navLightBelow : 100;
+    var cache = {}, cv = document.createElement("canvas"), g = null, light = false, t = 0;
+    var get = function () { if (!g) { cv.width = 48; cv.height = 48; g = cv.getContext("2d", { willReadFrequently: true }); } return g; };
+    var lumOf = function (data) { var s = 0, n = 0; for (var i = 0; i < data.length; i += 4) { if (data[i + 3] < 128) continue; s += 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]; n++; } return n ? s / n : 255; };
+    /* the part of a picture (object-fit cover/contain) that lies under the strip, in the picture's own 0..1 coordinates */
+    var part = function (el, nw, nh, band) {
+      var r = el.getBoundingClientRect(), fit = getComputedStyle(el).objectFit || "fill";
+      if (!r.width || !r.height || !nw || !nh) return null;
+      var sx = r.width / nw, sy = r.height / nh, k;
+      if (fit === "cover") { k = Math.max(sx, sy); sx = sy = k; } else if (fit === "contain" || fit === "scale-down") { k = Math.min(sx, sy); sx = sy = k; }
+      var ox = r.left + (r.width - nw * sx) / 2, oy = r.top + (r.height - nh * sy) / 2;
+      var x0 = Math.max(band.left, r.left), x1 = Math.min(band.right, r.right), y0 = Math.max(band.top, r.top), y1 = Math.min(band.bottom, r.bottom);
+      if (x1 <= x0 || y1 <= y0) return null;
+      var u0 = Math.max(0, (x0 - ox) / (nw * sx)), u1 = Math.min(1, (x1 - ox) / (nw * sx)), v0 = Math.max(0, (y0 - oy) / (nh * sy)), v1 = Math.min(1, (y1 - oy) / (nh * sy));
+      if (u1 <= u0 || v1 <= v0) return null;
+      return [u0, v0, u1, v1];
+    };
+    var sample = function (src, w, h, pr) {
+      var c = get(); c.clearRect(0, 0, 48, 48);
+      c.drawImage(src, pr[0] * w, pr[1] * h, Math.max(1, (pr[2] - pr[0]) * w), Math.max(1, (pr[3] - pr[1]) * h), 0, 0, 48, 48);
+      return lumOf(c.getImageData(0, 0, 48, 48).data);
+    };
+    var small = function (img) {
+      var u = img.currentSrc || img.src || "";
+      if (!/squarespace-cdn\.com/.test(u)) return null;
+      u = u.replace(/format=\d+w/, "format=100w"); if (u.indexOf("format=") < 0) u += (u.indexOf("?") < 0 ? "?" : "&") + "format=100w";
+      var e = cache[u];
+      if (!e) { e = cache[u] = { img: new Image(), ok: false }; e.img.crossOrigin = "anonymous"; e.img.onload = function () { e.ok = true; check(); }; e.img.src = u; }
+      return e.ok ? e.img : null;
+    };
+    var check = function () {
+      t = 0;
+      try {
+        var hd = document.querySelector("#header, header.header");
+        if (!hd || document.body.classList.contains("header--menu-open")) return set(false);
+        var hr = hd.getBoundingClientRect(), band = { left: 0, right: window.innerWidth, top: Math.max(0, hr.top), bottom: Math.max(1, Math.min(hr.bottom, 110)) };
+        var ys = [(band.top + band.bottom) / 2], xs = [band.right * 0.12, band.right * 0.5, band.right * 0.88], seen = [], L = [];
+        xs.forEach(function (x) { ys.forEach(function (y) {
+          var els = document.elementsFromPoint(x, y) || [];
+          for (var i = 0; i < els.length; i++) {
+            var el = els[i];
+            if (hd.contains(el) || el.closest(".obPvTip, .obBack, #obShopChipsBar")) continue;
+            var m = el.tagName === "IMG" || el.tagName === "VIDEO" ? el : null;
+            if (!m && el.closest) { var bg = el.closest("section") && el.closest(".section-background, .fluid-image-container, .image-block-wrapper, .sqs-block-image"); m = bg && bg.querySelector("video, img"); }
+            if (m && seen.indexOf(m) < 0) { seen.push(m); try {
+              if (m.tagName === "VIDEO") { if (m.videoWidth) { var pv = part(m, m.videoWidth, m.videoHeight, band); if (pv) L.push(sample(m, m.videoWidth, m.videoHeight, pv)); } }
+              else { var sm = small(m); if (sm) { var pi = part(m, m.naturalWidth || sm.naturalWidth, m.naturalHeight || sm.naturalHeight, band); if (pi) L.push(sample(sm, sm.naturalWidth, sm.naturalHeight, pi)); } }
+            } catch (e) {} }
+            if (m || getComputedStyle(el).backgroundColor.replace(/\s/g, "").indexOf("rgba(0,0,0,0)") < 0 && el !== document.body && el !== d) break;
+          }
+        }); });
+        if (!L.length) return set(false);
+        var avg = L.reduce(function (a, b) { return a + b; }, 0) / L.length;
+        set(light ? avg < LIMIT + 15 : avg < LIMIT);
+      } catch (e) { set(false); }
+    };
+    var set = function (v) { if (v !== light) { light = v; d.classList.toggle("obNavLight", v); } };
+    var soon = function () { if (!t) t = requestAnimationFrame(check); };
+    window.addEventListener("scroll", soon, { passive: true });
+    window.addEventListener("resize", soon, { passive: true });
+    window.addEventListener("load", soon);
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", soon); else soon();
+    /* the video changes underneath without a scroll: look again twice a second while one is under the header */
+    setInterval(function () { if (!document.hidden && document.querySelector(".section-background video")) { var v = document.querySelector(".section-background video"), r = v.getBoundingClientRect(); if (r.top < 110 && r.bottom > 0) soon(); } }, 500);
+  } catch (e) {}
 })();
 
 /* ---- OB STATEMENT LINES v1 (v17.6) · home page: the statement under the hero gets line breaks before SOMETHING, THINGS, TO and LITTLE (EVERY ROOM NEEDS / SOMETHING SLIGHTLY OFF. / THINGS MADE AND FOUND / TO KEEP YOUR PLACE, A / LITTLE LESS EXPECTED.). Only while the words are exactly these, in English; commas may sit anywhere. The breaks are <br class="obBr">: Custom CSS 9.6 shows them on phones only. statementLines: false in OB SETTINGS switches it off. ---- */
