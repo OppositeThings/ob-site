@@ -1,4 +1,5 @@
-/* OB SOLID SUITE v17.10 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.11 · ob-suite.js · Opposite Things
+   v17.11 = v17.10 + black: "snap" in OB SETTINGS: logo/nav and the words over the home video go pure black or pure white depending on what's behind them (html.obSnap, .obNavLight, .obHeroLight); styles in the Footer.
    v17.10 = v17.9 + the logo shrinks gradually with the scroll (100% → logoShrink over the first logoShrinkOver px, default 260) instead of all at once.
    v17.9 = v17.8 + black logo, nav, hero words and words over photos (black: true in OB SETTINGS; "auto" = nav turns white only over dark photos / video frames, html.obNavLight; false = old look) and the logo shrinking on scroll (html.obScrolled; logoShrink in OB SETTINGS). Styles in the Footer.
    v17.8 = v17.7 + home page: each tile's words come from homeWords in OB SETTINGS (VIEW RUGS, VIEW PRINTS, VIEW OBJECTS, BROWSE FINDS, EXPLORE SLOT; hero, Bloom and Rosalia stay SHOP), on the phone chips and the computer pointer chip; on computers SHOP FINDS (now BROWSE FINDS) becomes a fixed chip where it is, like the phone chips; over the FINDS chrome letters (an image block set to fit) the chip keeps the page tint, frosted, instead of the see-through photo look (shopChips: "phone" keeps computers as before). The words view / browse / explore count as SHOP words everywhere.
@@ -1111,9 +1112,11 @@ try {
     /* black: true = logo, nav, BAG, hero words and words over photos all black, always (Ben, 27 Nov: placeholders, try it). "auto" = nav black but white over dark photos / video frames, words over photos stay white. false = the old white, flipping look. */
     var B = C.black === undefined ? true : C.black;
     if (B === false) { d.classList.add("obNavOff"); return; }
-    if (B !== "auto") return;
-    d.classList.add("obTextWhite");
-    var LIMIT = typeof C.navLightBelow === "number" ? C.navLightBelow : 100;
+    /* "snap" (v17.11): logo/nav and the words over the home video are pure black or pure white, whichever reads better on what's behind them right now (never the muddy grey of the old flip); words over photos stay black. */
+    if (B !== "auto" && B !== "snap") return;
+    var SNAP = B === "snap";
+    d.classList.add(SNAP ? "obSnap" : "obTextWhite");
+    var LIMIT = typeof C.navLightBelow === "number" ? C.navLightBelow : SNAP ? 118 : 100;
     var cache = {}, cv = document.createElement("canvas"), g = null, light = false, t = 0;
     var get = function () { if (!g) { cv.width = 48; cv.height = 48; g = cv.getContext("2d", { willReadFrequently: true }); } return g; };
     var lumOf = function (data) { var s = 0, n = 0; for (var i = 0; i < data.length; i += 4) { if (data[i + 3] < 128) continue; s += 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]; n++; } return n ? s / n : 255; };
@@ -1143,18 +1146,14 @@ try {
       if (!e) { e = cache[u] = { img: new Image(), ok: false }; e.img.crossOrigin = "anonymous"; e.img.onload = function () { e.ok = true; check(); }; e.img.src = u; }
       return e.ok ? e.img : null;
     };
-    var check = function () {
-      t = 0;
-      try {
-        var hd = document.querySelector("#header, header.header");
-        if (!hd || document.body.classList.contains("header--menu-open")) return set(false);
-        var hr = hd.getBoundingClientRect(), band = { left: 0, right: window.innerWidth, top: Math.max(0, hr.top), bottom: Math.max(1, Math.min(hr.bottom, 110)) };
-        var ys = [(band.top + band.bottom) / 2], xs = [band.right * 0.12, band.right * 0.5, band.right * 0.88], seen = [], L = [];
+    /* average brightness (0..255) of the photos / video lying under a strip of the screen, or -1 when there's only the plain page there */
+    var under = function (band, skip) {
+        var ys = [(band.top + band.bottom) / 2], w = band.right - band.left, xs = [band.left + w * 0.12, band.left + w * 0.5, band.left + w * 0.88], seen = [], L = [], hd = skip;
         xs.forEach(function (x) { ys.forEach(function (y) {
           var els = document.elementsFromPoint(x, y) || [];
           for (var i = 0; i < els.length; i++) {
             var el = els[i];
-            if (hd.contains(el) || el.closest(".obPvTip, .obBack, #obShopChipsBar")) continue;
+            if (hd.contains(el) || el.closest(".obPvTip, .obBack, #obShopChipsBar, #header, header.header, .obShopChip")) continue;
             var m = el.tagName === "IMG" || el.tagName === "VIDEO" ? el : null;
             if (!m && el.closest) { var bg = el.closest("section") && el.closest(".section-background, .fluid-image-container, .image-block-wrapper, .sqs-block-image"); m = bg && bg.querySelector("video, img"); }
             if (m && seen.indexOf(m) < 0) { seen.push(m); try {
@@ -1164,9 +1163,34 @@ try {
             if (m || getComputedStyle(el).backgroundColor.replace(/\s/g, "").indexOf("rgba(0,0,0,0)") < 0 && el !== document.body && el !== d) break;
           }
         }); });
-        if (!L.length) return set(false);
-        var avg = L.reduce(function (a, b) { return a + b; }, 0) / L.length;
-        set(light ? avg < LIMIT + 15 : avg < LIMIT);
+        return L.length ? L.reduce(function (a, b) { return a + b; }, 0) / L.length : -1;
+    };
+    var heroLight = false, heroEl = null;
+    var heroFind = function () {
+      if (heroEl && document.contains(heroEl)) return heroEl;
+      var sec = document.querySelector("main section.page-section .section-background video");
+      sec = sec && sec.closest("section");
+      heroEl = sec ? sec.querySelector(".sqs-html-content") : null;
+      return heroEl;
+    };
+    var check = function () {
+      t = 0;
+      try {
+        var hd = document.querySelector("#header, header.header");
+        if (!hd || document.body.classList.contains("header--menu-open")) set(false);
+        else {
+          var hr = hd.getBoundingClientRect();
+          var a = under({ left: 0, right: window.innerWidth, top: Math.max(0, hr.top), bottom: Math.max(1, Math.min(hr.bottom, 110)) }, hd);
+          set(a >= 0 && (light ? a < LIMIT + 12 : a < LIMIT));
+        }
+        if (SNAP && heroFind()) {
+          var r = heroEl.getBoundingClientRect();
+          if (r.bottom > 0 && r.top < window.innerHeight) {
+            var b = under({ left: r.left, right: r.right, top: r.top, bottom: r.bottom }, heroEl.closest(".fe-block") || heroEl);
+            var v = b >= 0 && (heroLight ? b < LIMIT + 12 : b < LIMIT);
+            if (v !== heroLight) { heroLight = v; d.classList.toggle("obHeroLight", v); }
+          }
+        }
       } catch (e) { set(false); }
     };
     var set = function (v) { if (v !== light) { light = v; d.classList.toggle("obNavLight", v); } };
@@ -1176,7 +1200,7 @@ try {
     window.addEventListener("load", soon);
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", soon); else soon();
     /* the video changes underneath without a scroll: look again twice a second while one is under the header */
-    setInterval(function () { if (!document.hidden && document.querySelector(".section-background video")) { var v = document.querySelector(".section-background video"), r = v.getBoundingClientRect(); if (r.top < 110 && r.bottom > 0) soon(); } }, 500);
+    setInterval(function () { if (!document.hidden && document.querySelector(".section-background video")) { var v = document.querySelector(".section-background video"), r = v.getBoundingClientRect(); if (r.top < window.innerHeight && r.bottom > 0) soon(); } }, 400);
   } catch (e) {}
 })();
 
