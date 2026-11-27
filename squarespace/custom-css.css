@@ -1,9 +1,16 @@
 /* ======================================================================
-   OB SHOP CSS — Squarespace 7.1 — v17.8
+   OB SHOP CSS — Squarespace 7.1 — v17.9
    Opposite Things · Website → Pages → Custom Code → Custom CSS.
    Pairs with Header v15.5, the Footer (OB SETTINGS + ob-suite.js v17.0
    from GitHub) and the Store page's ob-drawings.js. "The suite" in the
    notes below is ob-suite.js: the code that used to sit in the Footer.
+
+   v17.9 — home page on phones (9.6b): one spacing rhythm instead of the
+     builder's: 48px between every part of the page (category tiles,
+     SLOT, FINDS, the products row, BLOOM, ROSALIA, MORE ON INSTAGRAM),
+     16px from a photo to its caption, tiles 6vw in from the sides.
+     INTRODUCING SLOT, BLOOM RUG and ROSALIA RUG at the statement's
+     size. Computers and iPads unchanged.
 
    v17.8 — home page on phones (9.6): the hero's height follows the
      statement's size, so the first screen always ends just under the
@@ -4069,6 +4076,88 @@ section[data-section-id="6ad932d919eb524248a93d6f"] .fluid-engine {
 @media (min-width: 768px) {
   br.obBr {
     display: none;
+  }
+}
+
+
+/* ----------------------------------------------------------------------
+   9.6b HOME PAGE SPACING ON PHONES (v17.9)
+   One rhythm in place of the builder's mobile layout: 48px between
+   every part of the page, 16px from a category photo to its caption,
+   category tiles 6vw in from the sides (the same as the text). Up to
+   767px only; the builder's layout still runs iPads and computers.
+   Found by section and block IDs: if a block is rebuilt in Squarespace,
+   its new ID goes here. More space everywhere: change each 48px.
+   ---------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  /* Categories (RUGS, PRINTS, OBJECTS): photos and captions stacked.
+     Each photo keeps the shape it had in the builder. */
+  html.ob-page-home .fe-69638ad590cd5d323dc96210 {
+    display: flex !important;
+    flex-direction: column;
+    padding-bottom: 48px !important;
+  }
+  html.ob-page-home .fe-69638ad590cd5d323dc96210 > .fe-block {
+    grid-area: auto !important;
+    margin-left: 6vw;
+    margin-right: 6vw;
+  }
+  html.ob-page-home .fe-69638ad590cd5d323dc96210 .sqs-html-content > *:last-child {
+    margin-bottom: 0 !important;
+  }
+  html.ob-page-home .fe-block-3c5fc76fa4cbc7808641 { aspect-ratio: ~"344 / 288"; }
+  html.ob-page-home .fe-block-d11d34447d813ded12c4 { aspect-ratio: ~"344 / 408"; margin-top: 48px; }
+  html.ob-page-home .fe-block-f06ac52c79d105b7c7eb { aspect-ratio: ~"344 / 456"; margin-top: 48px; }
+  html.ob-page-home .fe-block-8326b38ce646e1c03e54,
+  html.ob-page-home .fe-block-a073f63a503a9ff24deb,
+  html.ob-page-home .fe-block-fb1605df33397ee45c0c {
+    margin-top: 16px;
+  }
+
+  /* FINDS: 48px under SLOT, the lettering, then the text overlapping
+     it by 16px as before, then 48px to the products row */
+  html.ob-page-home .fe-6aeadbe7a168f43c24d66f62 {
+    display: flex !important;
+    flex-direction: column;
+    padding-top: 48px !important;
+    padding-bottom: 48px !important;
+  }
+  html.ob-page-home .fe-6aeadbe7a168f43c24d66f62 > .fe-block {
+    grid-area: auto !important;
+  }
+  html.ob-page-home .fe-6aeadbe7a168f43c24d66f62 .sqs-html-content > *:last-child {
+    margin-bottom: 0 !important;
+  }
+  html.ob-page-home .fe-block-f2c6bc69b5f82ee4e229 { aspect-ratio: ~"390 / 142"; }
+  html.ob-page-home .fe-block-ff929d0658904be80d16 {
+    margin: -16px 6vw 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Products row: 48px from the lowest price to BLOOM (was 144px) */
+  html.ob-page-home .fe-69638ad590cd5d323dc96216 {
+    padding-bottom: 48px !important;
+  }
+
+  /* BLOOM and ROSALIA: 48px apart (two 24px rows), ROSALIA's words
+     move down with it */
+  html.ob-page-home .fe-block-4e315091882e66ce87b1 { grid-row: ~"21 / 39" !important; }
+  html.ob-page-home .fe-block-1b4d5e03887c736b10d9 { grid-row: ~"29 / 32" !important; }
+
+  /* MORE ON INSTAGRAM: 48px under ROSALIA (24px row left in the BLOOM
+     section + 24px here) */
+  html.ob-page-home section[data-section-id="6964314968acfb6b448c5793"] .content-wrapper {
+    padding-top: 24px !important;
+  }
+
+  /* INTRODUCING SLOT, BLOOM RUG, ROSALIA RUG at the statement's size
+     (9.6); fits with or without RUG */
+  html.ob-page-home:not(#obRamp) .fe-block-bb195f9b4142fbc5cebc .sqs-html-content h2,
+  html.ob-page-home:not(#obRamp) .fe-block-b10732f9a5c30ed0baf0 .sqs-html-content h2,
+  html.ob-page-home:not(#obRamp) .fe-block-1b4d5e03887c736b10d9 .sqs-html-content h2 {
+    font-size: ~"min(calc(7.1vw - 2.3px), 36px)" !important;
+    line-height: 1.05 !important;
   }
 }
 
