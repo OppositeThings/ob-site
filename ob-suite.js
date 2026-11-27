@@ -1,4 +1,5 @@
-/* OB SOLID SUITE v17.7 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.8 · ob-suite.js · Opposite Things
+   v17.8 = v17.7 + home page: each tile's words come from homeWords in OB SETTINGS (VIEW RUGS, VIEW PRINTS, VIEW OBJECTS, BROWSE FINDS, EXPLORE SLOT; hero, Bloom and Rosalia stay SHOP), on the phone chips and the computer pointer chip; on computers SHOP FINDS (now BROWSE FINDS) becomes a fixed chip where it is, like the phone chips (shopChips: "phone" keeps computers as before). The words view / browse / explore count as SHOP words everywhere.
    v17.7 = v17.6 + the statement's A goes up to the end of the fourth line: … / TO KEEP YOUR PLACE A / LITTLE LESS EXPECTED. (break before LITTLE instead of A).
    v17.6 = v17.5 + home page, phones: the statement under the hero (EVERY ROOM NEEDS SOMETHING SLIGHTLY OFF…) breaks on Ben's five lines: EVERY ROOM NEEDS / SOMETHING SLIGHTLY OFF. / THINGS MADE AND FOUND / TO KEEP YOUR PLACE, / A LITTLE LESS EXPECTED. The suite adds <br class="obBr"> before SOMETHING, THINGS, TO and A, only while the words are exactly these (any copy change or another language: left alone). Custom CSS hides them from 768px up and sets the size. statementLines: false in OB_CONF switches it off.
    v17.5 = v17.4 + home page, phones and tablets: the SHOP… words under the hero and tile photos become chips like the computer pointer chip, where they are now (frosted over a photo, a faint tint on the page; shopChips: false in OB_CONF switches it off).
@@ -189,6 +190,53 @@ try {
   bindLang(0);
 })();
 } catch (e) { if (window.console) console.error("[OB PERKS v2]", e); }
+/* ---- OB HOME WORDS v1 (v17.8) · home page: each tile's SHOP… words get their own word from homeWords in OB SETTINGS (rugs: "VIEW RUGS", prints: "VIEW PRINTS", candles: "VIEW OBJECTS", finds: "BROWSE FINDS", slot: "EXPLORE SLOT"). A link is matched when its words or its address contain the key (SHOP CANDLES → candles, SHOP → /store/p/slot → slot). Links that match no key (the hero, Bloom, Rosalia) keep their words. The new words are used everywhere the old ones were: the phone chips, the computer pointer chip and the Finds chip. homeWords: false switches it off. Runs straight away so the old words don't flash. ---- */
+(function () {
+  try {
+    var W = (window.OB_CONF || {}).homeWords;
+    if (!W || typeof W !== "object") return;
+    var CTA = /^\[?\s*(shop|view|browse|explore)\b/i;
+    var esc = function (k) { return k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); };
+    var pick = function (txt, href) {
+      for (var k in W) {
+        if (!Object.prototype.hasOwnProperty.call(W, k) || !W[k]) continue;
+        var kk = esc(String(k).toLowerCase());
+        if (new RegExp("\\b" + kk + "\\b", "i").test(txt) || new RegExp("(^|[\\/\\-_])" + kk + "([\\/\\-_?#.]|$)", "i").test(href)) {
+          var v = W[k];
+          if (typeof v === "object") { var lg = (document.documentElement.lang || "en").slice(0, 2).toLowerCase(); v = v[lg] || v.en || ""; }
+          return String(v);
+        }
+      }
+      return "";
+    };
+    var run = function () {
+      try {
+        var d = document.documentElement;
+        if (!(d.classList.contains("ob-page-home") || (document.body && document.body.classList.contains("homepage")) || location.pathname === "/")) return;
+        var links = document.querySelectorAll("main .sqs-html-content a[href], main .sqs-block-button a[href]");
+        for (var i = 0; i < links.length; i++) {
+          var L = links[i];
+          if (L.getAttribute("data-ob-was-words") || L.querySelector("img")) continue;
+          var txt = (L.textContent || "").replace(/\s+/g, " ").trim();
+          if (!CTA.test(txt)) continue;
+          var w = pick(txt, L.getAttribute("href") || "");
+          if (!w) continue;
+          var br = /^\[/.test(txt) && /\]$/.test(txt);
+          if (br) w = "[" + w + "]";
+          var tw = document.createTreeWalker(L, NodeFilter.SHOW_TEXT, null), n, nodes = [];
+          while ((n = tw.nextNode())) if (/\S/.test(n.nodeValue)) nodes.push(n);
+          if (!nodes.length) continue;
+          L.setAttribute("data-ob-was-words", txt);
+          nodes[0].nodeValue = w;
+          for (var j = 1; j < nodes.length; j++) nodes[j].nodeValue = "";
+        }
+      } catch (e) {}
+    };
+    run();
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
+    window.OB_homeWords = run;
+  } catch (e) {}
+})();
 /* ---- footer: OB PHOTO VIEWER v2 · product pages: full-screen photo viewer (computers), word chip that trails the pointer over photos (ENLARGE, PREV/NEXT/CLOSE, SHOP over the home hero and tiles), cursor, home tile links and linkFix (viewer, heroShop, tiles, linkFix, cursor… in OB SETTINGS). Styles stay in the Footer. ---- */
 try {
 (function () {
@@ -584,7 +632,7 @@ try {
       if (!heroSec) return null;
       var links = heroSec.querySelectorAll(".sqs-html-content a[href], .sqs-block-button a[href]");
       heroLink = null;
-      for (var i = 0; i < links.length; i++) { if (/^\[?\s*shop\b/i.test((links[i].textContent || "").trim())) { heroLink = links[i]; break; } }
+      for (var i = 0; i < links.length; i++) { if (/^\[?\s*(shop|view|browse|explore)\b/i.test((links[i].textContent || "").trim())) { heroLink = links[i]; break; } }
       if (heroLink) {
         heroLink.classList.add("obHeroShopLink");
         heroLink.setAttribute("href", heroHref());
@@ -679,13 +727,13 @@ try {
             }
             if (!best || bestS < 0) {
               /* a SHOP… word that couldn't be matched to a photo, in a section with linked photos: still hidden on computers (v17.38) */
-              if (/^\[?\s*shop\b/i.test(txt) && pics.some(function (x) { return x.tagName === "A"; })) { L.classList.add("obTileLink", "obHeroShopHide"); }
+              if (/^\[?\s*(shop|view|browse|explore)\b/i.test(txt) && pics.some(function (x) { return x.tagName === "A"; })) { L.classList.add("obTileLink", "obHeroShopHide"); }
               continue;
             }
             /* a photo with no link of its own (Finds) keeps its button as it is (Ben, v17.35) */
             if (best.tagName !== "A") continue;
             L.classList.add("obTileLink");
-            if (/^\[?\s*shop\b/i.test(txt)) {
+            if (/^\[?\s*(shop|view|browse|explore)\b/i.test(txt)) {
               if (!best.getAttribute("data-ob-word")) best.setAttribute("data-ob-word", txt.replace(/[\[\]]/g, "").trim());
               var blk = L.closest(".fe-block") || L.closest(".sqs-block");
               var hEl = blk && (blk.textContent || "").replace(/\s+/g, " ").trim() === txt && !blk.querySelector("img") ? blk : L;
@@ -739,7 +787,7 @@ try {
         document.querySelectorAll("main section.page-section").forEach(function (sec) {
           var words = [];
           sec.querySelectorAll("a[href]").forEach(function (L) {
-            if (L.querySelector("img") || !/^\[?\s*shop\b/i.test((L.textContent || "").trim())) return;
+            if (L.querySelector("img") || !/^\[?\s*(shop|view|browse|explore)\b/i.test((L.textContent || "").trim())) return;
             words.push((L.getAttribute("href") || "").replace(/\/$/, ""));
           });
           sec.querySelectorAll("a[href]").forEach(function (P) {
@@ -960,7 +1008,7 @@ try {
   if ((window.OB_CONF || {}).shopChips === false || window.self !== window.top) return;
   var touch = function () { return !window.matchMedia("(hover: hover) and (pointer: fine)").matches; };
   var home = function () { var d = document.documentElement; return d.classList.contains("ob-page-home") || document.body.classList.contains("homepage") || location.pathname === "/"; };
-  var RX = /^\[?\s*shop\b/i;
+  var RX = /^\[?\s*(shop|view|browse|explore)\b/i;
   var unbracket = function (L) {
     var w = document.createTreeWalker(L, NodeFilter.SHOW_TEXT, null), n, all = [];
     while ((n = w.nextNode())) all.push(n);
@@ -1004,12 +1052,19 @@ try {
   };
   var mark = function () {
     try {
-      if (!touch() || !home()) return;
+      if (!home()) return;
+      /* v17.8: computers too, but only for the words the pointer chip doesn't take over (Finds, whose photo has no link): those become a fixed chip where they are. shopChips: "phone" keeps computers as before. */
+      var desk = !touch();
+      if (desk && (window.OB_CONF || {}).shopChips === "phone") return;
       document.documentElement.classList.add("obShopChips");
       var links = document.querySelectorAll("main .sqs-html-content a[href], main .sqs-block-button a[href]");
       for (var i = 0; i < links.length; i++) {
         var L = links[i];
         if (L.querySelector("img")) continue;
+        if (desk && (L.classList.contains("obTileLink") || L.classList.contains("obHeroShopLink") || L.closest(".obHeroShopHide"))) {
+          if (L.classList.contains("obShopChip")) { L.classList.remove("obShopChip", "obShopChipOnPhoto"); if (L.__obFloat) { L.__obFloat.remove(); L.__obFloat = null; L.classList.remove("obShopChipGhost"); } }
+          continue;
+        }
         if (!L.classList.contains("obShopChip")) {
           if (!RX.test((L.textContent || "").replace(/\s+/g, " ").trim())) continue;
           unbracket(L);
