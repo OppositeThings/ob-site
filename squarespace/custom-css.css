@@ -1,9 +1,13 @@
 /* ======================================================================
-   OB SHOP CSS — Squarespace 7.1 — v17.14
+   OB SHOP CSS — Squarespace 7.1 — v17.15
    Opposite Things · Website → Pages → Custom Code → Custom CSS.
    Pairs with Header v15.5, the Footer (OB SETTINGS + ob-suite.js v17.0
    from GitHub) and the Store page's ob-drawings.js. "The suite" in the
    notes below is ob-suite.js: the code that used to sit in the Footer.
+
+   v17.15 — About page on phones (9.6c): the five stories in one
+     rhythm, photo, 24px, words, 48px to the next photo.
+     Includes v17.14.
 
    v17.14 — the Footer's few rules that shape the page before any script
      runs move here (17 below), so they apply from the first paint: on
@@ -4218,6 +4222,94 @@ section[data-section-id="6ad932d919eb524248a93d6f"] .fluid-engine {
   html.ob-page-home:not(#obRamp) .fe-block-1b4d5e03887c736b10d9 .sqs-html-content h2 {
     font-size: ~"min(calc(7.1vw - 2.3px), 36px)" !important;
     line-height: 1.05 !important;
+  }
+}
+
+
+/* ----------------------------------------------------------------------
+   9.6c ABOUT PAGE SPACING ON PHONES (v17.15)
+   The five stories (THE APARTMENT, PALERMO, MADE AND FOUND, THE STUDIO,
+   AT HOME) in one rhythm, like the home page: photo, 24px, the words,
+   then 48px to the next photo (the builder left 49 to 73px, and 100px
+   before THE OPPOSITE THING). Photos keep their builder width, height
+   and side. Up to 767px only. Found by IDs: if a block is rebuilt in
+   Squarespace, its new ID goes here. More space: change each 48px.
+   ---------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  html.ob-page-about section.page-section:has(.fe-6ad9bd05b50cbc2c0abd929a, .fe-6ad9bd05b50cbc2c0abd929e, .fe-6ad9bd05b50cbc2c0abd92a2, .fe-6ad9bd05b50cbc2c0abd92a6, .fe-6ad9bd05b50cbc2c0abd92aa) .content-wrapper {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  html.ob-page-about :is(.fe-6ad9bd05b50cbc2c0abd929a, .fe-6ad9bd05b50cbc2c0abd929e, .fe-6ad9bd05b50cbc2c0abd92a2, .fe-6ad9bd05b50cbc2c0abd92a6, .fe-6ad9bd05b50cbc2c0abd92aa) {
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-start !important;
+    padding-top: 0 !important;
+    padding-bottom: 48px !important;
+    overflow: hidden;
+  }
+  html.ob-page-about :is(.fe-6ad9bd05b50cbc2c0abd929a, .fe-6ad9bd05b50cbc2c0abd929e, .fe-6ad9bd05b50cbc2c0abd92a2, .fe-6ad9bd05b50cbc2c0abd92a6, .fe-6ad9bd05b50cbc2c0abd92aa) > .fe-block {
+    grid-area: auto !important;
+    box-sizing: border-box;
+    flex: none !important;
+    min-width: 0 !important;
+    margin-right: 0;
+  }
+  html.ob-page-about :is(.fe-6ad9bd05b50cbc2c0abd929a, .fe-6ad9bd05b50cbc2c0abd929e, .fe-6ad9bd05b50cbc2c0abd92a2, .fe-6ad9bd05b50cbc2c0abd92a6, .fe-6ad9bd05b50cbc2c0abd92aa) .sqs-html-content > *:last-child {
+    margin-bottom: 0 !important;
+  }
+
+  /* photos: builder width (66vw on the right, or 88vw), builder height */
+  html.ob-page-about .fe-block-867af1000e5b6a7ff317,
+  html.ob-page-about .fe-block-1d2845ed1b78101ee656,
+  html.ob-page-about .fe-block-d85dec726ba8b8c12efa {
+    width: 66vw !important;
+    max-width: 66vw !important;
+    margin-left: 28vw;
+  }
+  html.ob-page-about .fe-block-8332b6a0265bd0d10c6c {
+    width: 66vw !important;
+    max-width: 66vw !important;
+    margin-left: 6vw;
+  }
+  html.ob-page-about .fe-block-b828b99cbd145d9d5370 {
+    width: 88vw !important;
+    max-width: 88vw !important;
+    margin-left: 6vw;
+  }
+  /* THE APARTMENT: 48px under the big photo */
+  html.ob-page-about .fe-6ad9bd05b50cbc2c0abd929a {
+    padding-top: 48px !important;
+  }
+  html.ob-page-about .fe-block-867af1000e5b6a7ff317 { height: 192px !important; }
+  html.ob-page-about .fe-block-8332b6a0265bd0d10c6c { height: 456px !important; }
+  html.ob-page-about .fe-block-1d2845ed1b78101ee656 { height: 288px !important; }
+  html.ob-page-about .fe-block-b828b99cbd145d9d5370,
+  html.ob-page-about .fe-block-d85dec726ba8b8c12efa { height: 312px !important; }
+
+  /* the words: 24px under the photo, builder width */
+  html.ob-page-about .fe-block-df2f2b086a78c38fa62d,
+  html.ob-page-about .fe-block-48eaa9b3dc01096d1239,
+  html.ob-page-about .fe-block-bf1504bd411c3af056a9,
+  html.ob-page-about .fe-block-c56c4068560d156c3cc7 {
+    width: 77vw !important;
+    max-width: 77vw !important;
+    margin: 24px 0 0 6vw;
+    height: auto !important;
+  }
+  html.ob-page-about .fe-block-bddd50c89c9d1d84d48e {
+    width: 88vw !important;
+    max-width: 88vw !important;
+    margin: 24px 0 0 6vw;
+    height: auto !important;
+  }
+
+  /* THE OPPOSITE THING (Instagram): 48px under AT HOME */
+  html.ob-page-about section.page-section:has(.fe-6ad9bd05b50cbc2c0abd92ae) .content-wrapper {
+    padding-top: 0 !important;
+  }
+  html.ob-page-about .fe-6ad9bd05b50cbc2c0abd92ae {
+    padding-top: 0 !important;
   }
 }
 
