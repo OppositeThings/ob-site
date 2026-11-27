@@ -1,5 +1,5 @@
 /* OB SOLID SUITE v17.13 · ob-suite.js · Opposite Things
-   v17.13 = v17.12 + phoneTileWord in OB SETTINGS ("VIEW"): the RUGS / PRINTS / OBJECTS chips get data-ob-phone-word, and the Footer shows just that word on phones.
+   v17.13 = v17.12 + phoneTileWord in OB SETTINGS ("VIEW"): the RUGS / PRINTS / OBJECTS chips show just that word on phones.
    v17.12 = v17.11 + black: "mono" in OB SETTINGS: the old white difference header and video words, made pure greyscale by a copy on top with mix-blend-mode: saturation (html.obMono, [data-ob-mono]); styles in the Footer. monoHero: false = header only, monoPhotos: false = words over photos stay plain white.
    v17.11 = v17.10 + black: "snap" in OB SETTINGS: logo/nav and the words over the home video go pure black or pure white depending on what's behind them (html.obSnap, .obNavLight, .obHeroLight); styles in the Footer.
    v17.10 = v17.9 + the logo shrinks gradually with the scroll (100% → logoShrink over the first logoShrinkOver px, default 260) instead of all at once.
@@ -237,7 +237,7 @@ try {
         }
       } catch (e) {}
     };
-    /* v17.13: phoneTileWord (OB SETTINGS, "VIEW"): the chips that sit on a tile's title line on phones (RUGS / PRINTS / OBJECTS: a block with a lone bold large title) carry data-ob-phone-word; the Footer shows that word on phones instead of the full words (screen readers and the computer pointer chip keep VIEW RUGS etc.). false = full words. */
+    /* v17.13: phoneTileWord (OB SETTINGS, "VIEW"): the chips that sit on a tile's title line on phones (RUGS / PRINTS / OBJECTS: a block with a lone bold large title) show that word on phones (under 768px) instead of the full words; screen readers and computers keep VIEW RUGS etc. false = full words. */
     var PW = (window.OB_CONF || {}).phoneTileWord;
     var tag = function () {
       try {
@@ -250,10 +250,25 @@ try {
             if (!t && ch.tagName === "P" && ch.classList.contains("sqsrte-large") && ch.children.length === 1 && ch.children[0].tagName === "STRONG" && !ch.querySelector("br")) t = ch;
             if (!a && ch.tagName === "P") { var l = ch.querySelector(":scope > a[href]"); if (l && CTA.test((l.textContent || "").trim())) a = l; }
           }
-          if (t && a) a.setAttribute("data-ob-phone-word", String(PW));
+          if (t && a && !a.hasAttribute("data-ob-phone-word")) { a.setAttribute("data-ob-phone-word", String(PW)); a.setAttribute("data-ob-full-words", (a.textContent || "").replace(/\s+/g, " ").trim()); }
         }
+        swap();
       } catch (e) {}
     };
+    /* phones: the link shows the short word, with the full words kept as its spoken name; computers get the full words back */
+    var MQ = window.matchMedia ? window.matchMedia("(max-width: 767px)") : null;
+    var swap = function () {
+      var on = !!(MQ && MQ.matches), ls = document.querySelectorAll("a[data-ob-phone-word]");
+      for (var i = 0; i < ls.length; i++) {
+        var a = ls[i], w = on ? a.getAttribute("data-ob-phone-word") : a.getAttribute("data-ob-full-words");
+        if (!w) continue;
+        var tw = document.createTreeWalker(a, NodeFilter.SHOW_TEXT, null), n, nodes = [];
+        while ((n = tw.nextNode())) if (/\S/.test(n.nodeValue)) nodes.push(n);
+        if (!nodes.length) { a.appendChild(document.createTextNode(w)); } else if (nodes[0].nodeValue !== w) { nodes[0].nodeValue = w; for (var j = 1; j < nodes.length; j++) nodes[j].nodeValue = ""; }
+        if (on) a.setAttribute("aria-label", a.getAttribute("data-ob-full-words")); else a.removeAttribute("aria-label");
+      }
+    };
+    if (MQ && PW) { if (MQ.addEventListener) MQ.addEventListener("change", swap); else if (MQ.addListener) MQ.addListener(swap); }
     run(); tag();
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { run(); tag(); });
     window.OB_homeWords = function () { run(); tag(); };
