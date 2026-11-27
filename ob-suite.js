@@ -1,4 +1,11 @@
-/* OB SOLID SUITE v17.13 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.14 · ob-suite.js · Opposite Things
+   v17.14 = v17.13, tidied (Footer v17.74): the Footer's styles now live in ob-suite.css (same commit, loaded just before this
+   file) and the few rules that shape the page before any script runs moved into Custom CSS v17.14, so nothing moves after the
+   first paint (the phone logo used to drop 1px and the menu shift 6px when the Footer styles arrived). Taken out: the logo
+   shrink (logoShrink, logoShrinkOver: Ben, 27 Nov), black "auto" / "snap" and their brightness sampling, monoPhotos, and the
+   old pointer dot and shapes (cursor, cursorDot, cursorShapes, shapeStyle, cursorSize, viewer.cursor): the pointer is always
+   the normal arrow with the word chip beside it over photos. black: true is now switched on by html.obBlack.
+   What the site looks like is unchanged.
    v17.13 = v17.12 + phoneTileWord in OB SETTINGS ("VIEW"): the RUGS / PRINTS / OBJECTS chips show just that word on phones. The logo shrink no longer animates on load or page change (html.obLogoAnim after the first touch/wheel/key).
    v17.12 = v17.11 + black: "mono" in OB SETTINGS: the old white difference header and video words, made pure greyscale by a copy on top with mix-blend-mode: saturation (html.obMono, [data-ob-mono]); styles in the Footer. monoHero: false = header only, monoPhotos: false = words over photos stay plain white.
    v17.11 = v17.10 + black: "snap" in OB SETTINGS: logo/nav and the words over the home video go pure black or pure white depending on what's behind them (html.obSnap, .obNavLight, .obHeroLight); styles in the Footer.
@@ -64,7 +71,7 @@
        (no wait before the page shows); if they arrive late, ob-drawings.js calls window.obDimsReady.
      · Store chips are announced as links again (the list roles replaced "link" for screen readers).
      · Image-block links start whether or not the page has finished loading.
-   To change code: edit here, merge into main, put the new commit ID in the Footer's last line.
+   To change code: edit here (styles: ob-suite.css), merge into main, put the new commit ID in the Footer's two lines (stylesheet and script).
    To change words or lists: edit OB_CONF in the Footer; no release needed. */
 /* ==== FOOTER PARTS (moved from the Squarespace Footer in v17.2, code unchanged) ====
    These ran as separate <script> boxes in Footer v17.50, in this order, just before the suite.
@@ -84,7 +91,7 @@ try {
   } catch (e) {}
 })();
 } catch (e) { if (window.console) console.error("[OB STORE SWAP v1]", e); }
-/* ---- footer: OB PERKS v2 · three chips under the SIZES panel on product pages, each with a small line under it (perks and perksLayout in OB SETTINGS). Styles stay in the Footer. ---- */
+/* ---- footer: OB PERKS v2 · three chips under the SIZES panel on product pages, each with a small line under it (perks and perksLayout in OB SETTINGS). Styles in ob-suite.css. ---- */
 try {
 (function () {
   var FALLBACK = [{
@@ -274,7 +281,7 @@ try {
     window.OB_homeWords = function () { run(); tag(); };
   } catch (e) {}
 })();
-/* ---- footer: OB PHOTO VIEWER v2 · product pages: full-screen photo viewer (computers), word chip that trails the pointer over photos (ENLARGE, PREV/NEXT/CLOSE, SHOP over the home hero and tiles), cursor, home tile links and linkFix (viewer, heroShop, tiles, linkFix, cursor… in OB SETTINGS). Styles stay in the Footer. ---- */
+/* ---- footer: OB PHOTO VIEWER v2 · product pages: full-screen photo viewer (computers), word chip that trails the pointer over photos (ENLARGE, PREV/NEXT/CLOSE, SHOP over the home hero and tiles), cursor, home tile links and linkFix (viewer, heroShop, tiles, linkFix, cursor… in OB SETTINGS). Styles in ob-suite.css. ---- */
 try {
 (function () {
   try {
@@ -644,20 +651,12 @@ try {
     tip.className = "obPvTip";
     tip.setAttribute("aria-hidden", "true");
     tip.setAttribute("data-wg-notranslate", "");
-    tip.innerHTML = "<i></i><b></b>";
-    var sq = tip.firstChild, chip = tip.lastChild;
+    tip.innerHTML = "<b></b>";
+    var chip = tip.firstChild;
     /* home page hero: on a computer the same pointer shows [SHOP] over the hero photo and a click anywhere on it opens the store (all products); the SHOP link laid over it is hidden there but stays for keyboard users (it shows when tabbed to) and on phones and tablets, where the hero is tappable too. heroShop in OB SETTINGS: href, word, on: false to switch it off, section: a section ID if the hero isn't the first section. */
     var HC = function () { return (window.OB_CONF || {}).heroShop || {}; };
     var heroHref = function () { return HC().href || "/store"; };
     var fine = function () { return window.matchMedia("(hover: hover) and (pointer: fine)").matches; };
-    /* computers: the arrow becomes a small circle everywhere, which grows over anything clickable. Form fields keep their normal text cursor. The arrow is only hidden once this code runs and the mouse moves. cursor: "arrow" in OB SETTINGS brings the normal arrow back. */
-    var cursorSet = function () { return String((window.OB_CONF || {}).cursor || "dot"); };
-    var dotMode = function () { return cursorSet() !== "arrow" && cursorSet() !== "plain" && fine(); };
-    /* cursor: "plain" in OB SETTINGS: the normal arrow everywhere, no dot or shapes; over photos only the word trails beside it */
-    var plain = function () { return cursorSet() === "plain"; };
-    if (plain()) document.documentElement.classList.add("obPlainCursor");
-    var NATIVE = 'input:not([type=submit]):not([type=button]):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=image]), textarea, select, [contenteditable=""], [contenteditable=true], iframe';
-    var CLICK = 'a[href], button, [role=button], [role=link], [role=tab], [role=menuitem], [role=option], label, summary, input[type=submit], input[type=button], input[type=checkbox], input[type=radio], input[type=image], [onclick], .product-gallery-slides-item, .obChipBtn';
     var heroSec = null, heroLink = null, heroIn = false;
     var heroFind = function () {
       if (HC().on === false || window.self !== window.top) return null;
@@ -847,26 +846,6 @@ try {
     document.addEventListener("load", function (e) { if (e.target && e.target.tagName === "IMG" && !tileScrollT) tileScrollT = setTimeout(function () { tileScrollT = 0; tileMark(); }, 100); }, true);
     var tileScrollT = 0;
     window.addEventListener("scroll", function () { if (tileScrollT) return; tileScrollT = setTimeout(function () { tileScrollT = 0; tileMark(); }, 250); }, { passive: true });
-    /* the rest of the site: over a photo that links somewhere (store grid, product cards, Finds, home tiles) the pointer is the same dot, with no word. cursorDot: false in OB SETTINGS switches it off. */
-    var DOT = "\u00b7dot", dotEl = null;
-    var dotSet = function (a) {
-      if (a === dotEl) return;
-      if (dotEl) dotEl.classList.remove("obDotIn");
-      dotEl = a;
-      if (a) a.classList.add("obDotIn");
-    };
-    var dotWord = function (el) {
-      var a = null;
-      if ((window.OB_CONF || {}).cursorDot !== false && !plain() && el && el.closest && !el.closest(".obPv, " + SLIDES)) {
-        var pic = el.tagName === "IMG" || el.tagName === "VIDEO" ? el : el.closest(".grid-image, .grid-item-image, .product-list-image-wrapper, .product-list-item-image, .fluid-image-container, .image-container, .image-block-wrapper, .summary-thumbnail-container");
-        if (pic && pic.closest("main, footer, #footer-sections")) {
-          a = pic.closest("a[href]");
-          if (!a) { var blk = pic.closest(".sqs-block-image, .sqs-block-product"); a = blk && blk.querySelector("a[href]") && pic.closest(".sqs-block-image, .sqs-block-product") ? blk : null; }
-        }
-      }
-      dotSet(a);
-      return a ? DOT : "";
-    };
     /* v17.37: the SHOP… words under each photo stay visible at rest and fade out while the pointer is on that photo, where the chip takes over (ctaRest: false in OB SETTINGS hides them all the time) */
     var heroCta, ctaNow = null, ctaOn = [];
     if ((window.OB_CONF || {}).ctaRest === false) document.documentElement.classList.add("obCtaHidden");
@@ -881,10 +860,9 @@ try {
       if (!el || !el.closest) return "";
       if (el.closest(".obPvSlide")) { var z = zone(lastE); return z ? t(z + "Tip") : ""; }
       if (!dlg || !dlg.open) { var it = el.closest(SLIDES); if (it && it.querySelector("img") && document.body.classList.contains("view-item")) return t("enlarge"); }
-      if (!dlg || !dlg.open) { var ow = el.closest(".obOtDragging[data-ob-tip]") || el.closest("[data-ob-tip]"); if (ow && fine() && ow.getAttribute("data-ob-tip")) { dotSet(null); return ow.getAttribute("data-ob-tip"); } var hw = heroWord(el, lastE); if (hw) { dotSet(null); return hw; } var tw = tileWord(el); if (tw) { dotSet(null); return tw; } return dotWord(el); }
+      if (!dlg || !dlg.open) { var ow = el.closest(".obOtDragging[data-ob-tip]") || el.closest("[data-ob-tip]"); if (ow && fine() && ow.getAttribute("data-ob-tip")) return ow.getAttribute("data-ob-tip"); return heroWord(el, lastE) || tileWord(el); }
       return "";
     };
-    var SHAPES = ["circle", "square", "triangle", "petal"], picShape = "circle", onPic = false;
     var mx = 0, my = 0, cx = 0, cy = 0, on = false, raf = 0, lastE = null, word = "", swapT = 0;
     /* v17.42: a new word slides in rather than jumping: the old word slides up and fades, the new one rises in, and the chip's width eases to fit it */
     var wordSpan = function (w) { var s = document.createElement("span"); s.textContent = w; return s; };
@@ -910,83 +888,40 @@ try {
     var draw = function () {
       raf = 0;
       if (still()) { cx = mx; cy = my; } else { cx += (mx - cx) * 0.09; cy += (my - cy) * 0.09; }
-      sq.style.transform = "translate(" + mx + "px," + my + "px)";
       chip.style.transform = "translate(" + cx.toFixed(1) + "px," + cy.toFixed(1) + "px)";
       if (Math.abs(mx - cx) > 0.3 || Math.abs(my - cy) > 0.3) raf = requestAnimationFrame(draw);
     };
     var tipAt = function (e) {
       if (!e) return;
       lastE = { clientX: e.clientX, clientY: e.clientY, pointerType: e.pointerType };
-      /* the Header's early dot (shown on arrival so the arrow doesn't flash in) hands over to this one */
-      if (e.pointerType === "mouse" || !e.pointerType) document.documentElement.classList.remove("obDotEarly");
-      if (window.PointerEvent && e instanceof PointerEvent) document.documentElement.classList.remove("obPicEarly", "obPicDot", "obPicHold");
-      if (e.pointerType && e.pointerType !== "mouse") { tip.classList.remove("obPvTipOn"); on = false; dotSet(null); document.documentElement.classList.remove("obDotCursor"); return; }
+      if (e.pointerType && e.pointerType !== "mouse") { tip.classList.remove("obPvTipOn"); on = false; return; }
       var home = dlg && dlg.open && !closing ? dlg : (closing ? tip.parentNode || document.body : document.body);
       if (tip.parentNode !== home) home.appendChild(tip);
       /* while the photos slide or the viewer closes, keep the word as it was */
       var w = (closing || Date.now() < navUntil) && on && word ? word : tipWord(document.elementFromPoint(e.clientX, e.clientY));
-      /* over a photo (a word, or a photo that links somewhere): a shape picked at random each time the pointer arrives on one, never the same twice running */
-      var pic = !!w;
-      if (pic && !onPic) {
-        /* the first photo after arriving keeps the Header's circle, so nothing jumps */
-        if (document.documentElement.classList.contains("obPicDot")) picShape = "circle";
-        else { var pool = SHAPES.filter(function (x) { return x !== picShape; }); picShape = pool[Math.floor(Math.random() * pool.length)]; }
-      }
-      onPic = pic;
-      var grow = false;
-      if (dotMode()) {
-        if (!document.documentElement.classList.contains("obDotCursor")) document.documentElement.classList.add("obDotCursor");
-        var under = document.elementFromPoint(e.clientX, e.clientY);
-        if (!under || (under.closest && under.closest(NATIVE))) { tip.classList.remove("obPvTipOn"); on = false; return; }
-        if (!w || w === DOT) { grow = w === DOT || !!(under.closest && under.closest(CLICK)); w = DOT; }
-      } else {
-        if (document.documentElement.classList.contains("obDotCursor")) document.documentElement.classList.remove("obDotCursor");
-        /* arrow mode: the dot only shows over photos that link somewhere, at its hover size */
-        if (w === DOT) grow = true;
-      }
       if (!w) { tip.classList.remove("obPvTipOn"); on = false; return; }
-      /* a word beside the dot: the dot is at its hover size too */
-      if (w !== DOT) grow = true;
-      tip.classList.toggle("obPvDotOnly", w === DOT);
-      tip.classList.toggle("obPvGrow", grow);
-      if (w !== DOT) setWord(w); else word = "";
-      var shape = pic && (window.OB_CONF || {}).cursorShapes !== false ? picShape : String(((window.OB_CONF || {}).viewer || {}).cursor || "circle");
-      if (tip.getAttribute("data-shape") !== shape) tip.setAttribute("data-shape", shape);
-      /* shapes over photos: solid black, or frosted glass inside a thin black line (shapeStyle in OB SETTINGS) */
-      var style = pic ? String((window.OB_CONF || {}).shapeStyle || "glass") : "solid";
-      if (tip.getAttribute("data-style") !== style) tip.setAttribute("data-style", style);
-      /* dot sizes in px: cursorSize { normal, hover } in OB SETTINGS (hover can be smaller than normal) */
-      var cs = (window.OB_CONF || {}).cursorSize || {}, d1 = (+cs.normal || 10) + "px", d2 = (+cs.hover || 16) + "px";
-      if (tip.style.getPropertyValue("--obDot") !== d1) tip.style.setProperty("--obDot", d1);
-      if (tip.style.getPropertyValue("--obDotHover") !== d2) tip.style.setProperty("--obDotHover", d2);
+      setWord(w);
       mx = e.clientX; my = e.clientY;
       if (!on) { cx = mx; cy = my; on = true; }
       tip.classList.add("obPvTipOn");
       if (!raf) raf = requestAnimationFrame(draw);
-      document.documentElement.classList.remove("obPicEarly", "obPicDot", "obPicHold");
     };
     var tipAgain = function () { setTimeout(function () { tipAt(lastE); }, 40); };
-    /* remember where the mouse was, so the next page's Header can put the dot there straight away */
+    /* remember where the mouse was, so the next page can show the word under it straight away */
     var dotSave = function () {
       try {
-        if (!lastE || (lastE.pointerType && lastE.pointerType !== "mouse")) { sessionStorage.removeItem("obDot"); sessionStorage.removeItem("obPtr"); return; }
-        /* any mode: where the mouse was, so the next page can show the right shape and word under it at once */
-        var cz = (window.OB_CONF || {}).cursorSize || {}, gl = String((window.OB_CONF || {}).shapeStyle || "glass");
-        sessionStorage.setItem("obPtr", JSON.stringify({ x: Math.round(lastE.clientX), y: Math.round(lastE.clientY), st: gl, s: (+cz.hover || 16) + (gl === "glass" ? 6 : 0), pic: onPic ? 1 : 0 }));
-        if (!dotMode()) { sessionStorage.removeItem("obDot"); return; }
-        var cs = (window.OB_CONF || {}).cursorSize || {};
-        sessionStorage.setItem("obDot", JSON.stringify({ x: Math.round(lastE.clientX), y: Math.round(lastE.clientY), s: +cs.normal || 10 }));
+        if (!lastE || (lastE.pointerType && lastE.pointerType !== "mouse")) { sessionStorage.removeItem("obPtr"); return; }
+        sessionStorage.setItem("obPtr", JSON.stringify({ x: Math.round(lastE.clientX), y: Math.round(lastE.clientY) }));
       } catch (e) {}
     };
     window.addEventListener("pagehide", dotSave);
-    /* arriving from another page with the mouse already over something (a photo, say): show its shape and word straight away, without waiting for the mouse to move; checked again as the photos are laid out */
+    /* arriving from another page with the mouse already over a photo: show its word without waiting for the mouse to move; checked again as the photos are laid out */
     try {
-      var p0 = JSON.parse(sessionStorage.getItem("obPtr") || sessionStorage.getItem("obDot") || "null");
+      var p0 = JSON.parse(sessionStorage.getItem("obPtr") || "null");
       if (p0 && typeof p0.x === "number" && fine()) {
         var hand = function () { if (!lastE || lastE.arrived) { tipAt({ clientX: p0.x, clientY: p0.y, pointerType: "mouse" }); if (lastE) lastE.arrived = true; } };
         if (document.body) hand(); else document.addEventListener("DOMContentLoaded", hand);
         [300, 800, 1500].forEach(function (ms) { setTimeout(hand, ms); });
-        setTimeout(function () { if (!document.documentElement.classList.contains("obPicHold")) document.documentElement.classList.remove("obPicEarly", "obPicDot", "obPicHold"); }, 1700);
         window.addEventListener("load", function () { setTimeout(hand, 50); });
       }
     } catch (e) {}
@@ -996,7 +931,7 @@ try {
     document.addEventListener("pointerup", tipAgain, { passive: true });
     document.addEventListener("keyup", tipAgain, { passive: true });
     window.addEventListener("scroll", tipAgain, { passive: true });
-    document.documentElement.addEventListener("pointerleave", function () { tip.classList.remove("obPvTipOn"); on = false; dotSet(null); document.documentElement.classList.remove("obTileOver"); ctaSet(null); });
+    document.documentElement.addEventListener("pointerleave", function () { tip.classList.remove("obPvTipOn"); on = false; document.documentElement.classList.remove("obTileOver"); ctaSet(null); });
     /* the pointer went into an embedded frame (card fields, maps, videos) or off the window */
     document.addEventListener("pointerover", function (e) { if (e.target && e.target.tagName === "IFRAME") { tip.classList.remove("obPvTipOn"); on = false; } }, { passive: true });
     window.addEventListener("blur", function () { tip.classList.remove("obPvTipOn"); on = false; });
@@ -1040,7 +975,7 @@ try {
   } catch (e) {}
 })();
 } catch (e) { if (window.console) console.error("[OB PHOTO VIEWER v2]", e); }
-/* ---- footer: OB SHOP CHIPS v1 · home page, phones and tablets: the SHOP… words under the hero and tile photos become chips like the computer pointer chip (12px mono, no brackets) and stay where they are: frosted over a photo, a light tint on the page. shopChips: false in OB SETTINGS switches it off. Styles stay in the Footer. ---- */
+/* ---- footer: OB SHOP CHIPS v1 · home page, phones and tablets: the SHOP… words under the hero and tile photos become chips like the computer pointer chip (12px mono, no brackets) and stay where they are: frosted over a photo, a light tint on the page. shopChips: false in OB SETTINGS switches it off. Styles in ob-suite.css. ---- */
 (function () {
   if ((window.OB_CONF || {}).shopChips === false || window.self !== window.top) return;
   var touch = function () { return !window.matchMedia("(hover: hover) and (pointer: fine)").matches; };
@@ -1125,187 +1060,59 @@ try {
   var rz; window.addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(mark, 200); }, { passive: true });
 })();
 
-/* ---- OB NAV TONE v1 (v17.9) · every page: the logo, nav and BAG are black (styles in the Footer). While the strip under the header lies on a dark photo or a dark moment of the video (SLOT, the darker video frames), html gets .obNavLight and they go back to white (the old flip). The photo is read from a small copy of the image (Squarespace's image server allows it), the video from its current frame. black in OB SETTINGS: true = all black always (default), "auto" = this dark-photo flip (html.obTextWhite, words over photos stay white), false = off (html.obNavOff). Also the logo shrinking on scroll: html.obScrolled once you're more than 60px down; the Footer scales the logo (logoShrink in OB SETTINGS: 0.75, false = off). ---- */
+/* ---- OB NAV TONE v2 (v17.14) · every page: how the logo, nav, BAG and the words over the home video look (black in OB SETTINGS; styles in ob-suite.css).
+   "mono" = the white difference look (Custom CSS 3.3) made pure greyscale: an inert copy of the header and of the words over the video lies on top with mix-blend-mode: saturation (html.obMono, [data-ob-mono]); monoHero: false = header only.
+   true = all black (html.obBlack). false = the plain white difference look (html.obNavOff).
+   v17.14: "auto" / "snap" (brightness sampling), monoPhotos and the logo shrink are gone. ---- */
 (function () {
   try {
     var C = window.OB_CONF || {}, d = document.documentElement;
-    if (C.logoShrink !== false) {
-      d.style.setProperty("--obLogoScale", String(typeof C.logoShrink === "number" ? C.logoShrink : 0.75));
-      /* v17.10: gradual: the logo follows the scroll, 100% at the top down to logoShrink over the first logoShrinkOver px (260), as --obLogoK 0..1 (rAF, transform only) */
-      var OVER = typeof C.logoShrinkOver === "number" && C.logoShrinkOver > 0 ? C.logoShrinkOver : 260, lk = -1, lraf = 0;
-      var sc = function () {
-        lraf = 0;
-        var y = Math.max(0, window.scrollY || 0), k = Math.min(1, y / OVER);
-        k = k * k * (3 - 2 * k);
-        k = Math.round(k * 1000) / 1000;
-        if (k !== lk) { lk = k; d.style.setProperty("--obLogoK", String(k)); }
-        d.classList.toggle("obScrolled", y > 60);
-      };
-      sc(); window.addEventListener("scroll", function () { if (!lraf) lraf = requestAnimationFrame(sc); }, { passive: true });
-      /* v17.13: the logo only animates once the visitor touches, wheels or presses a key, so a reload or page change halfway down shows it at the right size straight away (html.obLogoAnim gates the Footer's transition) */
-      var arm = function () { d.classList.add("obLogoAnim"); ["wheel", "touchstart", "keydown", "pointerdown"].forEach(function (e) { window.removeEventListener(e, arm, true); }); };
-      ["wheel", "touchstart", "keydown", "pointerdown"].forEach(function (e) { window.addEventListener(e, arm, { capture: true, passive: true }); });
-      window.addEventListener("pageshow", function (ev) { if (ev.persisted) { d.classList.remove("obLogoAnim"); sc(); ["wheel", "touchstart", "keydown", "pointerdown"].forEach(function (e) { window.addEventListener(e, arm, { capture: true, passive: true }); }); } });
-    }
-    /* black: true = logo, nav, BAG, hero words and words over photos all black, always (Ben, 27 Nov: placeholders, try it). "auto" = nav black but white over dark photos / video frames, words over photos stay white. false = the old white, flipping look. */
     var B = C.black === undefined ? true : C.black;
-    if (B === false) { d.classList.add("obNavOff"); return; }
-    /* "mono" (v17.12, Ben 27 Nov: "we want difference as black and white"): the old white difference look (obNavOff), plus an identical copy of the header and of the words over the home video laid on top with mix-blend-mode: saturation, so the difference result loses its colour and stays pure greyscale, pixel by pixel, with no flashing. The copies are inert, hidden from screen readers and take no clicks; they are rebuilt when the original changes (BAG count, Squarespace classes). Styles (html.obMono [data-ob-mono]) in the Footer. */
-    if (B === "mono") {
-      d.classList.add("obNavOff", "obMono");
-      var monoOf = function (src) {
-        var cl = null, raf = 0;
-        var build = function () {
-          raf = 0;
-          if (!src.isConnected) return;
-          var n = src.cloneNode(true);
-          n.setAttribute("data-ob-mono", ""); n.setAttribute("aria-hidden", "true"); n.inert = true;
-          n.querySelectorAll("video,iframe,script,noscript").forEach(function (x) { var k = document.createElement("i"); k.hidden = true; x.replaceWith(k); });
-          if (cl && cl.parentNode) cl.replaceWith(n); else src.after(n);
-          cl = n;
-        };
-        /* a class or style change is copied onto the same element in the copy (so the header's scroll classes keep their transitions in step); added or removed content rebuilds the copy */
-        var twin = function (el) {
-          var path = [];
-          while (el && el !== src) { var p = el.parentNode; if (!p) return null; path.unshift(Array.prototype.indexOf.call(p.children, el)); el = p; }
-          if (el !== src) return null;
-          var t = cl;
-          for (var i = 0; t && i < path.length; i++) t = t.children[path[i]];
-          return t || null;
-        };
-        build();
-        new MutationObserver(function (list) {
-          for (var i = 0; i < list.length; i++) {
-            var m = list[i];
-            if (m.type !== "attributes") { if (!raf) raf = requestAnimationFrame(build); return; }
-            var t = cl && twin(m.target);
-            if (!t) { if (!raf) raf = requestAnimationFrame(build); return; }
-            var v = m.target.getAttribute(m.attributeName);
-            if (v === null) t.removeAttribute(m.attributeName); else t.setAttribute(m.attributeName, v);
-          }
-        }).observe(src, { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ["class", "style", "src", "srcset", "href"] });
+    if (B === true) { d.classList.add("obBlack"); return; }
+    d.classList.add("obNavOff");
+    if (B !== "mono") return;
+    d.classList.add("obMono");
+    /* the copies are inert, hidden from screen readers and take no clicks; a class or style change is copied onto the same element in the copy (so the header's scroll classes keep their transitions in step); added or removed content rebuilds the copy (BAG count, Squarespace classes) */
+    var monoOf = function (src) {
+      var cl = null, raf = 0;
+      var build = function () {
+        raf = 0;
+        if (!src.isConnected) return;
+        var n = src.cloneNode(true);
+        n.setAttribute("data-ob-mono", ""); n.setAttribute("aria-hidden", "true"); n.inert = true;
+        n.querySelectorAll("video,iframe,script,noscript").forEach(function (x) { var k = document.createElement("i"); k.hidden = true; x.replaceWith(k); });
+        if (cl && cl.parentNode) cl.replaceWith(n); else src.after(n);
+        cl = n;
       };
-      var monoGo = function () {
-        var hd = document.querySelector("#header:not([data-ob-mono])");
-        if (hd) monoOf(hd);
-        if (C.monoHero !== false) document.querySelectorAll("section.page-section").forEach(function (sec) {
-          if (!sec.querySelector(".section-background video, .section-background .sqs-video-background-native")) return;
-          sec.querySelectorAll(".fe-block").forEach(function (b) { if (b.querySelector(".sqs-html-content") && !b.hasAttribute("data-ob-mono") && !b.hasAttribute("data-ob-mono-src")) { b.setAttribute("data-ob-mono-src", ""); monoOf(b); } });
-        });
-        /* monoPhotos: the white words over photos (INTRODUCING SLOT, BLOOM, ROSALIA) get the same greyscale difference (html.obMonoPhotos; the Footer sets their difference) */
-        if (C.monoPhotos !== false) {
-          d.classList.add("obMonoPhotos");
-          document.querySelectorAll("main .fe-block").forEach(function (b) { if (b.querySelector(".sqsrte-text-color--white") && !b.hasAttribute("data-ob-mono") && !b.hasAttribute("data-ob-mono-src")) { b.setAttribute("data-ob-mono-src", ""); monoOf(b); } });
-        }
+      var twin = function (el) {
+        var path = [];
+        while (el && el !== src) { var p = el.parentNode; if (!p) return null; path.unshift(Array.prototype.indexOf.call(p.children, el)); el = p; }
+        if (el !== src) return null;
+        var t = cl;
+        for (var i = 0; t && i < path.length; i++) t = t.children[path[i]];
+        return t || null;
       };
-      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", monoGo); else monoGo();
-      return;
-    }
-    /* "snap" (v17.11): logo/nav and the words over the home video are pure black or pure white, whichever reads better on what's behind them right now (never the muddy grey of the old flip); words over photos stay black. */
-    if (B !== "auto" && B !== "snap") return;
-    var SNAP = B === "snap";
-    d.classList.add(SNAP ? "obSnap" : "obTextWhite");
-    var LIMIT = typeof C.navLightBelow === "number" ? C.navLightBelow : SNAP ? 118 : 100;
-    var cache = {}, cv = document.createElement("canvas"), g = null, light = false, t = 0;
-    var get = function () { if (!g) { cv.width = 48; cv.height = 48; g = cv.getContext("2d", { willReadFrequently: true }); } return g; };
-    var lumOf = function (data) { var s = 0, n = 0; for (var i = 0; i < data.length; i += 4) { if (data[i + 3] < 128) continue; s += 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]; n++; } return n ? s / n : 255; };
-    /* the part of a picture (object-fit cover/contain) that lies under the strip, in the picture's own 0..1 coordinates */
-    var part = function (el, nw, nh, band) {
-      var r = el.getBoundingClientRect(), fit = getComputedStyle(el).objectFit || "fill";
-      if (!r.width || !r.height || !nw || !nh) return null;
-      var sx = r.width / nw, sy = r.height / nh, k;
-      if (fit === "cover") { k = Math.max(sx, sy); sx = sy = k; } else if (fit === "contain" || fit === "scale-down") { k = Math.min(sx, sy); sx = sy = k; }
-      var ox = r.left + (r.width - nw * sx) / 2, oy = r.top + (r.height - nh * sy) / 2;
-      var x0 = Math.max(band.left, r.left), x1 = Math.min(band.right, r.right), y0 = Math.max(band.top, r.top), y1 = Math.min(band.bottom, r.bottom);
-      if (x1 <= x0 || y1 <= y0) return null;
-      var u0 = Math.max(0, (x0 - ox) / (nw * sx)), u1 = Math.min(1, (x1 - ox) / (nw * sx)), v0 = Math.max(0, (y0 - oy) / (nh * sy)), v1 = Math.min(1, (y1 - oy) / (nh * sy));
-      if (u1 <= u0 || v1 <= v0) return null;
-      return [u0, v0, u1, v1];
-    };
-    var sample = function (src, w, h, pr) {
-      var c = get(); c.clearRect(0, 0, 48, 48);
-      c.drawImage(src, pr[0] * w, pr[1] * h, Math.max(1, (pr[2] - pr[0]) * w), Math.max(1, (pr[3] - pr[1]) * h), 0, 0, 48, 48);
-      return lumOf(c.getImageData(0, 0, 48, 48).data);
-    };
-    var small = function (img) {
-      var u = img.currentSrc || img.src || "";
-      if (!/squarespace-cdn\.com/.test(u)) return null;
-      u = u.replace(/format=\d+w/, "format=100w"); if (u.indexOf("format=") < 0) u += (u.indexOf("?") < 0 ? "?" : "&") + "format=100w";
-      var e = cache[u];
-      if (!e) { e = cache[u] = { img: new Image(), ok: false }; e.img.crossOrigin = "anonymous"; e.img.onload = function () { e.ok = true; check(); }; e.img.src = u; }
-      return e.ok ? e.img : null;
-    };
-    /* average brightness (0..255) of the photos / video lying under a strip of the screen, or -1 when there's only the plain page there */
-    var under = function (band, skip) {
-        var ys = [(band.top + band.bottom) / 2], w = band.right - band.left, xs = [band.left + w * 0.12, band.left + w * 0.5, band.left + w * 0.88], seen = [], L = [], hd = skip;
-        xs.forEach(function (x) { ys.forEach(function (y) {
-          var els = document.elementsFromPoint(x, y) || [];
-          for (var i = 0; i < els.length; i++) {
-            var el = els[i];
-            if (hd.contains(el) || el.closest(".obPvTip, .obBack, #obShopChipsBar, #header, header.header, .obShopChip")) continue;
-            var m = el.tagName === "IMG" || el.tagName === "VIDEO" ? el : null;
-            if (!m && el.closest) { var bg = el.closest("section") && el.closest(".section-background, .fluid-image-container, .image-block-wrapper, .sqs-block-image"); m = bg && bg.querySelector("video, img"); }
-            /* a section's own background photo or video takes no clicks, so it never shows up here: reaching the section (or its coloured border box) means it's what lies behind */
-            if (!m && el.closest && (el.tagName === "SECTION" || el.classList.contains("section-border"))) { var sx = el.closest("section.page-section") || el; m = sx.querySelector(".section-background video") || sx.querySelector(".section-background img"); }
-            if (m && seen.indexOf(m) < 0) { seen.push(m); try {
-              if (m.tagName === "VIDEO") { if (m.videoWidth) { var pv = part(m, m.videoWidth, m.videoHeight, band); if (pv) L.push(sample(m, m.videoWidth, m.videoHeight, pv)); } }
-              else { var sm = small(m); if (sm) { var pi = part(m, m.naturalWidth || sm.naturalWidth, m.naturalHeight || sm.naturalHeight, band); if (pi) L.push(sample(sm, sm.naturalWidth, sm.naturalHeight, pi)); } }
-            } catch (e) {} }
-            if (m || getComputedStyle(el).backgroundColor.replace(/\s/g, "").indexOf("rgba(0,0,0,0)") < 0 && el !== document.body && el !== d) break;
-          }
-        }); });
-        return L.length ? L.reduce(function (a, b) { return a + b; }, 0) / L.length : -1;
-    };
-    var heroLight = false, heroEl = null;
-    var heroFind = function () {
-      if (heroEl && document.contains(heroEl)) return heroEl;
-      var sec = document.querySelector("main section.page-section .section-background video");
-      sec = sec && sec.closest("section");
-      heroEl = sec ? sec.querySelector(".sqs-html-content") : null;
-      return heroEl;
-    };
-    var check = function () {
-      t = 0;
-      try {
-        var hd = document.querySelector("#header, header.header");
-        if (!hd || document.body.classList.contains("header--menu-open")) set(false);
-        else {
-          var hr = hd.getBoundingClientRect();
-          var a = under({ left: 0, right: window.innerWidth, top: Math.max(0, hr.top), bottom: Math.max(1, Math.min(hr.bottom, 110)) }, hd);
-          set(a >= 0 && (light ? a < LIMIT + 12 : a < LIMIT));
+      build();
+      new MutationObserver(function (list) {
+        for (var i = 0; i < list.length; i++) {
+          var m = list[i];
+          if (m.type !== "attributes") { if (!raf) raf = requestAnimationFrame(build); return; }
+          var t = cl && twin(m.target);
+          if (!t) { if (!raf) raf = requestAnimationFrame(build); return; }
+          var v = m.target.getAttribute(m.attributeName);
+          if (v === null) t.removeAttribute(m.attributeName); else t.setAttribute(m.attributeName, v);
         }
-        if (SNAP && heroFind()) {
-          var r = heroEl.getBoundingClientRect();
-          if (r.bottom > 0 && r.top < window.innerHeight) {
-            var b = under({ left: r.left, right: r.right, top: r.top, bottom: r.bottom }, heroEl.closest(".fe-block") || heroEl);
-            var v = b >= 0 && (heroLight ? b < LIMIT + 12 : b < LIMIT);
-            if (v !== heroLight) { heroLight = v; d.classList.toggle("obHeroLight", v); }
-          }
-        }
-        /* v17.11b: words over photos (the white-coloured headings: INTRODUCING SLOT, BLOOM, ROSALIA) snap too, each on its own: .obTxtLight on the word = white */
-        if (SNAP) {
-          var ws = document.querySelectorAll("main .sqsrte-text-color--white");
-          for (var w = 0; w < ws.length; w++) {
-            var el = ws[w];
-            if (el.closest(".obShopChip")) continue;
-            var er = el.getBoundingClientRect();
-            if (!er.width || er.bottom < 0 || er.top > window.innerHeight) continue;
-            var lv = under({ left: er.left, right: er.right, top: er.top, bottom: er.bottom }, el.closest(".fe-block") || el.closest(".sqs-block") || el);
-            var on = el.classList.contains("obTxtLight");
-            var nv = lv >= 0 && (on ? lv < LIMIT + 12 : lv < LIMIT);
-            if (nv !== on) el.classList.toggle("obTxtLight", nv);
-          }
-        }
-      } catch (e) { set(false); }
+      }).observe(src, { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ["class", "style", "src", "srcset", "href"] });
     };
-    var set = function (v) { if (v !== light) { light = v; d.classList.toggle("obNavLight", v); } };
-    var soon = function () { if (!t) t = requestAnimationFrame(check); };
-    window.addEventListener("scroll", soon, { passive: true });
-    window.addEventListener("resize", soon, { passive: true });
-    window.addEventListener("load", soon);
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", soon); else soon();
-    /* the video changes underneath without a scroll: look again twice a second while one is under the header */
-    setInterval(function () { if (!document.hidden && document.querySelector(".section-background video")) { var v = document.querySelector(".section-background video"), r = v.getBoundingClientRect(); if (r.top < window.innerHeight && r.bottom > 0) soon(); } }, 400);
+    var monoGo = function () {
+      var hd = document.querySelector("#header:not([data-ob-mono])");
+      if (hd) monoOf(hd);
+      if (C.monoHero !== false) document.querySelectorAll("section.page-section").forEach(function (sec) {
+        if (!sec.querySelector(".section-background video, .section-background .sqs-video-background-native")) return;
+        sec.querySelectorAll(".fe-block").forEach(function (b) { if (b.querySelector(".sqs-html-content") && !b.hasAttribute("data-ob-mono") && !b.hasAttribute("data-ob-mono-src")) { b.setAttribute("data-ob-mono-src", ""); monoOf(b); } });
+      });
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", monoGo); else monoGo();
   } catch (e) {}
 })();
 
@@ -1353,7 +1160,7 @@ try {
   } catch (e) {}
 })();
 
-/* ---- footer: OB OTHER THINGS v1 · product pages, computers: OTHER THINGS as one sideways row (drag, trackpad, arrow keys), topped up from the store (otherThings in OB SETTINGS). Styles stay in the Footer. ---- */
+/* ---- footer: OB OTHER THINGS v1 · product pages, computers: OTHER THINGS as one sideways row (drag, trackpad, arrow keys), topped up from the store (otherThings in OB SETTINGS). Styles in ob-suite.css. ---- */
 try {
 (function () {
   try {
@@ -1577,7 +1384,7 @@ try {
   } catch (e) {}
 })();
 } catch (e) { if (window.console) console.error("[OB OTHER THINGS v1]", e); }
-/* ---- footer: OB BACK CHIP v1 · product pages: a frosted ‹ SHOP chip under the header that pops in when you scroll back up and away when you scroll down (the store chips' rule), back to the store page you came from, same category and place (backChip in OB SETTINGS). Styles stay in the Footer. ---- */
+/* ---- footer: OB BACK CHIP v1 · product pages: a frosted ‹ SHOP chip under the header that pops in when you scroll back up and away when you scroll down (the store chips' rule), back to the store page you came from, same category and place (backChip in OB SETTINGS). Styles in ob-suite.css. ---- */
 try {
 (function () {
   try {

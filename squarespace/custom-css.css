@@ -1,9 +1,50 @@
 /* ======================================================================
-   OB SHOP CSS — Squarespace 7.1 — v17.7
+   OB SHOP CSS — Squarespace 7.1 — v17.14
    Opposite Things · Website → Pages → Custom Code → Custom CSS.
    Pairs with Header v15.5, the Footer (OB SETTINGS + ob-suite.js v17.0
    from GitHub) and the Store page's ob-drawings.js. "The suite" in the
    notes below is ob-suite.js: the code that used to sit in the Footer.
+
+   v17.14 — the Footer's few rules that shape the page before any script
+     runs move here (17 below), so they apply from the first paint: on
+     phones the logo no longer drops 1px and the menu no longer jumps 6px
+     as the page finishes loading; the product photo frame shape, the
+     RUGS / PRINTS / OBJECTS titles at 14px and the fit-to-width text
+     (MADE IN SICILY) are there from the start too. Pairs with Footer
+     v17.74 (the rest of its styles moved to ob-suite.css on GitHub).
+     Includes v17.13.
+
+   v17.13 — phones: on landing, the bottom of the screen (where the
+     browser's toolbar sits) cuts through the middle of EVERY ROOM NEEDS,
+     a peek that says scroll (v17.8 ended just under that line).
+     Includes v17.12.
+
+   v17.12 — phones: BROWSE FINDS sits right under the FINDS text (the
+     empty line above it is hidden; was a 47px gap, now 10px).
+     Includes v17.11.
+
+   v17.11 — phones: BLOOM and ROSALIA touch again, as on computers
+     (v17.9 had put 48px between them); MORE ON INSTAGRAM stays 48px
+     under ROSALIA. Category captions 24px under their photo (was 16px).
+     Includes v17.10.
+
+   v17.10 — fix for v17.9 on iPhone: the category photos and the FINDS
+     lettering ran off the side of the screen (Safari sized them from
+     their shape instead of the screen). They now get fixed sizes from
+     the screen width (no aspect-ratio), and the two stacked parts can't
+     spill sideways.
+
+   v17.9 — home page on phones (9.6b): one spacing rhythm instead of the
+     builder's: 48px between every part of the page (category tiles,
+     SLOT, FINDS, the products row, BLOOM + ROSALIA, MORE ON INSTAGRAM),
+     16px from a photo to its caption, tiles 6vw in from the sides.
+     INTRODUCING SLOT, BLOOM RUG and ROSALIA RUG at the statement's
+     size. Computers and iPads unchanged.
+
+   v17.8 — home page on phones (9.6): the hero's height follows the
+     statement's size, so the first screen always ends just under the
+     statement's first line (EVERY ROOM NEEDS), never through the second,
+     on any phone (as it looked on the iPhone 17 Pro Max).
 
    v17.7 — home statement on phones (9.6) grows with the screen: its
      longest line runs 16px from each edge (about 25px on a 390px phone,
@@ -4009,10 +4050,19 @@ section[data-section-id="6ad932d919eb524248a93d6f"] .fluid-engine {
     height: ~"calc(100svh - 204px)" !important;
   }
 }
+/* Phones (v17.13): the bottom of the screen on landing (100svh, the
+   height with the browser's toolbars showing) cuts through the middle
+   of the statement's first line. The statement starts 50px into its
+   section and its size is min(7.1vw - 2.3px, 36px) (below); 0.525 times
+   that is the middle of its first line. If the statement's size
+   changes, change these to 0.525 times it: 3.728vw = 0.525 x 7.1vw,
+   1.208px = 0.525 x 2.3px, 18.9px = 0.525 x 36px. Less of the line
+   showing: make 0.525 smaller (0.3); more: bigger (0.8).
+   (v17.8 used 1.04: the screen ended just under the line.) */
 @media (max-width: 767px) {
   section[data-section-id="6ad932d919eb524248a93d6f"] {
-    height: ~"calc(100vh - 80px)" !important;
-    height: ~"calc(100svh - 80px)" !important;
+    height: ~"calc(100vh - 50px - min(3.728vw - 1.208px, 18.9px))" !important;
+    height: ~"calc(100svh - 50px - min(3.728vw - 1.208px, 18.9px))" !important;
   }
 }
 
@@ -4058,6 +4108,116 @@ section[data-section-id="6ad932d919eb524248a93d6f"] .fluid-engine {
 @media (min-width: 768px) {
   br.obBr {
     display: none;
+  }
+}
+
+
+/* ----------------------------------------------------------------------
+   9.6b HOME PAGE SPACING ON PHONES (v17.9)
+   One rhythm in place of the builder's mobile layout: 48px between
+   every part of the page, 24px from a category photo to its caption,
+   category tiles 6vw in from the sides (the same as the text). Up to
+   767px only; the builder's layout still runs iPads and computers.
+   Found by section and block IDs: if a block is rebuilt in Squarespace,
+   its new ID goes here. More space everywhere: change each 48px.
+   ---------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  /* Categories (RUGS, PRINTS, OBJECTS): photos and captions stacked.
+     Each photo keeps the shape it had in the builder. */
+  html.ob-page-home .fe-69638ad590cd5d323dc96210 {
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-start !important;
+    padding-bottom: 48px !important;
+    overflow: hidden;
+  }
+  html.ob-page-home .fe-69638ad590cd5d323dc96210 > .fe-block {
+    grid-area: auto !important;
+    box-sizing: border-box;
+    flex: none !important;
+    width: 88vw !important;
+    max-width: 88vw !important;
+    min-width: 0 !important;
+    margin-left: 6vw;
+    margin-right: 0;
+  }
+  html.ob-page-home .fe-69638ad590cd5d323dc96210 .sqs-html-content > *:last-child {
+    margin-bottom: 0 !important;
+  }
+  /* heights = the builder's shapes at 88vw wide: 288/344, 408/344 and
+     456/344 of 88vw */
+  html.ob-page-home .fe-block-3c5fc76fa4cbc7808641 { height: 73.67vw !important; }
+  html.ob-page-home .fe-block-d11d34447d813ded12c4 { height: 104.37vw !important; margin-top: 48px; }
+  html.ob-page-home .fe-block-f06ac52c79d105b7c7eb { height: 116.65vw !important; margin-top: 48px; }
+  html.ob-page-home .fe-block-8326b38ce646e1c03e54,
+  html.ob-page-home .fe-block-a073f63a503a9ff24deb,
+  html.ob-page-home .fe-block-fb1605df33397ee45c0c {
+    margin-top: 24px;
+  }
+
+  /* FINDS: 48px under SLOT, the lettering, then the text overlapping
+     it by 16px as before, then 48px to the products row */
+  html.ob-page-home .fe-6aeadbe7a168f43c24d66f62 {
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-start !important;
+    padding-top: 48px !important;
+    padding-bottom: 48px !important;
+    overflow: hidden;
+  }
+  html.ob-page-home .fe-6aeadbe7a168f43c24d66f62 > .fe-block {
+    grid-area: auto !important;
+    box-sizing: border-box;
+    flex: none !important;
+    min-width: 0 !important;
+  }
+  html.ob-page-home .fe-6aeadbe7a168f43c24d66f62 .sqs-html-content > *:last-child {
+    margin-bottom: 0 !important;
+  }
+  /* the lettering: full width, 142/390 of it high */
+  html.ob-page-home .fe-block-f2c6bc69b5f82ee4e229 {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 36.41vw !important;
+  }
+  /* BROWSE FINDS right under the text (v17.12): the empty line above
+     it is hidden */
+  html.ob-page-home .fe-block-ff929d0658904be80d16 .sqs-html-content > p:empty {
+    display: none !important;
+  }
+  html.ob-page-home .fe-block-ff929d0658904be80d16 .sqs-html-content > p:last-child {
+    margin-top: 8px !important;
+  }
+  html.ob-page-home .fe-block-ff929d0658904be80d16 {
+    width: 88vw !important;
+    max-width: 88vw !important;
+    margin: -16px 0 0 6vw;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Products row: 48px from the lowest price to BLOOM (was 144px) */
+  html.ob-page-home .fe-69638ad590cd5d323dc96216 {
+    padding-bottom: 48px !important;
+  }
+
+  /* BLOOM and ROSALIA touch, as on computers (v17.11). MORE ON
+     INSTAGRAM: 48px under ROSALIA (the BLOOM section ends with 72px of
+     empty rows; the Instagram section is pulled up 24px over them) */
+  html.ob-page-home section[data-section-id="6964314968acfb6b448c5793"] {
+    margin-top: -24px !important;
+  }
+  html.ob-page-home section[data-section-id="6964314968acfb6b448c5793"] .content-wrapper {
+    padding-top: 0 !important;
+  }
+
+  /* INTRODUCING SLOT, BLOOM RUG, ROSALIA RUG at the statement's size
+     (9.6); fits with or without RUG */
+  html.ob-page-home:not(#obRamp) .fe-block-bb195f9b4142fbc5cebc .sqs-html-content h2,
+  html.ob-page-home:not(#obRamp) .fe-block-b10732f9a5c30ed0baf0 .sqs-html-content h2,
+  html.ob-page-home:not(#obRamp) .fe-block-1b4d5e03887c736b10d9 .sqs-html-content h2 {
+    font-size: ~"min(calc(7.1vw - 2.3px), 36px)" !important;
+    line-height: 1.05 !important;
   }
 }
 
@@ -5313,6 +5473,57 @@ main .section-background .sqs-video-background-native {
   body.collection-type-products.view-item .product-gallery-slides {
     border-radius: var(--obChipCorner) !important;
     overflow: hidden !important;
+  }
+}
+
+/* ======================================================================
+   17. FROM THE FOOTER (v17.14): RULES NEEDED FROM THE FIRST PAINT
+   These were in the Footer (v17.47–v17.73), which only arrives at the end
+   of the page, so the page could shift once they applied. Everything else
+   the Footer styled is built by ob-suite.js and is styled by ob-suite.css.
+   ====================================================================== */
+
+/* Phones: the product photo frame has the photos' own shape (A-paper,
+   like the store tiles) and the photo fills it from the first moment */
+@media (max-width: 767px) {
+  .product-gallery-slides {
+    aspect-ratio: ~"2480 / 3508" !important;
+    height: auto !important;
+  }
+
+  .product-gallery-slides-item img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+}
+
+/* Phones: the menu lines meet the photos' left edge; logo, menu and BAG
+   share one centre line; Squarespace's fit-to-width text (MADE IN SICILY
+   on the Slot page) fills the width (the site heading size overrode it) */
+@media (max-width: 767px) {
+  .header-display-mobile .header-burger-btn {
+    margin-left: -6px !important;
+  }
+
+  .header-display-mobile .header-mobile-logo {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  html:not(#obRamp):not(#obScaled) .sqs-html-content .sqsrte-scaled-text > :is(h1, h2, h3, h4, p) {
+    font-size: 1em !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+  }
+}
+
+/* Phones and tablets: the home tile titles (RUGS, PRINTS, OBJECTS: a
+   bold paragraph on its own) at 14px, a touch bigger than the chips */
+@media (hover: none), (pointer: coarse) {
+  html.ob-page-home main p.sqsrte-large > strong:only-child:not(:has(br)) {
+    font-size: 14px;
   }
 }
 
