@@ -1,4 +1,5 @@
-/* OB SOLID SUITE v17.9 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.10 · ob-suite.js · Opposite Things
+   v17.10 = v17.9 + the logo shrinks gradually with the scroll (100% → logoShrink over the first logoShrinkOver px, default 260) instead of all at once.
    v17.9 = v17.8 + black logo, nav, hero words and words over photos (black: true in OB SETTINGS; "auto" = nav turns white only over dark photos / video frames, html.obNavLight; false = old look) and the logo shrinking on scroll (html.obScrolled; logoShrink in OB SETTINGS). Styles in the Footer.
    v17.8 = v17.7 + home page: each tile's words come from homeWords in OB SETTINGS (VIEW RUGS, VIEW PRINTS, VIEW OBJECTS, BROWSE FINDS, EXPLORE SLOT; hero, Bloom and Rosalia stay SHOP), on the phone chips and the computer pointer chip; on computers SHOP FINDS (now BROWSE FINDS) becomes a fixed chip where it is, like the phone chips; over the FINDS chrome letters (an image block set to fit) the chip keeps the page tint, frosted, instead of the see-through photo look (shopChips: "phone" keeps computers as before). The words view / browse / explore count as SHOP words everywhere.
    v17.7 = v17.6 + the statement's A goes up to the end of the fourth line: … / TO KEEP YOUR PLACE A / LITTLE LESS EXPECTED. (break before LITTLE instead of A).
@@ -1095,8 +1096,17 @@ try {
     var C = window.OB_CONF || {}, d = document.documentElement;
     if (C.logoShrink !== false) {
       d.style.setProperty("--obLogoScale", String(typeof C.logoShrink === "number" ? C.logoShrink : 0.75));
-      var sc = function () { d.classList.toggle("obScrolled", (window.scrollY || 0) > 60); };
-      sc(); window.addEventListener("scroll", sc, { passive: true });
+      /* v17.10: gradual: the logo follows the scroll, 100% at the top down to logoShrink over the first logoShrinkOver px (260), as --obLogoK 0..1 (rAF, transform only) */
+      var OVER = typeof C.logoShrinkOver === "number" && C.logoShrinkOver > 0 ? C.logoShrinkOver : 260, lk = -1, lraf = 0;
+      var sc = function () {
+        lraf = 0;
+        var y = Math.max(0, window.scrollY || 0), k = Math.min(1, y / OVER);
+        k = k * k * (3 - 2 * k);
+        k = Math.round(k * 1000) / 1000;
+        if (k !== lk) { lk = k; d.style.setProperty("--obLogoK", String(k)); }
+        d.classList.toggle("obScrolled", y > 60);
+      };
+      sc(); window.addEventListener("scroll", function () { if (!lraf) lraf = requestAnimationFrame(sc); }, { passive: true });
     }
     /* black: true = logo, nav, BAG, hero words and words over photos all black, always (Ben, 27 Nov: placeholders, try it). "auto" = nav black but white over dark photos / video frames, words over photos stay white. false = the old white, flipping look. */
     var B = C.black === undefined ? true : C.black;
