@@ -6416,35 +6416,60 @@ try {
     var b = h ? Math.max(0, h.getBoundingClientRect().bottom) : 0;
     return Math.min(b, 120);
   };
+  /* next frame, with a timer as a backstop (frames pause in hidden tabs and some webviews) */
+  var tick = function (f) { var done = 0, g = function () { if (done) return; done = 1; f(); }; requestAnimationFrame(g); setTimeout(g, 50); };
   var run = 0;
+  /* our own short ease-out glide (420ms): the same on every phone, and a finger on the screen stops it */
+  var glide = function (by, my) {
+    var y0 = window.scrollY, t0 = performance.now(), dur = still() ? 0 : 420, stop = false;
+    var halt = function () { stop = true; };
+    window.addEventListener("touchstart", halt, { passive: true, once: true });
+    window.addEventListener("wheel", halt, { passive: true, once: true });
+    var step = function () {
+      if (stop || my !== run) return;
+      var k = dur ? Math.min(1, (performance.now() - t0) / dur) : 1;
+      window.scrollTo({ top: y0 + by * (1 - Math.pow(1 - k, 3)), behavior: "instant" });
+      if (k < 1) tick(step);
+      else { window.removeEventListener("touchstart", halt); window.removeEventListener("wheel", halt); }
+    };
+    step();
+  };
   document.addEventListener("click", function (e) {
-    if (!phone()) return;
+    if (!phone() || !e.isTrusted) return; /* real taps only: the page opens INSPIRATION itself on load */
     var btn = e.target.closest && e.target.closest("button.accordion-item__click-target");
     if (!btn) return;
     var item = btn.closest("li.accordion-item, .accordion-item");
     if (!item) return;
-    var my = ++run, top0 = item.getBoundingClientRect().top, t0 = performance.now(), quiet = 0, lastH = -1;
+    var my = ++run, top0 = item.getBoundingClientRect().top, t0 = performance.now(), calm = t0, lastH = -1;
     var prevAnchor = d.style.overflowAnchor;
     d.style.overflowAnchor = "none";
+    /* keep the opened section's title where it was tapped (something closing above it would move it). Also run from a ResizeObserver, which fires after layout and before paint, so no frame shows the jump */
+    var pin = function () {
+      if (my !== run) return null;
+      var r = item.getBoundingClientRect(), dy = r.top - top0;
+      if (Math.abs(dy) > 0.5) window.scrollTo({ top: window.scrollY + dy, behavior: "instant" }); /* the site scrolls smoothly by default; this hold must not */
+      return r;
+    };
+    var ro = null;
+    try { ro = new ResizeObserver(function () { pin(); }); ro.observe(item.parentNode || item); } catch (e2) {}
+    var done = function () { if (my === run) d.style.overflowAnchor = prevAnchor; if (ro) { ro.disconnect(); ro = null; } };
     var hold = function () {
-      if (my !== run) return;
-      if (btn.getAttribute("aria-expanded") !== "true") { d.style.overflowAnchor = prevAnchor; return; }
-      var r = item.getBoundingClientRect();
-      /* keep the opened section's title where it was tapped (something closing above it would move it) */
-      var dy = r.top - top0;
-      if (Math.abs(dy) > 0.5) window.scrollBy(0, dy);
-      quiet = Math.abs(r.height - lastH) < 0.5 ? quiet + 1 : 0;
-      lastH = r.height;
-      if (quiet < 6 && performance.now() - t0 < 1200) { requestAnimationFrame(hold); return; }
-      d.style.overflowAnchor = prevAnchor;
+      if (my !== run) { done(); return; }
+      if (btn.getAttribute("aria-expanded") !== "true") { done(); return; }
+      var r = pin();
+      /* settled = nothing has changed for 150ms, and at least 400ms since the tap (Squarespace opens after a short delay) */
+      var now = performance.now();
+      if (Math.abs(r.height - lastH) >= 0.5) { calm = now; lastH = r.height; }
+      if ((now - t0 < 400 || now - calm < 150) && now - t0 < 1500) { tick(hold); return; }
+      done();
       /* settled: show the whole section if it runs off the bottom, never pushing its title under the header */
       r = item.getBoundingClientRect();
       var topLimit = headerBottom() + 16, bottomLimit = window.innerHeight - 24, by = 0;
       if (r.bottom > bottomLimit) by = Math.min(r.bottom - bottomLimit, r.top - topLimit);
       else if (r.top < topLimit) by = r.top - topLimit;
-      if (Math.abs(by) > 2) window.scrollBy({ top: by, behavior: still() ? "auto" : "smooth" });
+      if (Math.abs(by) > 2) glide(by, my);
     };
-    requestAnimationFrame(hold);
+    tick(hold);
   }, false);
 })();
 } catch (e) { if (window.console) console.error("[OB accordion reveal v1]", e); }
