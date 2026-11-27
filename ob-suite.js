@@ -1193,6 +1193,20 @@ try {
             if (v !== heroLight) { heroLight = v; d.classList.toggle("obHeroLight", v); }
           }
         }
+        /* v17.11b: words over photos (the white-coloured headings: INTRODUCING SLOT, BLOOM, ROSALIA) snap too, each on its own: .obTxtLight on the word = white */
+        if (SNAP) {
+          var ws = document.querySelectorAll("main .sqsrte-text-color--white");
+          for (var w = 0; w < ws.length; w++) {
+            var el = ws[w];
+            if (el.closest(".obShopChip")) continue;
+            var er = el.getBoundingClientRect();
+            if (!er.width || er.bottom < 0 || er.top > window.innerHeight) continue;
+            var lv = under({ left: er.left, right: er.right, top: er.top, bottom: er.bottom }, el.closest(".fe-block") || el.closest(".sqs-block") || el);
+            var on = el.classList.contains("obTxtLight");
+            var nv = lv >= 0 && (on ? lv < LIMIT + 12 : lv < LIMIT);
+            if (nv !== on) el.classList.toggle("obTxtLight", nv);
+          }
+        }
       } catch (e) { set(false); }
     };
     var set = function (v) { if (v !== light) { light = v; d.classList.toggle("obNavLight", v); } };
