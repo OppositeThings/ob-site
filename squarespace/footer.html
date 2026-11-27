@@ -1,0 +1,260 @@
+<!-- OB first photos early v2 · starts the photos at the top of the page loading straight away, instead of waiting for Squarespace's own script (about 1 second later). Same files Squarespace asks for, so nothing downloads twice. v2: on product pages the first photo also gets its address straight away, so the page's short wait (Header, up to 0.8s) ends as soon as that photo is ready. -->
+<script>
+(function () {
+  try {
+    if (!document.querySelector || /[?&]ob-popup=/.test(location.search)) return;
+    var STEPS = [100, 300, 500, 750, 1000, 1500, 2500];
+    var MAX = 4;
+    var dpr = Math.min(window.devicePixelRatio || 1, 3);
+    var vh = window.innerHeight || 800;
+    var done = {};
+    var count = 0;
+
+    var boxOf = function (img) {
+      var el = img;
+      for (var i = 0; el && i < 4; i++, el = el.parentElement) {
+        var r = el.getBoundingClientRect();
+        if (r.width > 0) return r;
+      }
+      return null;
+    };
+
+    var pick = function (img, w) {
+      var need = w * dpr;
+      var set = img.getAttribute("srcset");
+      if (set && /\d+w/.test(set)) {
+        var best = null, biggest = null;
+        set.split(/,\s+/).forEach(function (part) {
+          var m = /^(\S+)\s+(\d+)w$/.exec(part.trim());
+          if (!m) return;
+          var c = { url: m[1], w: +m[2] };
+          if (!biggest || c.w > biggest.w) biggest = c;
+          if (c.w >= need && (!best || c.w < best.w)) best = c;
+        });
+        return (best || biggest || {}).url || null;
+      }
+      var src = img.getAttribute("data-src");
+      if (!src || /\?/.test(src)) return null;
+      for (var i = 0; i < STEPS.length; i++) {
+        if (STEPS[i] >= need) return src + "?format=" + STEPS[i] + "w";
+      }
+      return src + "?format=" + STEPS[STEPS.length - 1] + "w";
+    };
+
+    var start = function (url) {
+      if (!url || done[url]) return;
+      done[url] = true;
+      count++;
+      var l = document.createElement("link");
+      l.rel = "preload";
+      l.as = "image";
+      l.href = url;
+      l.setAttribute("fetchpriority", "high");
+      document.head.appendChild(l);
+    };
+
+    var sel = ".product-gallery-slides-item img, main .product-list-item img.grid-item-image, main .sqs-block-image img";
+    var imgs = document.querySelectorAll(sel);
+    var gallery = false;
+    for (var i = 0; i < imgs.length && count < MAX; i++) {
+      var img = imgs[i];
+      var inGallery = !!img.closest(".product-gallery-slides-item");
+      if (inGallery) {
+        if (gallery) continue;
+        gallery = true;
+      }
+      var r = boxOf(img);
+      if (!r || r.height <= 0) continue;
+      if (!inGallery && (r.top >= vh || r.bottom <= 0)) continue;
+      var url = pick(img, r.width);
+      start(url);
+      if (inGallery && url && !img.getAttribute("src")) img.setAttribute("src", url);
+    }
+  } catch (e) {}
+})();
+</script>
+<!-- OB SOLID SUITE Footer v17.74 · the light Footer. The code and its styles live on GitHub (OppositeThings/ob-site: ob-suite.js and ob-suite.css, v17.14) and load from jsDelivr by commit ID (the two lines at the end). This box keeps: first photos early (must stay at the very top), the safety line, and OB SETTINGS (all the words and settings: edit them here, no GitHub step). Pairs with Custom CSS v17.14 and Header v15.10. Rollback: Footer v17.73 (with Custom CSS v17.13). -->
+<script>setTimeout(function () { if (!window.__obSolidSuiteV7) document.documentElement.classList.remove("obHashLanding"); }, 5000);</script>
+<script>
+/* OB SETTINGS · the words and lists the site uses.
+   \n inside the words starts a new line. Keep the quotes, commas and brackets as they are.
+   If anything here has a mistake, the site quietly uses the copies inside ob-suite.js instead. */
+window.OB_CONF = {
+
+  /* The line above the products on each store page: English, then Italian. */
+  copy: {
+    all: {
+      en: "New and old, designed and found,\nmade to be mixed.",
+      it: "Nuovo e vecchio, disegnato e trovato,\nfatto per essere mescolato."
+    },
+    rugs: {
+      en: "Drawn in the studio, hand-tufted in wool,\nmade to order. Shoes off.",
+      it: "Disegnati in studio, taftati a mano in lana,\nrealizzati su ordinazione. Via le scarpe."
+    },
+    prints: {
+      en: "Shapes we couldn’t stop looking at.\nMinimal on paper. Less so once they’re up.",
+      it: "Forme di Palermo\nche non riuscivamo a smettere di guardare.\nMinimali sulla carta.\nMeno, una volta appese."
+    },
+    finds: {
+      en: "Picked up along the way,\nfor someone else to keep.\nOne of each, then gone.",
+      it: "Raccolti lungo la strada,\nperché qualcun altro li tenga.\nPezzi unici, poi spariscono."
+    },
+    objects: {
+      en: "Small things for the house.\nUseful, mostly. Good company, always.",
+      it: "Piccole cose per la casa.\nUtili, quasi sempre.\nBuona compagnia, sempre."
+    }
+  },
+
+  /* The store chips, in this order.
+     key: a short name (the copy above uses the same name). label: the chip. path: where it goes.
+     match: words in a Squarespace category's address or name that belong to this chip.
+     page: true for a chip that opens a single product page. */
+  categories: [
+    { key: "all",     label: "ALL",        path: "/store",              match: ["all"] },
+    { key: "rugs",    label: "RUGS",       path: "/store/rugs",         match: ["rug"] },
+    { key: "prints",  label: "PRINTS",     path: "/store/prints",       match: ["print"] },
+    { key: "finds",   label: "FINDS",      path: "/store/finds",        match: ["find"] },
+    { key: "objects", label: "OBJECTS",    path: "/store/objects",      match: ["object", "home", "homeware", "everyday", "merch"] },
+    { key: "slot",    label: "SLOT CHAIR", path: "/store/p/slot-chair", match: ["slot"], page: true }
+  ],
+
+  /* SELECT COLOUR chips on product pages: one entry per design, one chip per product page.
+     design: the design's name (rugs: the same name as its drawing, so the SIZES panel finds it).
+     dot: the colour of the dot before the word (leave it out for no dot).
+     label: a heading other than SELECT COLOUR: (optional). */
+  colourLinks: [
+    { design: "Rosalia", colours: [
+      { name: "Lilac", path: "/store/p/rosalia-lilac", dot: "#b9a8d6" },
+      { name: "Khaki", path: "/store/p/rosalia-khaki", dot: "#a89f72" } ] },
+    { design: "Petals", colours: [
+      { name: "Sand",  path: "/store/p/petals-sand",  dot: "#d5bba8" },
+      { name: "Blush", path: "/store/p/petals-blush", dot: "#e5cac8" } ] },
+    { design: "Bloom", colours: [
+      { name: "Chocolate", path: "/store/p/bloom-chocolate", dot: "#4a342d" },
+      { name: "Moss",      path: "/store/p/bloom-moss",      dot: "#4b4d33" } ] },
+    { design: "Stretch", colours: [
+      { name: "Rose", path: "/store/p/stretch-rose", dot: "#e4bab8" },
+      { name: "Sky",  path: "/store/p/stretch-sky",  dot: "#b7c5d4" } ] },
+    { design: "Cartone", colours: [
+      { name: "Tan",   path: "/store/p/cartone-tan",   dot: "#84684c" },
+      { name: "Olive", path: "/store/p/cartone-olive", dot: "#645b44" } ] },
+    { design: "Eindhoven", colours: [
+      { name: "Original", path: "/store/p/eindhoven",        dot: "#c9a3a6" },
+      { name: "Invert",   path: "/store/p/eindhoven-invert", dot: "#7a6fc4" } ] },
+    { design: "Marcel and Breuer", label: "THE SET:", colours: [
+      { name: "Marcel", path: "/store/p/marcel" },
+      { name: "Breuer", path: "/store/p/breuer" } ] },
+    { design: "Pretoria and Vergogna", label: "THE SET:", colours: [
+      { name: "Pretoria", path: "/store/p/pretoria" },
+      { name: "Vergogna", path: "/store/p/vergogna" } ] }
+  ],
+
+  /* PERKS: three chips under the SIZES panel on product pages, one set per kind of product.
+     The first set that fits the page is used:
+       sizes: the page's sizes are all in this list (prints: A0–A5), or
+       paths: the page's address starts with one of these (rugs: each design's address start).
+     label: the big words. sub: the small line under them. it: the Italian (optional).
+     place: "panel" (under the SIZES panel), "button" (under ADD TO BAG) or "size" (between the sizes and ADD TO BAG). */
+  /* PERKS on phones: "1-2" = the first chip full width, the other two side by side below; "row" = all three in one row */
+  perksLayout: "1-2",
+  perks: [
+    { name: "prints",
+      sizes: ["A0", "A1", "A2", "A3", "A4", "A5"],
+      place: "panel",
+      chips: [
+        { label: { en: "Museum standard", it: "Qualità museale" },     sub: { en: "Archival Print", it: "Stampa d'Archivio" } },
+        { label: { en: "Shipping included", it: "Spedizione inclusa" }, sub: { en: "Worldwide", it: "In Tutto il Mondo" } },
+        { label: { en: "Duties paid",     it: "Dazi inclusi" },        sub: { en: "UK, EU, US, AU", it: "UK, UE, USA, AU" } }
+      ] },
+    { name: "rugs",
+      paths: ["/store/p/rosalia", "/store/p/petals", "/store/p/bloom", "/store/p/stretch", "/store/p/cartone"],
+      place: "panel",
+      chips: [
+        { label: { en: "Hand-tufted",   it: "Taftato a mano" },   sub: { en: "100% New Zealand Wool", it: "100% Lana Neozelandese" } },
+        { label: { en: "Shipping included", it: "Spedizione inclusa" }, sub: { en: "UK, EU, US", it: "UK, UE, USA" } },
+        { label: { en: "Duties paid",   it: "Dazi inclusi" },     sub: { en: "UK, EU, US", it: "UK, UE, USA" } }
+      ] }
+  ],
+
+  /* home hero: [SHOP] beside the pointer over the hero photo; a click opens href (the store, all products). on: false switches it off; section: "<section ID>" if the hero isn't the first section */
+  heroShop: {
+    on: true,
+    href: "/store",
+    word: { en: "Shop", it: "Negozio" }
+  },
+  /* home page tiles on computers: the photo shows its SHOP button's words as the chip and clicks through; the SHOP buttons are hidden and names/prices are not links (phones unchanged). false = off */
+  tiles: true,
+  /* home page: the SHOP words under the hero and tile photos stay visible until the pointer is on the photo, then the chip takes over. false = always hidden on computers */
+  ctaRest: false,
+  /* home page, phones and tablets: the SHOP words become chips where they are (frosted over a photo, a faint tint on the page).
+     On computers the same chip for the words the pointer chip doesn't cover (BROWSE FINDS). "phone" = phones and tablets only, false = plain words as before */
+  shopChips: true,
+  /* phones: the chip on the RUGS / PRINTS / OBJECTS title line shows just this word (screen readers and computers keep VIEW RUGS etc.). false = the full words */
+  phoneTileWord: "VIEW",
+  /* home page words on each tile (phone chips and the computer pointer chip). The key is found in the tile's link words or address; change the words freely, keep the keys.
+     The hero keeps heroShop's word (SHOP) and Bloom / Rosalia keep SHOP. false = the words as typed in Squarespace */
+  homeWords: {
+    rugs: "VIEW RUGS",
+    prints: "VIEW PRINTS",
+    candles: "VIEW OBJECTS",
+    finds: "BROWSE FINDS",
+    slot: "EXPLORE SLOT"
+  },
+  /* store: how the category line changes when a chip is picked: "scramble" = the letter scramble, "fade" = a short slide and fade.
+     names: how the product names and prices come in: "fade" = they rise and fade in, one after another, "header" = the same scramble as the category line, "scramble" = a calmer scramble, left to right in 0.4s, false = they just arrive with the photos */
+  textSwap: { phone: "scramble", computer: "scramble", names: "header" },
+  /* store chips: "images" = only the photos fade out and in while the names and prices switch straight away; "all" = the whole grid fades out and in */
+  chipSwap: "images",
+  /* the logo, nav, BAG and the words over the home video.
+     "mono" = the difference look (white that inverts what's behind) in black and white only, no colour tints (the words over other photos stay as set in Squarespace).
+     true = all black. false = the difference look with its colour tints (the look before v17.65). monoHero: false = mono on the header only */
+  black: "mono",
+  monoHero: true,
+
+  /* PHOTO VIEWER words. enlarge: the chip by the pointer over a product photo (computers; the viewer is off on phones).
+     nextTip / prevTip / closeTip: the chip by the pointer in the viewer: right half of the photo (next), left half (back), around the photo (close).
+     close: the button at the top right of the full-screen photos.
+     blur: true shows the same photo, heavily blurred, behind it; false (Ben, 27 Nov) gives the plain website background colour, so the product always stands out. */
+  viewer: {
+    blur: false,
+    enlarge: { en: "Enlarge", it: "Ingrandisci" },
+    nextTip: { en: "Next",    it: "Avanti" },
+    prevTip: { en: "Prev",    it: "Indietro" },
+    closeTip: { en: "Close",  it: "Chiudi" },
+    close:   { en: "Close",     it: "Chiudi" }
+  },
+
+  /* SIZE GUIDE link next to SELECT SIZE:, the bag page's title, and the print size chosen first. */
+  sizeGuide: { en: "SIZE GUIDE", it: "GUIDA ALLE MISURE" },
+  cartTitle: "BAG",
+  defaultSize: "A2",
+
+  /* BACK TO SHOP chip on product pages: pops in under the header when you scroll back up, goes when you scroll down (same timing as the store chips).
+     A tap goes back to the store page you came from, same category and same place; opened straight from a link, it goes to href.
+     show: "both" (phones and computers), "phone", "computer" or false (off). word: the chip's word (the arrow comes first by itself). */
+  backChip: {
+    show: "both",
+    word: { en: "Shop", it: "Negozio" },
+    href: "/store"
+  },
+
+  /* OTHER THINGS (the products row at the bottom of each product page), computers only: one row you can drag or scroll sideways.
+     The row runs to the right edge of the screen, so the next product hangs off the page and says it scrolls.
+     show: how many products fit across (4 = the size they always were). peek: how much of the next one shows at the screen edge (0.25 = a quarter).
+     max: how many products in the row in all (Squarespace gives 5; any more are added from the store, same kind first). skipFree: true leaves out €0 products (placeholders).
+     skip: product addresses never to add, e.g. ["/store/p/cup"]. view: the chip over a product. drag: the chip over the gaps and while dragging.
+     on: false = the row as Squarespace makes it (four across). Phones are unchanged. */
+  otherThings: {
+    on: true,
+    show: 4,
+    peek: 0.25,
+    max: 6,
+    skipFree: true,
+    skip: [],
+    view: { en: "View", it: "Vedi" },
+    drag: { en: "Drag", it: "Trascina" }
+  }
+};
+</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/OppositeThings/ob-site@957caba8ca1d95a217618716810dc03d4a1a1ecc/ob-suite.min.css" onerror="var l=document.createElement('link');l.rel='stylesheet';l.href=this.href.replace('//cdn.','//fastly.');document.head.appendChild(l)">
+<script src="https://cdn.jsdelivr.net/gh/OppositeThings/ob-site@957caba8ca1d95a217618716810dc03d4a1a1ecc/ob-suite.min.js" onerror="var s=document.createElement('script');s.src=this.src.replace('//cdn.','//fastly.');document.head.appendChild(s)"></script>

@@ -1,0 +1,158 @@
+/* OB SOLID SUITE styles · ob-suite.css · Opposite Things
+   The styles for what ob-suite.js builds or switches on (chips, perks, photo viewer, pointer chip,
+   OTHER THINGS row, back chip, black / mono header). Loaded by the Squarespace Footer from jsDelivr
+   by commit ID, just before ob-suite.js. Moved from the Footer in Footer v17.74.
+   Rules that shape the page before any script runs live in Custom CSS (they must be there from the first paint). */
+/* ==== PAGE · no double-tap zoom on phones (pinch stays); store chip swap fades only the photos (chipSwap "images") ==== */
+html,body{touch-action:manipulation}
+html .product-list-container.obSwapOut img:not(.grid-image-hover){opacity:0!important;transition:opacity .2s ease!important}
+html .product-list-container.obSwapIn img:not(.grid-image-hover){transition:opacity .3s cubic-bezier(.25,.1,.25,1)!important}
+/* ==== PERKS · chips under SIZES on product pages (perks, perksLayout) ==== */
+.obPerks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--obChipGap,8px);margin:20px 0 0;padding:0;list-style:none;text-transform:none}
+.obPerks li{display:flex;flex-direction:column;justify-content:center;gap:4px;min-height:72px;margin:0;padding:12px 8px;border-radius:var(--obChipCorner,5px);background:rgba(230,228,222,.62);color:#111;text-align:center;box-sizing:border-box}
+.obPerks li::before{content:none!important;display:none!important}
+.obPerks b{display:block;font-weight:500;font-size:13px;line-height:1.25;letter-spacing:.02em;text-transform:uppercase}
+.obPerks span{display:block;font-size:11px;line-height:1.3;color:#5f5d58;text-transform:uppercase}
+.obPerks.obPerksAtSize{margin:16px 0 24px}
+#obDims .obPerks.obPerksPanel{gap:var(--obChipGap,8px);margin:var(--obChipGap,8px) 0 0}
+.obPerks.obPerksPanel li{min-height:112px;padding:20px 16px;gap:4px;background:rgba(230,228,222,.62);color:#111}
+.obPerks.obPerksPanel b{font-size:20px;font-weight:400;letter-spacing:0}
+.obPerks.obPerksPanel span{font-size:12px;color:#5f5d58;text-transform:none}
+@media (max-width:767px){
+.obPerks{gap:6px;margin-top:16px}
+.obPerks li{min-height:60px;padding:10px 4px}
+.obPerks b{font-size:11px}
+.obPerks span{font-size:10px}
+.obPerks.obPerksPanel{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.obPerks.obPerksPanel li{min-height:84px;padding:12px 6px;gap:2px}
+.obPerks.obPerksPanel b{font-size:13px}
+.obPerks.obPerksPanel span{font-size:11px}
+.obPerks.obPerks12,.obPerks.obPerksPanel.obPerks12{grid-template-columns:repeat(2,minmax(0,1fr))}
+.obPerks.obPerks12 li:first-child{grid-column:1/-1}
+}
+@media (max-width:379px){
+.obPerks.obPerksPanel li{padding:12px 3px}
+.obPerks.obPerksPanel span{font-size:10px}
+}
+/* ==== POINTER CHIP · computers: normal arrow, a frosted word trails it over photos (ENLARGE, PREV/NEXT/CLOSE, SHOP/VIEW…) ==== */
+@media (hover:hover) and (pointer:fine){.obInfoLink{pointer-events:none!important;cursor:default!important}.obTilePic,.obTilePic *,html.obTileOver main *{cursor:pointer!important}:is(.product-gallery-slides-item,.product-gallery-slides-item *,.obPv .obPvSlide,.obPv .obPvSlide *,section.obHeroShopIn,section.obHeroShopIn *){cursor:pointer!important}}
+@media (hover:hover) and (pointer:fine){body{cursor:default}main :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption){cursor:default}main a[href] :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption),main :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption) :is(a[href],a[href] *,button,button *){cursor:pointer}:is(input:not([type=submit]):not([type=button]):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=image]):not([type=color]):not([type=file]),textarea,[contenteditable=""],[contenteditable=true]){cursor:text}}
+@media (min-width:768px){.product-gallery-slides-item,.product-gallery-slides-item img{cursor:pointer}}
+.obPvTip{position:fixed;left:0;top:0;z-index:2147483001;pointer-events:none;opacity:0;transition:opacity .08s ease-out}
+.obPvTip.obPvTipOn{opacity:1;transition:opacity .2s ease}
+.obPvTip b{justify-items:start;overflow:hidden;box-sizing:border-box;transition:width .24s cubic-bezier(.2,.7,.2,1)}
+.obPvTip b>span{grid-area:1/1;display:block;transition:opacity .18s ease,transform .24s cubic-bezier(.2,.7,.2,1)}
+.obPvTip b>span.obPvOut{opacity:0;transform:translateY(-80%)}
+.obPvTip b>span.obPvIn{opacity:0;transform:translateY(80%);transition:none}
+@media (prefers-reduced-motion:reduce){.obPvTip b,.obPvTip b>span{transition:none}}
+.obPvTip b{position:absolute;left:18px;top:14px;display:grid;align-content:center;height:44px;box-sizing:border-box;padding:0 14px;border-radius:5px;border:0;background:rgba(255,255,250,.5);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#111;font:400 13px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0;text-transform:uppercase;white-space:nowrap}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.obPvTip b{background:rgba(255,255,250,.92)}}
+.product-gallery-slides-item::after{pointer-events:none}
+@media (hover:hover) and (pointer:fine){.obHeroShopHide{pointer-events:none!important;transition:opacity .18s ease}.obHeroShopHide.obCtaAway,html.obCtaHidden .obHeroShopHide{opacity:0!important}.obHeroShopHide:focus-within{opacity:1!important}}
+@media (prefers-reduced-motion:reduce){.obHeroShopHide{transition:none!important}}
+/* ==== PHOTO VIEWER · product pages, computers (viewer) ==== */
+.product-gallery-slides-item:focus:not(:focus-visible)::after{display:none}
+.obPv{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;color:#111;overflow:hidden;font-family:ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;z-index:2147483000}
+.obPv::backdrop{background:transparent}
+.obPvBlur{position:absolute;inset:0;overflow:hidden;background:#fffffa}
+.obPvBlur i{position:absolute;inset:0;background:center / cover no-repeat;-webkit-filter:blur(60px) saturate(1.15);filter:blur(60px) saturate(1.15);transform:scale(1.25) translateZ(0);opacity:0;transition:opacity .5s ease;will-change:opacity}
+.obPvBlur i.obPvOn{opacity:1}
+.obPvBlur,.obPvBar{transition:opacity .3s ease}
+.obPv.obPvIntro .obPvBlur,.obPv.obPvIntro .obPvBar,.obPv.obPvOutro .obPvBlur,.obPv.obPvOutro .obPvBar{opacity:0}
+.obPv.obPvOutro{pointer-events:none}
+.obPvBlur::after{content:"";position:absolute;inset:0;background:rgba(255,255,250,.5)}
+.obPvSolid .obPvBlur{background:var(--siteBackgroundColor,#fffffa)}.obPvSolid .obPvBlur::after{display:none}
+.obPvSolid .obPvBlur i{display:none}
+.obPv:not([open]){display:none}
+.obPv:focus,.obPv:focus-visible{outline:none}
+.obPv button:focus:not(:focus-visible){outline:none}
+.obPvTrack{position:absolute;inset:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.obPvTrack::-webkit-scrollbar{display:none}
+.obPvSlide{flex:0 0 100%;width:100%;height:100%;margin:0;scroll-snap-align:center;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;padding:64px 24px 56px;box-sizing:border-box;overflow:hidden}
+.obPvSlide img{display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;cursor:default}
+.obPvBar{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;justify-content:space-between;padding:16px 24px;pointer-events:none;font-size:14px;line-height:1;letter-spacing:0;text-transform:uppercase}
+.obPvBar>*{pointer-events:auto}
+.obPvCount{font-variant-numeric:tabular-nums}
+.obPv button{appearance:none;-webkit-appearance:none;margin:0;border:0;background:none;color:inherit;font:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.obPvClose{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;height:44px;padding:0 14px;border-radius:5px;background:rgba(230,228,222,.62)!important;font-size:13px;letter-spacing:0;transition:background .15s ease}
+.obPvClose:hover,.obPvClose:focus-visible{background:rgba(215,212,205,1)!important}
+.obPvNav{position:absolute;top:50%;width:48px;height:48px;margin-top:-24px;display:flex;align-items:center;justify-content:center;border-radius:999px!important;background:rgba(230,228,222,.62)!important;font-size:18px!important;line-height:1}
+.obPvNav:hover{background:rgba(214,211,203,.8)!important}
+.obPvNav:not(:focus-visible){opacity:0;pointer-events:none}
+.obPvPrev{left:24px}
+.obPvNext{right:24px}
+.obPv button:focus-visible{outline:2px solid #111;outline-offset:3px}
+.obPv.obPvOne .obPvNav,.obPv.obPvOne .obPvCount{visibility:hidden}
+.obPvLive{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (min-width:768px){
+.obPvSlide{flex-direction:column;align-items:center;justify-content:flex-start;padding:64px 0 48px;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+.obPvSlide::-webkit-scrollbar{display:none}
+.obPvSlide img{flex:none;width:75vw;height:auto;margin:auto 0;object-fit:fill;border-radius:var(--obChipCorner,5px)}
+}
+@media (max-width:767px){
+.obPvBar{padding:10px 16px;font-size:13px}
+.obPvSlide{padding:56px 0 40px}
+.obPvNav{display:none}
+}
+/* ==== OTHER THINGS · sideways row on product pages, computers (otherThings) ==== */
+html.obOtOn .related-products-section .product-list-container.obOtRow{display:flex!important;grid-template-columns:none!important;gap:var(--product-list-column-spacing,1.5vw)!important;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-user-select:none;user-select:none;outline:none}
+html.obOtOn .obOtRow::-webkit-scrollbar{display:none}
+html.obOtOn .obOtRow:focus-visible{outline:2px solid #111;outline-offset:6px}
+html.obOtOn body .related-products-section .product-list-container.obOtRow>.product-list-item:nth-child(n){display:flex!important;flex:0 0 calc((100% - var(--product-list-column-spacing,1.5vw) * var(--obOtShow,4)) / (var(--obOtShow,4) + var(--obOtPeek,.25)));min-width:0;scroll-snap-align:start}
+html.obOtOn .obOtRow::after{content:"";flex:0 0 var(--obOtEnd,0px);height:1px}
+html.obOtOn .obOtRow.obOtDragging{scroll-snap-type:none}
+html.obOtOn .obOtRow.obOtDragging a{pointer-events:none}
+html.obOtOn .obOtRow img{-webkit-user-drag:none}
+.obOtExtra{display:none!important}
+.obOtExtra .grid-item-image{width:100%;height:100%;object-fit:cover}
+/* ==== BACK CHIP · ← SHOP on product pages (backChip) ==== */
+.obBack{position:fixed;z-index:9999;left:var(--obBackX,var(--sqs-site-gutter,4vw));top:calc(var(--obChipsTop,72px) - 10px);display:block;padding:10px;margin:-10px;text-decoration:none!important;color:#111!important;-webkit-tap-highlight-color:transparent;transform:translate3d(0,0,0);opacity:1;transition:transform var(--obChipSlideMs,550ms) cubic-bezier(.4,0,.2,1),opacity var(--obChipSlideMs,550ms) cubic-bezier(.4,0,.2,1);will-change:transform,opacity}
+.obBack.obBackHidden{transform:translate3d(0,-120%,0);opacity:0;pointer-events:none}
+.obBack b{display:flex;align-items:center;gap:8px;box-sizing:border-box;height:44px;padding:0 14px;border-radius:5px;border:1px solid rgba(17,17,17,.1);background:rgba(255,255,250,.5);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);font:400 13px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0;text-transform:uppercase;white-space:nowrap;transition:background .15s ease}
+.obBack i{display:block;flex:none;font-style:normal;transition:transform .2s cubic-bezier(.2,.7,.2,1)}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.obBack b{background:rgba(255,255,250,.92)}}
+@media (hover:hover) and (pointer:fine){.obBack:hover b{background:rgba(255,255,250,.8)}.obBack:hover i{transform:translateX(-2px)}}
+.obBack:focus-visible{outline:none}.obBack:focus-visible b{outline:2px solid rgba(0,0,0,.55);outline-offset:2px}
+html.ob-compact .obBack{left:var(--obBackX,var(--sqs-mobile-site-gutter,6vw));top:62px}html.ob-compact .obBack b{padding:0 12px}
+body.header--menu-open .obBack{opacity:0!important;pointer-events:none!important}
+@media (hover:none),(pointer:coarse){.obBack b{height:30px;padding:0 11px;border:1px solid rgba(53,53,53,.4);background:rgba(255,255,250,.45);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);font-size:12px;font-weight:500;color:#353535}}
+@media (prefers-reduced-motion:reduce){.obBack,.obBack i,.obBack b{transition:none}}
+@media print{.obBack{display:none}}
+/* ==== HOME CHIPS · SHOP / VIEW… words as chips (shopChips, homeWords, phoneTileWord) ==== */
+html.obShopChips a.obShopChip{display:inline-flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;height:44px!important;min-width:44px!important;margin:0!important;padding:0 10px!important;min-height:0!important;border:0!important;border-radius:5px!important;background:rgba(17,17,17,.06)!important;box-shadow:none!important;color:#111!important;font:400 13px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace!important;letter-spacing:0!important;text-transform:uppercase!important;text-decoration:none!important;white-space:nowrap!important;-webkit-tap-highlight-color:transparent;transition:transform .15s ease}
+html.obShopChips a.obShopChip *{font:inherit!important;letter-spacing:inherit!important;text-transform:inherit!important;text-decoration:none!important;color:inherit!important;background:none!important}
+html.obShopChips a.obShopChip.obShopChipOnPhoto{background:rgba(255,255,250,.5)!important;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){html.obShopChips a.obShopChip.obShopChipOnPhoto{background:rgba(255,255,250,.92)!important}}
+html.obShopChips a.obShopChip.obShopChipOnArt{-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+html.obShopChips a.obShopChipFloat{position:absolute!important;z-index:5;mix-blend-mode:normal}
+html.obShopChips a.obShopChipGhost{visibility:hidden!important}
+html.obShopChips a.obShopChip:active{transform:scale(.96)}
+@media (hover:hover) and (pointer:fine){html.obShopChips a.obShopChip{padding:0 14px!important;transition:transform .15s ease,background-color .15s ease}html.obShopChips a.obShopChip:hover{background:rgba(17,17,17,.1)!important}html.obShopChips a.obShopChip.obShopChipOnPhoto:hover{background:rgba(255,255,250,.8)!important}}
+@media (hover:none),(pointer:coarse){html.obShopChips a.obShopChip{height:36px!important;min-width:36px!important;font-weight:500!important;color:#353535!important}html.obShopChips a.obShopChip:not(.obShopChipFloat){position:relative!important}html.obShopChips a.obShopChip::after{content:"";position:absolute;left:0;right:0;top:-7px;bottom:-7px}}
+@media (hover:none),(pointer:coarse){html.obShopChips a.obShopChip{background:transparent!important;box-shadow:inset 0 0 0 1px #111!important;height:30px!important;min-width:30px!important;padding:0 11px!important;font-size:12px!important}html.obShopChips a.obShopChip.obShopChipOnArt{background:rgba(255,255,250,.35)!important}html.obShopChips a.obShopChip.obShopChipOnPhoto{background:rgba(255,255,250,.28)!important;-webkit-backdrop-filter:blur(14px) saturate(1.3)!important;backdrop-filter:blur(14px) saturate(1.3)!important;box-shadow:none!important;color:#111!important}html.obShopChips a.obShopChip:active{transform:scale(.97)}}
+@media (prefers-reduced-motion:reduce){html.obShopChips a.obShopChip{transition:none}}
+@media (max-width:767px){
+html.ob-page-home .fe-block .sqs-html-content:has(> p.sqsrte-large > strong:only-child):has(> p > a.obShopChip){display:grid!important;grid-template-columns:1fr auto;column-gap:16px;align-items:center}
+html.ob-page-home .fe-block .sqs-html-content:has(> p.sqsrte-large > strong:only-child):has(> p > a.obShopChip) > p{grid-column:1 / -1}
+html.ob-page-home .fe-block .sqs-html-content:has(> p.sqsrte-large > strong:only-child):has(> p > a.obShopChip) > p.sqsrte-large{grid-column:1;grid-row:1;margin:0!important}
+html.ob-page-home .fe-block .sqs-html-content:has(> p.sqsrte-large > strong:only-child):has(> p > a.obShopChip) > p:has(> a.obShopChip){grid-column:2;grid-row:1;margin:0!important;justify-self:end;align-self:start}
+html.ob-page-home .fe-block .sqs-html-content:has(> p.sqsrte-large > strong:only-child):has(> p > a.obShopChip) > p:not(.sqsrte-large):not(:has(> a.obShopChip)){max-width:75%;margin-top:0!important}
+}
+/* ==== BLACK · black: true (html.obBlack): logo, nav, BAG and the words over the home video in black ==== */
+html.obBlack:not(.obNavOff) .header-announcement-bar-wrapper,html.obBlack:not(.obNavOff) #header{mix-blend-mode:normal!important}
+html.obBlack:not(.obNavOff) #header,html.obBlack:not(.obNavOff) #header a,html.obBlack:not(.obNavOff) #header svg,html.obBlack:not(.obNavOff) [class*="language"] a,html.obBlack:not(.obNavOff) [class*="language"] span,html.obBlack:not(.obNavOff) [class*="language"] svg{color:#111!important;fill:#111!important;stroke:#111!important}
+html.obBlack:not(.obNavOff) .header-nav-item--active a,html.obBlack:not(.obNavOff) .header-nav-folder-item--active a{color:#111!important;border-color:#111!important}
+html.obBlack:not(.obNavOff) .header-nav-item--active a::after,html.obBlack:not(.obNavOff) .header-nav-item--active a::before{background-color:#111!important}
+html.obBlack:not(.obNavOff) .header-title-logo img,html.obBlack:not(.obNavOff) .header-title-logo picture img{filter:brightness(0)!important}
+html.obBlack:not(.obNavOff) body:not(.header--menu-open) .header-display-mobile :is(a,svg){color:#111!important;fill:#111!important;stroke:#111!important}
+html.obBlack:not(.obNavOff) body:not(.header--menu-open) .header-display-mobile .burger-inner>div{background-color:#111!important}
+html.obBlack:not(.obNavOff) body:not(.header--menu-open) .header-mobile-logo img{filter:brightness(0)!important}
+html.obBlack:not(.obNavOff) body:not(.header--menu-open) #header,html.obBlack:not(.obNavOff) body:not(.header--menu-open) .header-announcement-bar-wrapper{mix-blend-mode:normal!important}
+html.obBlack:not(.obNavOff) section.page-section:has(.section-background .sqs-video-background-native) .fe-block:has(.sqs-html-content){mix-blend-mode:normal!important}
+html.obBlack:not(.obNavOff) section.page-section:has(.section-background .sqs-video-background-native) .sqs-html-content,html.obBlack:not(.obNavOff) section.page-section:has(.section-background .sqs-video-background-native) .sqs-html-content *{color:#111!important}
+html.obBlack:not(.obNavOff) main .sqsrte-text-color--white{color:#111!important}
+/* ==== MONO · black: "mono" (html.obMono): the white difference look in pure greyscale (a copy on top with the saturation blend) ==== */
+html.obMono [data-ob-mono]{mix-blend-mode:saturation!important;pointer-events:none!important;user-select:none!important}
+html.obMono [data-ob-mono] *{mix-blend-mode:normal!important;pointer-events:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html.obMono [data-ob-mono] a,html.obMono [data-ob-mono] .header-announcement-bar-wrapper{background:transparent!important;box-shadow:none!important}
+html.obMono body.header--menu-open #header[data-ob-mono]{display:none!important}
