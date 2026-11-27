@@ -1,5 +1,5 @@
 /* OB SOLID SUITE v17.13 · ob-suite.js · Opposite Things
-   v17.13 = v17.12 + phoneTileWord in OB SETTINGS ("VIEW"): the RUGS / PRINTS / OBJECTS chips show just that word on phones.
+   v17.13 = v17.12 + phoneTileWord in OB SETTINGS ("VIEW"): the RUGS / PRINTS / OBJECTS chips show just that word on phones. The logo shrink no longer animates on load or page change (html.obLogoAnim after the first touch/wheel/key).
    v17.12 = v17.11 + black: "mono" in OB SETTINGS: the old white difference header and video words, made pure greyscale by a copy on top with mix-blend-mode: saturation (html.obMono, [data-ob-mono]); styles in the Footer. monoHero: false = header only, monoPhotos: false = words over photos stay plain white.
    v17.11 = v17.10 + black: "snap" in OB SETTINGS: logo/nav and the words over the home video go pure black or pure white depending on what's behind them (html.obSnap, .obNavLight, .obHeroLight); styles in the Footer.
    v17.10 = v17.9 + the logo shrinks gradually with the scroll (100% → logoShrink over the first logoShrinkOver px, default 260) instead of all at once.
@@ -1142,6 +1142,10 @@ try {
         d.classList.toggle("obScrolled", y > 60);
       };
       sc(); window.addEventListener("scroll", function () { if (!lraf) lraf = requestAnimationFrame(sc); }, { passive: true });
+      /* v17.13: the logo only animates once the visitor touches, wheels or presses a key, so a reload or page change halfway down shows it at the right size straight away (html.obLogoAnim gates the Footer's transition) */
+      var arm = function () { d.classList.add("obLogoAnim"); ["wheel", "touchstart", "keydown", "pointerdown"].forEach(function (e) { window.removeEventListener(e, arm, true); }); };
+      ["wheel", "touchstart", "keydown", "pointerdown"].forEach(function (e) { window.addEventListener(e, arm, { capture: true, passive: true }); });
+      window.addEventListener("pageshow", function (ev) { if (ev.persisted) { d.classList.remove("obLogoAnim"); sc(); ["wheel", "touchstart", "keydown", "pointerdown"].forEach(function (e) { window.addEventListener(e, arm, { capture: true, passive: true }); }); } });
     }
     /* black: true = logo, nav, BAG, hero words and words over photos all black, always (Ben, 27 Nov: placeholders, try it). "auto" = nav black but white over dark photos / video frames, words over photos stay white. false = the old white, flipping look. */
     var B = C.black === undefined ? true : C.black;
