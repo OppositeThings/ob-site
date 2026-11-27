@@ -1212,7 +1212,7 @@ try {
       a.href = target();
       a.setAttribute("tabindex", "-1");
       a.setAttribute("aria-hidden", "true");
-      a.innerHTML = '<b><svg viewBox="0 0 6 10" width="6" height="10" aria-hidden="true" focusable="false"><path d="M5 1 1 5l4 4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span></span></b>';
+      a.innerHTML = '<b><i aria-hidden="true">\u2190</i><span></span></b>'; /* the arrow: the About page's TAKE SOMETHING HOME arrow, turned to point back */
       a.querySelector("span").textContent = words(conf().word, "Shop");
       a.setAttribute("aria-label", words(conf().label, "Back to shop"));
       /* back to the store page we came from: the browser's own Back, so the category, the place on the page and the photos already loaded all come back as they were */
