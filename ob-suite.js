@@ -1,4 +1,5 @@
-/* OB SOLID SUITE v17.4 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.5 · ob-suite.js · Opposite Things
+   v17.5 = v17.4 + home page, phones and tablets: the SHOP… words under the hero and tile photos become chips like the computer pointer chip, where they are now (frosted over a photo, a faint tint on the page; shopChips: false in OB_CONF switches it off).
    v17.4 = v17.3 + product pages: a frosted ‹ SHOP chip pops in under the header when you scroll back up and goes when you scroll down, like the store chips; it goes back to the store page you came from, same category and place (backChip in OB_CONF: show "both" | "phone" | "computer" | false).
    v17.3 = v17.2 + photo viewer: no flash on opening (the white background fades in from the first frame instead of popping in), the page photo steps aside while its copy flies, photos and blur only swap in once decoded, viewer made ready after the page loads.
    v17.2 = v17.1 + the Footer's own code (Footer v17.51): store page swap, perks chips, photo viewer and pointer
@@ -952,6 +953,79 @@ try {
   } catch (e) {}
 })();
 } catch (e) { if (window.console) console.error("[OB PHOTO VIEWER v2]", e); }
+/* ---- footer: OB SHOP CHIPS v1 · home page, phones and tablets: the SHOP… words under the hero and tile photos become chips like the computer pointer chip (12px mono, no brackets) and stay where they are: frosted over a photo, a light tint on the page. shopChips: false in OB SETTINGS switches it off. Styles stay in the Footer. ---- */
+(function () {
+  if ((window.OB_CONF || {}).shopChips === false || window.self !== window.top) return;
+  var touch = function () { return !window.matchMedia("(hover: hover) and (pointer: fine)").matches; };
+  var home = function () { var d = document.documentElement; return d.classList.contains("ob-page-home") || document.body.classList.contains("homepage") || location.pathname === "/"; };
+  var RX = /^\[?\s*shop\b/i;
+  var unbracket = function (L) {
+    var w = document.createTreeWalker(L, NodeFilter.SHOW_TEXT, null), n, all = [];
+    while ((n = w.nextNode())) all.push(n);
+    all.forEach(function (x) { if (/[\[\]]/.test(x.nodeValue)) x.nodeValue = x.nodeValue.replace(/[\[\]]/g, ""); });
+    if (all.length) { all[0].nodeValue = all[0].nodeValue.replace(/^\s+/, ""); var z = all[all.length - 1]; z.nodeValue = z.nodeValue.replace(/\s+$/, ""); }
+  };
+  /* over a photo when the middle of the words lies on one of the section's photos (its background photo or video, or an image block) */
+  var onPhoto = function (L) {
+    var sec = L.closest("section"), r = L.getBoundingClientRect();
+    if (!sec || !r.width) return false;
+    var x = r.left + r.width / 2, y = r.top + r.height / 2;
+    var media = sec.querySelectorAll(".section-background img, .section-background video, .sqs-block-image img, .sqs-block-video video, .fluid-image-container img");
+    for (var i = 0; i < media.length; i++) {
+      var m = media[i].getBoundingClientRect();
+      if (m.width && x >= m.left && x <= m.right && y >= m.top && y <= m.bottom) return true;
+    }
+    return false;
+  };
+  /* words in a text block that flips its colour (difference, over the home video) can't show a frosted chip: the flip would invert it. There the chip is a stand-in laid over the same spot, outside the block; the words underneath keep their place but are hidden, and a tap on the stand-in taps them. */
+  var float = function (L) {
+    var blk = null, sec = L.closest("section");
+    for (var e = L.parentElement; e && e !== sec; e = e.parentElement) if (getComputedStyle(e).mixBlendMode !== "normal") blk = e;
+    var host = blk && blk.parentElement;
+    if (!host) { if (L.__obFloat) { L.__obFloat.remove(); L.__obFloat = null; L.classList.remove("obShopChipGhost"); } return; }
+    var a = L.__obFloat;
+    if (!a) {
+      a = L.__obFloat = document.createElement("a");
+      a.className = "obShopChip obShopChipFloat";
+      a.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); L.click(); });
+      if (getComputedStyle(host).position === "static") host.style.position = "relative";
+      host.appendChild(a);
+      L.classList.add("obShopChipGhost");
+      L.setAttribute("tabindex", "-1");
+    }
+    a.href = L.getAttribute("href") || "#";
+    a.textContent = L.textContent;
+    a.classList.toggle("obShopChipOnPhoto", L.classList.contains("obShopChipOnPhoto"));
+    var r = L.getBoundingClientRect(), h = host.getBoundingClientRect();
+    a.style.left = (r.left - h.left) + "px";
+    a.style.top = (r.top - h.top) + "px";
+  };
+  var mark = function () {
+    try {
+      if (!touch() || !home()) return;
+      document.documentElement.classList.add("obShopChips");
+      var links = document.querySelectorAll("main .sqs-html-content a[href], main .sqs-block-button a[href]");
+      for (var i = 0; i < links.length; i++) {
+        var L = links[i];
+        if (L.querySelector("img")) continue;
+        if (!L.classList.contains("obShopChip")) {
+          if (!RX.test((L.textContent || "").replace(/\s+/g, " ").trim())) continue;
+          unbracket(L);
+          L.classList.add("obShopChip");
+        }
+        L.classList.toggle("obShopChipOnPhoto", onPhoto(L));
+        float(L);
+      }
+    } catch (e) {}
+  };
+  var tries = 0;
+  var tick = function () { mark(); if (++tries < 6) setTimeout(tick, 500); };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", tick); else tick();
+  window.addEventListener("load", mark);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(mark);
+  var rz; window.addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(mark, 200); }, { passive: true });
+})();
+
 /* ---- footer: OB OTHER THINGS v1 · product pages, computers: OTHER THINGS as one sideways row (drag, trackpad, arrow keys), topped up from the store (otherThings in OB SETTINGS). Styles stay in the Footer. ---- */
 try {
 (function () {
