@@ -1123,12 +1123,30 @@ try {
           if (!src.isConnected) return;
           var n = src.cloneNode(true);
           n.setAttribute("data-ob-mono", ""); n.setAttribute("aria-hidden", "true"); n.inert = true;
-          n.querySelectorAll("video,iframe,script,noscript").forEach(function (x) { x.remove(); });
+          n.querySelectorAll("video,iframe,script,noscript").forEach(function (x) { var k = document.createElement("i"); k.hidden = true; x.replaceWith(k); });
           if (cl && cl.parentNode) cl.replaceWith(n); else src.after(n);
           cl = n;
         };
+        /* a class or style change is copied onto the same element in the copy (so the header's scroll classes keep their transitions in step); added or removed content rebuilds the copy */
+        var twin = function (el) {
+          var path = [];
+          while (el && el !== src) { var p = el.parentNode; if (!p) return null; path.unshift(Array.prototype.indexOf.call(p.children, el)); el = p; }
+          if (el !== src) return null;
+          var t = cl;
+          for (var i = 0; t && i < path.length; i++) t = t.children[path[i]];
+          return t || null;
+        };
         build();
-        new MutationObserver(function () { if (!raf) raf = requestAnimationFrame(build); }).observe(src, { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ["class", "style", "src", "srcset", "href"] });
+        new MutationObserver(function (list) {
+          for (var i = 0; i < list.length; i++) {
+            var m = list[i];
+            if (m.type !== "attributes") { if (!raf) raf = requestAnimationFrame(build); return; }
+            var t = cl && twin(m.target);
+            if (!t) { if (!raf) raf = requestAnimationFrame(build); return; }
+            var v = m.target.getAttribute(m.attributeName);
+            if (v === null) t.removeAttribute(m.attributeName); else t.setAttribute(m.attributeName, v);
+          }
+        }).observe(src, { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ["class", "style", "src", "srcset", "href"] });
       };
       var monoGo = function () {
         var hd = document.querySelector("#header:not([data-ob-mono])");
