@@ -1156,6 +1156,8 @@ try {
             if (hd.contains(el) || el.closest(".obPvTip, .obBack, #obShopChipsBar, #header, header.header, .obShopChip")) continue;
             var m = el.tagName === "IMG" || el.tagName === "VIDEO" ? el : null;
             if (!m && el.closest) { var bg = el.closest("section") && el.closest(".section-background, .fluid-image-container, .image-block-wrapper, .sqs-block-image"); m = bg && bg.querySelector("video, img"); }
+            /* a section's own background photo or video takes no clicks, so it never shows up here: reaching the section (or its coloured border box) means it's what lies behind */
+            if (!m && el.closest && (el.tagName === "SECTION" || el.classList.contains("section-border"))) { var sx = el.closest("section.page-section") || el; m = sx.querySelector(".section-background video") || sx.querySelector(".section-background img"); }
             if (m && seen.indexOf(m) < 0) { seen.push(m); try {
               if (m.tagName === "VIDEO") { if (m.videoWidth) { var pv = part(m, m.videoWidth, m.videoHeight, band); if (pv) L.push(sample(m, m.videoWidth, m.videoHeight, pv)); } }
               else { var sm = small(m); if (sm) { var pi = part(m, m.naturalWidth || sm.naturalWidth, m.naturalHeight || sm.naturalHeight, band); if (pi) L.push(sample(sm, sm.naturalWidth, sm.naturalHeight, pi)); } }
