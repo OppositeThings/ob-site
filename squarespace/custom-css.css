@@ -1,9 +1,16 @@
 /* ======================================================================
-   OB SHOP CSS — Squarespace 7.1 — v17.4
+   OB SHOP CSS — Squarespace 7.1 — v17.5
    Opposite Things · Website → Pages → Custom Code → Custom CSS.
    Pairs with Header v15.5, the Footer (OB SETTINGS + ob-suite.js v17.0
    from GitHub) and the Store page's ob-drawings.js. "The suite" in the
    notes below is ob-suite.js: the code that used to sit in the Footer.
+
+   v17.5 — home page on phones (9.6), replaces v17.4's sizes: the hero
+     statement is 20px on three lines (A Palermo Studio. / Rugs, Prints,
+     Furniture / & Finds.), and the statement under it (EVERY ROOM NEEDS
+     SOMETHING SLIGHTLY OFF…) is 24px on Ben's five lines. The breaks
+     come from the suite (v17.6, <br class="obBr">); from 768px up they
+     are hidden, so iPads and computers are unchanged.
 
    v17.4 — home hero on phones (9.6): the statement is bigger (13px to
      17px, a touch smaller on narrow phones so each line stays on one
@@ -4000,23 +4007,44 @@ section[data-section-id="6ad932d919eb524248a93d6f"] .fluid-engine {
   }
 }
 
-/* v17.4 phones: bigger statement, more room above SHOP. 4.4vw keeps
-   "Rugs, Prints, Furniture & Finds." on one line down to 320px wide;
-   17px from 387px up matches the computer size at 768px. More room
-   above SHOP: raise 22px. The SHOP chip follows the hidden link in the
-   second paragraph (suite), so moving the paragraph moves the chip. */
+/* v17.5 phones: the hero statement on three lines, the SHOP chip 22px
+   under it, and the statement under the hero bigger, on five lines.
+   Hero: 24.5ch wide (the font is monospaced, so this always breaks
+   before "& Finds."); 5.2vw keeps it inside narrow phones, 20px from
+   385px up. The SHOP chip follows the hidden link in the second
+   paragraph (suite), so moving the paragraph moves the chip; lifted
+   16px to stay in the middle of the photo. More room above SHOP: raise
+   22px.
+   Statement (block 9ab85bbd3fe12bad781b): the suite adds the line
+   breaks (<br class="obBr">). 24px is the most that fits its longest
+   line (SOMETHING SLIGHTLY OFF.) on a 390px phone; 6vw below 400px.
+   white-space: normal drops the space before each break so the lines
+   stay centred. */
 @media (max-width: 767px) {
   html.ob-page-home #block-833ae6fe237abe3ab55d .sqs-html-content {
     position: relative;
     top: -16px;
   }
   html.ob-page-home #block-833ae6fe237abe3ab55d .sqs-html-content > p.sqsrte-large {
-    font-size: ~"min(4.4vw, 17px)" !important;
-    line-height: 1.4 !important;
+    font-size: ~"min(5.2vw, 20px)" !important;
+    line-height: 1.35 !important;
+    max-width: 24.5ch;
+    margin-left: auto !important;
+    margin-right: auto !important;
     margin-bottom: 0 !important;
   }
   html.ob-page-home #block-833ae6fe237abe3ab55d .sqs-html-content > p.sqsrte-large + p {
     margin-top: 22px !important;
+  }
+  html.ob-page-home #block-9ab85bbd3fe12bad781b h1 {
+    font-size: ~"min(6vw, 24px)" !important;
+    line-height: 1.05 !important;
+    white-space: normal !important;
+  }
+}
+@media (min-width: 768px) {
+  br.obBr {
+    display: none;
   }
 }
 

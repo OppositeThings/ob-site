@@ -1,4 +1,5 @@
-/* OB SOLID SUITE v17.5 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.6 · ob-suite.js · Opposite Things
+   v17.6 = v17.5 + home page, phones: the statement under the hero (EVERY ROOM NEEDS SOMETHING SLIGHTLY OFF…) breaks on Ben's five lines: EVERY ROOM NEEDS / SOMETHING SLIGHTLY OFF. / THINGS MADE AND FOUND / TO KEEP YOUR PLACE, / A LITTLE LESS EXPECTED. The suite adds <br class="obBr"> before SOMETHING, THINGS, TO and A, only while the words are exactly these (any copy change or another language: left alone). Custom CSS hides them from 768px up and sets the size. statementLines: false in OB_CONF switches it off.
    v17.5 = v17.4 + home page, phones and tablets: the SHOP… words under the hero and tile photos become chips like the computer pointer chip, where they are now (frosted over a photo, a faint tint on the page; shopChips: false in OB_CONF switches it off).
    v17.4 = v17.3 + product pages: a frosted ‹ SHOP chip pops in under the header when you scroll back up and goes when you scroll down, like the store chips; it goes back to the store page you came from, same category and place (backChip in OB_CONF: show "both" | "phone" | "computer" | false).
    v17.3 = v17.2 + photo viewer: no flash on opening (the white background fades in from the first frame instead of popping in), the page photo steps aside while its copy flies, photos and blur only swap in once decoded, viewer made ready after the page loads.
@@ -1024,6 +1025,50 @@ try {
   window.addEventListener("load", mark);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(mark);
   var rz; window.addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(mark, 200); }, { passive: true });
+})();
+
+/* ---- OB STATEMENT LINES v1 (v17.6) · home page: the statement under the hero gets line breaks before SOMETHING, THINGS, TO and A (EVERY ROOM NEEDS / SOMETHING SLIGHTLY OFF. / THINGS MADE AND FOUND / TO KEEP YOUR PLACE, / A LITTLE LESS EXPECTED.). Only while the words are exactly these, in English; commas may sit anywhere. The breaks are <br class="obBr">: Custom CSS 9.6 shows them on phones only. statementLines: false in OB SETTINGS switches it off. ---- */
+(function () {
+  try {
+    if ((window.OB_CONF || {}).statementLines === false) return;
+    var WORDS = "every room needs something slightly off things made and found to keep your place a little less expected";
+    var BEFORE = { 3: 1, 6: 1, 10: 1, 14: 1 };
+    var run = function () {
+      try {
+        var d = document.documentElement;
+        if (!(d.classList.contains("ob-page-home") || location.pathname === "/")) return;
+        var hs = document.querySelectorAll("main .sqs-html-content h1, main .sqs-html-content h2");
+        for (var i = 0; i < hs.length; i++) {
+          var h = hs[i];
+          if (h.querySelector("br.obBr")) continue;
+          var txt = (h.textContent || "").toLowerCase().replace(/[^a-z\s]/g, " ").replace(/\s+/g, " ").trim();
+          if (txt !== WORDS) continue;
+          var w = document.createTreeWalker(h, NodeFilter.SHOW_TEXT, null), n, nodes = [];
+          while ((n = w.nextNode())) nodes.push(n);
+          var idx = 0, inWord = false, cuts = [];
+          nodes.forEach(function (t) {
+            var v = t.nodeValue;
+            for (var k = 0; k < v.length; k++) {
+              var isW = /[A-Za-z]/.test(v.charAt(k));
+              if (isW && !inWord) { if (BEFORE[idx]) cuts.push([t, k]); idx++; }
+              if (/\s/.test(v.charAt(k))) inWord = false; else if (isW) inWord = true;
+            }
+          });
+          if (cuts.length !== 4) continue;
+          for (var c = cuts.length - 1; c >= 0; c--) {
+            var node = cuts[c][0], at = cuts[c][1];
+            var rest = node.splitText(at), br = document.createElement("br");
+            br.className = "obBr";
+            rest.parentNode.insertBefore(br, rest);
+          }
+          h.classList.add("obStatement");
+        }
+      } catch (e) {}
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run); else run();
+    window.addEventListener("load", run);
+    if (window.Weglot && Weglot.on) try { Weglot.on("languageChanged", function () { setTimeout(run, 0); }); } catch (e) {}
+  } catch (e) {}
 })();
 
 /* ---- footer: OB OTHER THINGS v1 · product pages, computers: OTHER THINGS as one sideways row (drag, trackpad, arrow keys), topped up from the store (otherThings in OB SETTINGS). Styles stay in the Footer. ---- */
