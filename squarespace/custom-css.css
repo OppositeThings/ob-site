@@ -1,9 +1,14 @@
 /* ======================================================================
-   OB SHOP CSS — Squarespace 7.1 — v17.12
+   OB SHOP CSS — Squarespace 7.1 — v17.13
    Opposite Things · Website → Pages → Custom Code → Custom CSS.
    Pairs with Header v15.5, the Footer (OB SETTINGS + ob-suite.js v17.0
    from GitHub) and the Store page's ob-drawings.js. "The suite" in the
    notes below is ob-suite.js: the code that used to sit in the Footer.
+
+   v17.13 — phones: on landing, the bottom of the screen (where the
+     browser's toolbar sits) cuts through the middle of EVERY ROOM NEEDS,
+     a peek that says scroll (v17.8 ended just under that line).
+     Includes v17.12.
 
    v17.12 — phones: BROWSE FINDS sits right under the FINDS text (the
      empty line above it is hidden; was a 47px gap, now 10px).
@@ -4036,16 +4041,19 @@ section[data-section-id="6ad932d919eb524248a93d6f"] .fluid-engine {
     height: ~"calc(100svh - 204px)" !important;
   }
 }
-/* Phones (v17.8): the screen ends just under the statement's first
-   line. The statement starts 50px into its section (its padding) and its
-   size is min(7.1vw - 2.3px, 36px) (below); 1.04 times that puts the
-   screen's edge halfway between line one's letters and line two's. If
-   the statement's size changes, change these numbers to 1.04 times it:
-   7.384vw = 1.04 x 7.1vw, 2.392px = 1.04 x 2.3px, 37.44px = 1.04 x 36px. */
+/* Phones (v17.13): the bottom of the screen on landing (100svh, the
+   height with the browser's toolbars showing) cuts through the middle
+   of the statement's first line. The statement starts 50px into its
+   section and its size is min(7.1vw - 2.3px, 36px) (below); 0.525 times
+   that is the middle of its first line. If the statement's size
+   changes, change these to 0.525 times it: 3.728vw = 0.525 x 7.1vw,
+   1.208px = 0.525 x 2.3px, 18.9px = 0.525 x 36px. Less of the line
+   showing: make 0.525 smaller (0.3); more: bigger (0.8).
+   (v17.8 used 1.04: the screen ended just under the line.) */
 @media (max-width: 767px) {
   section[data-section-id="6ad932d919eb524248a93d6f"] {
-    height: ~"calc(100vh - 50px - min(7.384vw - 2.392px, 37.44px))" !important;
-    height: ~"calc(100svh - 50px - min(7.384vw - 2.392px, 37.44px))" !important;
+    height: ~"calc(100vh - 50px - min(3.728vw - 1.208px, 18.9px))" !important;
+    height: ~"calc(100svh - 50px - min(3.728vw - 1.208px, 18.9px))" !important;
   }
 }
 
