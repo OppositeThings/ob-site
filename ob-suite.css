@@ -44,7 +44,7 @@ html .product-list-container.obSwapIn img:not(.grid-image-hover){transition:opac
 /* v17.20: grows in slightly as it fades in (scale is separate from the inline transform that moves it) */
 .obPvTip>b{scale:.96;transition:width .24s cubic-bezier(.2,.7,.2,1),scale .15s ease-out}
 .obPvTip.obPvTipOn>b{scale:1;transition:width .24s cubic-bezier(.2,.7,.2,1),scale .2s cubic-bezier(.22,.61,.36,1)}
-@media (prefers-reduced-motion:reduce){.obPvTip>b{scale:1}}
+@media (prefers-reduced-motion:reduce){.obPvTip>b,.obPvTip.obPvTipOn>b{scale:1;transition:none}}
 .obPvTip b{justify-items:start;overflow:hidden;box-sizing:border-box;transition:width .24s cubic-bezier(.2,.7,.2,1)}
 .obPvTip b>span{grid-area:1/1;display:block;transition:opacity .18s ease,transform .24s cubic-bezier(.2,.7,.2,1)}
 .obPvTip b>span.obPvOut{opacity:0;transform:translateY(-80%)}
