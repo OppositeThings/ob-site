@@ -1,4 +1,5 @@
-/* OB SOLID SUITE v17.19 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.20 · ob-suite.js · Opposite Things
+   v17.20 = v17.19 + computers, the pointer chip: follows the mouse by time (same on every screen, ~0.1s trail instead of ~0.5s at 60Hz), grows in slightly as it fades in (96% to 100%, 0.2s), fades out over 0.15s instead of 0.08s.
    v17.19 = v17.18 + smoothness pass: the back chip slides in over 0.42s easing out, away over 0.28s easing in, like the store chips bar (ob-suite.css; the rest is in Custom CSS v17.16).
    v17.18 = v17.17 + product pages, phones: the accordion opens and closes smoothly (the suite does it instead of Squarespace: starts on the tap, 0.32s height and fade, the section above closes in the same glide, the page follows so nothing jumps). OB SETTINGS accordion { smooth, multiple }. Replaces the v17.15 accordion reveal.
    v17.17 = v17.16 + store chips (chipSwap "images"): photos fade out quicker (0.16s) and back in softer (0.42s), one after another left to right (35ms apart), and only once the first new photos are decoded (up to 0.3s), so they come in together instead of popping. Styles in ob-suite.css.
@@ -892,11 +893,15 @@ try {
       nw.classList.remove("obPvIn");
       swapT = setTimeout(function () { var olds = chip.querySelectorAll(".obPvOut"); for (var j = 0; j < olds.length; j++) chip.removeChild(olds[j]); }, 300);
     };
+    /* v17.20: the chip follows by time, not by frames (the same on 60Hz and 120Hz screens): it closes 90% of the gap in about 0.1s */
+    var drawT = 0, TAU = 45;
     var draw = function () {
       raf = 0;
-      if (still()) { cx = mx; cy = my; } else { cx += (mx - cx) * 0.09; cy += (my - cy) * 0.09; }
+      var now = performance.now(), dt = drawT ? Math.min(64, now - drawT) : 16;
+      drawT = now;
+      if (still()) { cx = mx; cy = my; } else { var k = 1 - Math.exp(-dt / TAU); cx += (mx - cx) * k; cy += (my - cy) * k; }
       chip.style.transform = "translate(" + cx.toFixed(1) + "px," + cy.toFixed(1) + "px)";
-      if (Math.abs(mx - cx) > 0.3 || Math.abs(my - cy) > 0.3) raf = requestAnimationFrame(draw);
+      if (Math.abs(mx - cx) > 0.3 || Math.abs(my - cy) > 0.3) raf = requestAnimationFrame(draw); else drawT = 0;
     };
     var tipAt = function (e) {
       if (!e) return;
