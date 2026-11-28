@@ -1,4 +1,5 @@
-/* OB SOLID SUITE v17.22 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.23 · ob-suite.js · Opposite Things
+   v17.23 = v17.22 + computers, the pointer chip in black glass at 34px (dark see-through glass, off-white words, 12px; Ben 28 Nov).
    v17.22 = v17.20 at 44px (v17.21's smaller chip set aside) + pointer chip flashing fixed: no grow-in (scaling a blurred-glass chip can flicker), a 120ms wait before it fades when the mouse crosses a gap, and coming back mid-fade it glides on instead of jumping.
    v17.21 = v17.20 + computers, the pointer chip is smaller: 34px tall, 12px words (was 44px / 13px), same light glass, corner and capitals (Ben: option 4).
    v17.20 = v17.19 + computers, the pointer chip: follows the mouse by time (same on every screen, ~0.1s trail instead of ~0.5s at 60Hz), grows in slightly as it fades in (96% to 100%, 0.2s), fades out over 0.15s instead of 0.08s.
