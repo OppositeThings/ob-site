@@ -107,8 +107,8 @@ html.obOtOn .obOtRow img{-webkit-user-drag:none}
 .obOtExtra{display:none!important}
 .obOtExtra .grid-item-image{width:100%;height:100%;object-fit:cover}
 /* ==== BACK CHIP · ← SHOP on product pages (backChip) ==== */
-.obBack{position:fixed;z-index:9999;left:var(--obBackX,var(--sqs-site-gutter,4vw));top:calc(var(--obChipsTop,72px) - 10px);display:block;padding:10px;margin:-10px;text-decoration:none!important;color:#111!important;-webkit-tap-highlight-color:transparent;transform:translate3d(0,0,0);opacity:1;transition:transform var(--obChipSlideMs,550ms) cubic-bezier(.4,0,.2,1),opacity var(--obChipSlideMs,550ms) cubic-bezier(.4,0,.2,1);will-change:transform,opacity}
-.obBack.obBackHidden{transform:translate3d(0,-120%,0);opacity:0;pointer-events:none}
+.obBack{position:fixed;z-index:9999;left:var(--obBackX,var(--sqs-site-gutter,4vw));top:calc(var(--obChipsTop,72px) - 10px);display:block;padding:10px;margin:-10px;text-decoration:none!important;color:#111!important;-webkit-tap-highlight-color:transparent;transform:translate3d(0,0,0);opacity:1;transition:transform var(--obChipSlideMs,420ms) cubic-bezier(.22,.61,.36,1),opacity var(--obChipSlideMs,420ms) cubic-bezier(.22,.61,.36,1);will-change:transform,opacity}
+.obBack.obBackHidden{transform:translate3d(0,-120%,0);opacity:0;pointer-events:none;transition:transform .28s cubic-bezier(.4,0,1,1),opacity .28s cubic-bezier(.4,0,1,1)}
 .obBack b{display:flex;align-items:center;gap:8px;box-sizing:border-box;height:44px;padding:0 14px;border-radius:5px;border:1px solid rgba(17,17,17,.1);background:rgba(255,255,250,.5);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);font:400 13px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0;text-transform:uppercase;white-space:nowrap;transition:background .15s ease}
 .obBack i{display:block;flex:none;font-style:normal;transition:transform .2s cubic-bezier(.2,.7,.2,1)}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.obBack b{background:rgba(255,255,250,.92)}}
