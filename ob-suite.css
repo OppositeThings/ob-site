@@ -39,15 +39,19 @@ html .product-list-container.obSwapIn img:not(.grid-image-hover){transition:opac
 @media (hover:hover) and (pointer:fine){.obInfoLink{pointer-events:none!important;cursor:default!important}.obTilePic,.obTilePic *,html.obTileOver main *{cursor:pointer!important}:is(.product-gallery-slides-item,.product-gallery-slides-item *,.obPv .obPvSlide,.obPv .obPvSlide *,section.obHeroShopIn,section.obHeroShopIn *){cursor:pointer!important}}
 @media (hover:hover) and (pointer:fine){body{cursor:default}main :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption){cursor:default}main a[href] :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption),main :is(p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption) :is(a[href],a[href] *,button,button *){cursor:pointer}:is(input:not([type=submit]):not([type=button]):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=image]):not([type=color]):not([type=file]),textarea,[contenteditable=""],[contenteditable=true]){cursor:text}}
 @media (min-width:768px){.product-gallery-slides-item,.product-gallery-slides-item img{cursor:pointer}}
-.obPvTip{position:fixed;left:0;top:0;z-index:2147483001;pointer-events:none;opacity:0;transition:opacity .08s ease-out}
+.obPvTip{position:fixed;left:0;top:0;z-index:2147483001;pointer-events:none;opacity:0;transition:opacity .15s ease-out}
 .obPvTip.obPvTipOn{opacity:1;transition:opacity .2s ease}
 .obPvTip b{justify-items:start;overflow:hidden;box-sizing:border-box;transition:width .24s cubic-bezier(.2,.7,.2,1)}
 .obPvTip b>span{grid-area:1/1;display:block;transition:opacity .18s ease,transform .24s cubic-bezier(.2,.7,.2,1)}
 .obPvTip b>span.obPvOut{opacity:0;transform:translateY(-80%)}
 .obPvTip b>span.obPvIn{opacity:0;transform:translateY(80%);transition:none}
 @media (prefers-reduced-motion:reduce){.obPvTip b,.obPvTip b>span{transition:none}}
-.obPvTip b{position:absolute;left:18px;top:14px;display:grid;align-content:center;height:44px;box-sizing:border-box;padding:0 14px;border-radius:5px;border:0;background:rgba(255,255,250,.5);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#111;font:400 13px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0;text-transform:uppercase;white-space:nowrap}
+.obPvTip b{position:absolute;left:18px;top:14px;display:grid;align-content:center;height:34px;box-sizing:border-box;padding:0 11px;border-radius:5px;border:0;background:rgba(255,255,250,.5);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#111;font:400 12px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0;text-transform:uppercase;white-space:nowrap}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.obPvTip b{background:rgba(255,255,250,.92)}}
+/* v17.20 (after the rules above, so its transition wins): grows in slightly as it fades in (scale is separate from the inline transform that moves it) */
+.obPvTip>b{scale:.96;transition:width .24s cubic-bezier(.2,.7,.2,1),scale .15s ease-out}
+.obPvTip.obPvTipOn>b{scale:1;transition:width .24s cubic-bezier(.2,.7,.2,1),scale .2s cubic-bezier(.22,.61,.36,1)}
+@media (prefers-reduced-motion:reduce){.obPvTip>b,.obPvTip.obPvTipOn>b{scale:1;transition:none}}
 .product-gallery-slides-item::after{pointer-events:none}
 @media (hover:hover) and (pointer:fine){.obHeroShopHide{pointer-events:none!important;transition:opacity .18s ease}.obHeroShopHide.obCtaAway,html.obCtaHidden .obHeroShopHide{opacity:0!important}.obHeroShopHide:focus-within{opacity:1!important}}
 @media (prefers-reduced-motion:reduce){.obHeroShopHide{transition:none!important}}
