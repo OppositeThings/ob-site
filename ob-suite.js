@@ -1,4 +1,5 @@
-/* OB SOLID SUITE v17.20 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.21 · ob-suite.js · Opposite Things
+   v17.21 = v17.20 + computers, the pointer chip is smaller: 34px tall, 12px words (was 44px / 13px), same light glass, corner and capitals (Ben: option 4).
    v17.20 = v17.19 + computers, the pointer chip: follows the mouse by time (same on every screen, ~0.1s trail instead of ~0.5s at 60Hz), grows in slightly as it fades in (96% to 100%, 0.2s), fades out over 0.15s instead of 0.08s.
    v17.19 = v17.18 + smoothness pass: the back chip slides in over 0.42s easing out, away over 0.28s easing in, like the store chips bar (ob-suite.css; the rest is in Custom CSS v17.16).
    v17.18 = v17.17 + product pages, phones: the accordion opens and closes smoothly (the suite does it instead of Squarespace: starts on the tap, 0.32s height and fade, the section above closes in the same glide, the page follows so nothing jumps). OB SETTINGS accordion { smooth, multiple }. Replaces the v17.15 accordion reveal.
