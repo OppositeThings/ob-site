@@ -46,8 +46,8 @@ html .product-list-container.obSwapIn img:not(.grid-image-hover){transition:opac
 .obPvTip b>span.obPvOut{opacity:0;transform:translateY(-80%)}
 .obPvTip b>span.obPvIn{opacity:0;transform:translateY(80%);transition:none}
 @media (prefers-reduced-motion:reduce){.obPvTip b,.obPvTip b>span{transition:none}}
-.obPvTip b{position:absolute;left:18px;top:14px;display:grid;align-content:center;height:34px;box-sizing:border-box;padding:0 11px;border-radius:5px;border:0;background:rgba(17,17,17,.55);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#fffffa;font:400 12px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0;text-transform:uppercase;white-space:nowrap}
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.obPvTip b{background:rgba(17,17,17,.88)}}
+.obPvTip b{position:absolute;left:18px;top:14px;display:grid;align-content:center;height:44px;box-sizing:border-box;padding:0 14px;border-radius:5px;border:0;background:rgba(255,255,250,.5);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#111;font:400 13px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0;text-transform:uppercase;white-space:nowrap}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.obPvTip b{background:rgba(255,255,250,.92)}}
 .product-gallery-slides-item::after{pointer-events:none}
 @media (hover:hover) and (pointer:fine){.obHeroShopHide{pointer-events:none!important;transition:opacity .18s ease}.obHeroShopHide.obCtaAway,html.obCtaHidden .obHeroShopHide{opacity:0!important}.obHeroShopHide:focus-within{opacity:1!important}}
 @media (prefers-reduced-motion:reduce){.obHeroShopHide{transition:none!important}}
