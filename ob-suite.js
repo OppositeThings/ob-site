@@ -1,4 +1,5 @@
-/* OB SOLID SUITE v17.18 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.19 · ob-suite.js · Opposite Things
+   v17.19 = v17.18 + smoothness pass: the back chip slides in over 0.42s easing out, away over 0.28s easing in, like the store chips bar (ob-suite.css; the rest is in Custom CSS v17.16).
    v17.18 = v17.17 + product pages, phones: the accordion opens and closes smoothly (the suite does it instead of Squarespace: starts on the tap, 0.32s height and fade, the section above closes in the same glide, the page follows so nothing jumps). OB SETTINGS accordion { smooth, multiple }. Replaces the v17.15 accordion reveal.
    v17.17 = v17.16 + store chips (chipSwap "images"): photos fade out quicker (0.16s) and back in softer (0.42s), one after another left to right (35ms apart), and only once the first new photos are decoded (up to 0.3s), so they come in together instead of popping. Styles in ob-suite.css.
    v17.16 = v17.15 + computers: the OTHER THINGS row on product pages runs off the left edge of the screen too (products scrolled past slide off the left); it still starts with the first product on the page margin.

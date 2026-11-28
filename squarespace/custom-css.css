@@ -1,9 +1,15 @@
 /* ======================================================================
-   OB SHOP CSS — Squarespace 7.1 — v17.15
+   OB SHOP CSS — Squarespace 7.1 — v17.16
    Opposite Things · Website → Pages → Custom Code → Custom CSS.
    Pairs with Header v15.5, the Footer (OB SETTINGS + ob-suite.js v17.0
    from GitHub) and the Store page's ob-drawings.js. "The suite" in the
    notes below is ob-suite.js: the code that used to sit in the Footer.
+
+   v17.16 — smoothness pass (6.1, 6.2, 3.x chips bar): pages arrive
+     on an easing-out curve (fast start, soft landing), leave a touch
+     quicker (180ms, easing in); photos fade in over 0.6s, easing out;
+     the store chips bar slides in over 0.42s easing out and away over
+     0.28s easing in (was 0.55s both ways). Includes v17.15.
 
    v17.15 — About page on phones (9.6c): the five stories in one
      rhythm, photo, 24px, words, 48px to the next photo.
@@ -198,7 +204,7 @@
   --obChipPadX: 12px;
   --obChipFontSize: 14px;
   --obChipGap: 8px;
-  --obChipSlideMs: 550ms;           /* chips bar slide in/out */
+  --obChipSlideMs: 420ms;           /* chips bar slide in (away: 280ms, 3.x) */
 
   /* Product detail header padding */
   --obProductHeaderPadMobile: 22px;
@@ -773,7 +779,7 @@ body .header-announcement-bar-wrapper {
 
   html.obLeaving body.header--menu-open #header {
     opacity: 0 !important;
-    transition: opacity 200ms ease !important;
+    transition: opacity 180ms cubic-bezier(0.4, 0, 1, 1) !important;
   }
 }
 
@@ -1407,13 +1413,20 @@ body.header--menu-open .header-menu .header-menu-nav-folder[data-folder="root"] 
 
 html.obChipsReady #obShopChipsBar {
   transition:
-    transform var(--obChipSlideMs) cubic-bezier(0.4, 0, 0.2, 1),
-    opacity   var(--obChipSlideMs) cubic-bezier(0.4, 0, 0.2, 1);
+    transform var(--obChipSlideMs) cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity   var(--obChipSlideMs) cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 html.obChipsHidden #obShopChipsBar {
   transform: translate3d(0,-120%,0);
   opacity: 0;
+}
+
+/* v17.16: away quicker, easing in (in: --obChipSlideMs, easing out) */
+html.obChipsReady.obChipsHidden #obShopChipsBar {
+  transition:
+    transform 280ms cubic-bezier(0.4, 0, 1, 1),
+    opacity   280ms cubic-bezier(0.4, 0, 1, 1);
 }
 
 #obShopChipsScroller {
@@ -2134,26 +2147,26 @@ html.obFilterSlow ul[data-ob-owned] a.category-link.active {
 main,
 #footer-sections,
 #header {
-  animation: obPageIn 300ms cubic-bezier(0.25, 0.1, 0.25, 1) backwards;
+  animation: obPageIn 320ms cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
 }
 
 @media (max-width: 767px) {
   #obShopChipsBar {
-    animation: obPageIn 300ms cubic-bezier(0.25, 0.1, 0.25, 1) backwards;
+    animation: obPageIn 320ms cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
   }
 
   /* The chips bar (only on show further down the page) fades out with
      the page when a link or chip is tapped */
   html.obLeaving #obShopChipsBar {
     opacity: 0 !important;
-    transition: opacity 200ms ease !important;
+    transition: opacity 180ms cubic-bezier(0.4, 0, 1, 1) !important;
   }
 
   /* Leaving from the open menu: the menu fades out with the page */
   html.obLeaving:is([class*="menu-open"], [class*="menu--open"]) #header,
   html.obLeaving body:is([class*="menu-open"], [class*="menu--open"]) #header {
     opacity: 0 !important;
-    transition: opacity 200ms ease !important;
+    transition: opacity 180ms cubic-bezier(0.4, 0, 1, 1) !important;
   }
 }
 /* ---- Every screen size from here ---- */
@@ -2180,7 +2193,7 @@ html.obHeroWait :is(main, #footer-sections, #header) {
    transition: it outranks the hover zooms (9.2, 9.3), so without
    transform here the zoom snapped instead of easing. */
 html.obImgFade body main img:not(.grid-image-hover) {
-  transition: opacity 500ms cubic-bezier(0.25, 0.1, 0.25, 1), transform .6s ease !important;
+  transition: opacity 600ms cubic-bezier(0.22, 0.61, 0.36, 1), transform .6s ease !important;
 }
 
 /* Images that arrive while the page is held don't fade on their own —
@@ -2192,14 +2205,14 @@ html.obHeroWait body main img:not(.grid-image-hover) {
 /* Fade-out when following a link (the header stays) */
 html.obLeaving :is(main, #footer-sections) {
   opacity: 0 !important;
-  transition: opacity 200ms ease !important;
+  transition: opacity 180ms cubic-bezier(0.4, 0, 1, 1) !important;
 }
 
 /* The footer head's colour layer sits outside the page (on <html>); it
    fades with it */
 html.obLeaving > .obWarpLayer {
   opacity: 0 !important;
-  transition: opacity 200ms ease !important;
+  transition: opacity 180ms cubic-bezier(0.4, 0, 1, 1) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2227,7 +2240,7 @@ html.obLeaving > .obWarpLayer {
   /* ... and the products and the sections below them fade out */
   html.obLeaving.obLeavingInStore :is(.product-list-container, .product-list-section ~ .page-section) {
     opacity: 0 !important;
-    transition: opacity 200ms ease !important;
+    transition: opacity 180ms cubic-bezier(0.4, 0, 1, 1) !important;
   }
 
   /* Arriving from another category: the line and chips are already on
@@ -2237,7 +2250,7 @@ html.obLeaving > .obWarpLayer {
   }
 
   html.obFromStore :is(.product-list-container, .product-list-section ~ .page-section) {
-    animation: obPageIn 300ms cubic-bezier(0.25, 0.1, 0.25, 1) backwards;
+    animation: obPageIn 320ms cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
   }
 }
 
