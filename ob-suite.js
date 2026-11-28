@@ -1,4 +1,5 @@
-/* OB SOLID SUITE v17.17 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.18 · ob-suite.js · Opposite Things
+   v17.18 = v17.17 + product pages, phones: the accordion opens and closes smoothly (the suite does it instead of Squarespace: starts on the tap, 0.32s height and fade, the section above closes in the same glide, the page follows so nothing jumps). OB SETTINGS accordion { smooth, multiple }. Replaces the v17.15 accordion reveal.
    v17.17 = v17.16 + store chips (chipSwap "images"): photos fade out quicker (0.16s) and back in softer (0.42s), one after another left to right (35ms apart), and only once the first new photos are decoded (up to 0.3s), so they come in together instead of popping. Styles in ob-suite.css.
    v17.16 = v17.15 + computers: the OTHER THINGS row on product pages runs off the left edge of the screen too (products scrolled past slide off the left); it still starts with the first product on the page margin.
    v17.15 = v17.14 + phones: the home products row (FINDS) scrolls freely (no snap) and runs from page margin to page margin;
@@ -6440,72 +6441,109 @@ try {
 })();
 } catch (e) { if (window.console) console.error("[OB meta fit]", e); }
 
-/* ---- OB ACCORDION REVEAL v1 (v17.15) · product pages, phones: a tapped-open accordion section (DETAILS, SHIPPING…) ends fully on screen. While the sections animate, the opened one is held where it was (so one closing above it doesn't throw it upwards); once they settle, the page glides just enough to show all of it, its title kept under the header. ---- */
+/* ---- OB ACCORDION v2 (v17.18) · product pages, phones: the suite opens and closes the accordion sections itself (DETAILS, SHIPPING…), instead of Squarespace's (a short pause after the tap, then a snap). It starts on the tap; the section grows open over 0.32s and its words fade in; the + turns with it; the section open above closes in the same 0.32s; the page moves with them in one glide, so the tapped title doesn't jump and the open section ends fully on screen, under the header. Reduced motion: opens at once. OB SETTINGS accordion: { smooth: false } gives Squarespace's back; { multiple: true } lets several stay open. Replaces the v17.15 accordion reveal. ---- */
 try {
 (function () {
   var d = document.documentElement;
   if (!(d.classList.contains("ob-page-product") || /^\/store\/p\//i.test(location.pathname))) return;
+  var C = function () { return (window.OB_CONF || {}).accordion || {}; };
+  if (C().smooth === false) return;
   var phone = function () { return window.matchMedia("(max-width: 767px)").matches; };
   var still = function () { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; };
+  var MS = 320, EASE = "cubic-bezier(.22,.61,.36,1)";
+  var ease = function (k) { return 1 - Math.pow(1 - k, 3); };
   var headerBottom = function () {
     var h = document.querySelector("#header:not([data-ob-mono])");
     var b = h ? Math.max(0, h.getBoundingClientRect().bottom) : 0;
     return Math.min(b, 120);
   };
-  /* next frame, with a timer as a backstop (frames pause in hidden tabs and some webviews) */
   var tick = function (f) { var done = 0, g = function () { if (done) return; done = 1; f(); }; requestAnimationFrame(g); setTimeout(g, 50); };
-  var run = 0;
-  /* our own short ease-out glide (420ms): the same on every phone, and a finger on the screen stops it */
-  var glide = function (by, my) {
-    var y0 = window.scrollY, t0 = performance.now(), dur = still() ? 0 : 420, stop = false;
-    var halt = function () { stop = true; };
-    window.addEventListener("touchstart", halt, { passive: true, once: true });
-    window.addEventListener("wheel", halt, { passive: true, once: true });
-    var step = function () {
-      if (stop || my !== run) return;
-      var k = dur ? Math.min(1, (performance.now() - t0) / dur) : 1;
-      window.scrollTo({ top: y0 + by * (1 - Math.pow(1 - k, 3)), behavior: "instant" });
-      if (k < 1) tick(step);
-      else { window.removeEventListener("touchstart", halt); window.removeEventListener("wheel", halt); }
-    };
-    step();
+  var parts = function (item) {
+    return { btn: item.querySelector("button.accordion-item__click-target"), dd: item.querySelector(".accordion-item__dropdown"), desc: item.querySelector(".accordion-item__description") };
   };
+  var isOpen = function (item) { var p = parts(item); return !!p.btn && p.btn.getAttribute("aria-expanded") === "true"; };
+  var mark = function (item, open) {
+    var p = parts(item);
+    if (p.btn) p.btn.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) item.setAttribute("data-is-open", "true"); else item.removeAttribute("data-is-open");
+    if (p.dd) p.dd.classList.toggle("accordion-item__dropdown--open", open);
+  };
+  var stop = function (item) {
+    var p = parts(item);
+    [p.dd, p.desc].forEach(function (el) { if (el && el.__obAcc) { el.__obAcc.cancel(); el.__obAcc = null; } });
+  };
+  var anim = function (el, frames, ms, delay) {
+    if (!el || !el.animate) return null;
+    var a = el.animate(frames, { duration: ms, delay: delay || 0, easing: EASE, fill: "both" });
+    el.__obAcc = a;
+    return a;
+  };
+  var run = 0;
   document.addEventListener("click", function (e) {
-    if (!phone() || !e.isTrusted) return; /* real taps only: the page opens INSPIRATION itself on load */
+    if (!phone() || !e.isTrusted) return; /* real taps only: the page opens INSPIRATION itself on load (Squarespace's way) */
     var btn = e.target.closest && e.target.closest("button.accordion-item__click-target");
     if (!btn) return;
-    var item = btn.closest("li.accordion-item, .accordion-item");
-    if (!item) return;
-    var my = ++run, top0 = item.getBoundingClientRect().top, t0 = performance.now(), calm = t0, lastH = -1;
-    var prevAnchor = d.style.overflowAnchor;
+    var item = btn.closest("li.accordion-item");
+    var list = item && item.parentElement;
+    if (!item || !list || !parts(item).dd) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    var my = ++run, quick = still() ? 0 : MS;
+    var many = C().multiple != null ? !!C().multiple : list.getAttribute("data-should-allow-multiple-open-items") === "true";
+    var opening = !isOpen(item);
+    var closing = [];
+    if (!opening) closing.push(item);
+    else if (!many) Array.prototype.forEach.call(list.children, function (it) { if (it !== item && it.classList.contains("accordion-item") && isOpen(it)) closing.push(it); });
+
+    /* measure before anything moves */
+    var top0 = item.getBoundingClientRect().top;
+    var heights = closing.map(function (it) { return parts(it).dd.offsetHeight; });
+    var p = parts(item), openH = 0;
+    stop(item);
+    closing.forEach(stop);
+    if (opening) {
+      mark(item, true);
+      p.dd.style.height = "";
+      openH = p.dd.scrollHeight;
+    }
+    closing.forEach(function (it) { mark(it, false); parts(it).dd.style.display = "block"; });
+
+    /* where the page should end: the tapped title where it was, moved up just enough to show the open section whole */
+    var by = 0;
+    if (opening) {
+      var titleH = item.getBoundingClientRect().height - p.dd.offsetHeight;
+      var bottom = top0 + titleH + openH, topLimit = headerBottom() + 16, bottomLimit = window.innerHeight - 24;
+      if (bottom > bottomLimit) by = Math.max(0, Math.min(bottom - bottomLimit, top0 - topLimit));
+    }
+
+    /* the sections move */
+    var finish = function () {
+      if (my !== run) return;
+      if (opening) { stop(item); p.dd.style.height = ""; }
+      closing.forEach(function (it) { stop(it); parts(it).dd.style.display = ""; });
+      d.style.overflowAnchor = "";
+    };
+    if (opening) {
+      anim(p.dd, [{ height: "0px" }, { height: openH + "px" }], quick);
+      if (p.desc) anim(p.desc, [{ opacity: 0 }, { opacity: 1 }], quick ? quick - 60 : 0, quick ? 60 : 0);
+    }
+    closing.forEach(function (it, i) {
+      var q = parts(it);
+      anim(q.dd, [{ height: heights[i] + "px" }, { height: "0px" }], quick);
+      if (q.desc) anim(q.desc, [{ opacity: 1 }, { opacity: 0 }], quick ? Math.round(quick * 0.6) : 0);
+    });
+
+    /* the page moves with them, in the same easing: the tapped title stays put (or glides up by `by`) */
     d.style.overflowAnchor = "none";
-    /* keep the opened section's title where it was tapped (something closing above it would move it). Also run from a ResizeObserver, which fires after layout and before paint, so no frame shows the jump */
-    var pin = function () {
-      if (my !== run) return null;
-      var r = item.getBoundingClientRect(), dy = r.top - top0;
-      if (Math.abs(dy) > 0.5) window.scrollTo({ top: window.scrollY + dy, behavior: "instant" }); /* the site scrolls smoothly by default; this hold must not */
-      return r;
+    var t0 = performance.now(), dur = quick;
+    var follow = function () {
+      if (my !== run) return;
+      var k = dur ? Math.min(1, (performance.now() - t0) / dur) : 1;
+      var want = top0 - by * ease(k), now = item.getBoundingClientRect().top;
+      if (Math.abs(now - want) > 0.5) window.scrollTo({ top: window.scrollY + (now - want), behavior: "instant" });
+      if (k < 1) tick(follow); else { finish(); var r = item.getBoundingClientRect(); if (Math.abs(r.top - want) > 0.5) window.scrollTo({ top: window.scrollY + (r.top - want), behavior: "instant" }); }
     };
-    var ro = null;
-    try { ro = new ResizeObserver(function () { pin(); }); ro.observe(item.parentNode || item); } catch (e2) {}
-    var done = function () { if (my === run) d.style.overflowAnchor = prevAnchor; if (ro) { ro.disconnect(); ro = null; } };
-    var hold = function () {
-      if (my !== run) { done(); return; }
-      if (btn.getAttribute("aria-expanded") !== "true") { done(); return; }
-      var r = pin();
-      /* settled = nothing has changed for 150ms, and at least 400ms since the tap (Squarespace opens after a short delay) */
-      var now = performance.now();
-      if (Math.abs(r.height - lastH) >= 0.5) { calm = now; lastH = r.height; }
-      if ((now - t0 < 400 || now - calm < 150) && now - t0 < 1500) { tick(hold); return; }
-      done();
-      /* settled: show the whole section if it runs off the bottom, never pushing its title under the header */
-      r = item.getBoundingClientRect();
-      var topLimit = headerBottom() + 16, bottomLimit = window.innerHeight - 24, by = 0;
-      if (r.bottom > bottomLimit) by = Math.min(r.bottom - bottomLimit, r.top - topLimit);
-      else if (r.top < topLimit) by = r.top - topLimit;
-      if (Math.abs(by) > 2) glide(by, my);
-    };
-    tick(hold);
-  }, false);
+    follow();
+  }, true);
 })();
-} catch (e) { if (window.console) console.error("[OB accordion reveal v1]", e); }
+} catch (e) { if (window.console) console.error("[OB accordion v2]", e); }
