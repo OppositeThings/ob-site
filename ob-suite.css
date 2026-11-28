@@ -5,8 +5,9 @@
    Rules that shape the page before any script runs live in Custom CSS (they must be there from the first paint). */
 /* ==== PAGE · no double-tap zoom on phones (pinch stays); store chip swap fades only the photos (chipSwap "images") ==== */
 html,body{touch-action:manipulation}
-html .product-list-container.obSwapOut img:not(.grid-image-hover){opacity:0!important;transition:opacity .2s ease!important}
-html .product-list-container.obSwapIn img:not(.grid-image-hover){transition:opacity .3s cubic-bezier(.25,.1,.25,1)!important}
+/* v17.17: out quick (0.16s, easing in), in slower and softer (0.42s, easing out), one photo after another (--obSwapDelay, set by the suite) */
+html .product-list-container.obSwapOut img:not(.grid-image-hover){opacity:0!important;transition:opacity .16s cubic-bezier(.4,0,1,1),transform .6s ease!important}
+html .product-list-container.obSwapIn img:not(.grid-image-hover){transition:opacity .42s cubic-bezier(.22,.61,.36,1) var(--obSwapDelay,0ms),transform .6s ease!important}
 /* ==== PERKS · chips under SIZES on product pages (perks, perksLayout) ==== */
 .obPerks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--obChipGap,8px);margin:20px 0 0;padding:0;list-style:none;text-transform:none}
 .obPerks li{display:flex;flex-direction:column;justify-content:center;gap:4px;min-height:72px;margin:0;padding:12px 8px;border-radius:var(--obChipCorner,5px);background:rgba(230,228,222,.62);color:#111;text-align:center;box-sizing:border-box}
