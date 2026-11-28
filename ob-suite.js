@@ -4522,14 +4522,15 @@ try {
      filterToTop();
      filterShow(key);
      namesShuffleIn(filterGrid());
-     const vh = window.innerHeight;
-     let n = 0;
+     /* on screen, in reading order (row by row, left to right) */
+     const vh = window.innerHeight, seen = [];
      filterAll().forEach(t => {
-      if (t.classList.contains("obTileOff")) return t.style.removeProperty("--obSwapDelay");
+      t.style.removeProperty("--obSwapDelay");
+      if (t.classList.contains("obTileOff")) return;
       const r = t.getBoundingClientRect();
-      if (r.bottom < 0 || r.top > vh) return t.style.removeProperty("--obSwapDelay");
-      t.style.setProperty("--obSwapDelay", Math.min(n++ * FILTER.staggerMs, FILTER.staggerMax) + "ms");
+      if (r.height && r.bottom > 0 && r.top < vh) seen.push([ Math.round(r.top / 8), r.left, t ]);
      });
+     seen.sort((a, b) => a[0] - b[0] || a[1] - b[1]).forEach(([, , t], n) => t.style.setProperty("--obSwapDelay", Math.min(n * FILTER.staggerMs, FILTER.staggerMax) + "ms"));
      void box.offsetWidth;
      requestAnimationFrame(() => {
       if (token !== filterState.token) return;
