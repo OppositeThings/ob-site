@@ -46,12 +46,8 @@ html .product-list-container.obSwapIn img:not(.grid-image-hover){transition:opac
 .obPvTip b>span.obPvOut{opacity:0;transform:translateY(-80%)}
 .obPvTip b>span.obPvIn{opacity:0;transform:translateY(80%);transition:none}
 @media (prefers-reduced-motion:reduce){.obPvTip b,.obPvTip b>span{transition:none}}
-.obPvTip b{position:absolute;left:18px;top:14px;display:grid;align-content:center;height:34px;box-sizing:border-box;padding:0 11px;border-radius:5px;border:0;background:rgba(255,255,250,.5);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#111;font:400 12px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0;text-transform:uppercase;white-space:nowrap}
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.obPvTip b{background:rgba(255,255,250,.92)}}
-/* v17.20 (after the rules above, so its transition wins): grows in slightly as it fades in (scale is separate from the inline transform that moves it) */
-.obPvTip>b{scale:.96;transition:width .24s cubic-bezier(.2,.7,.2,1),scale .15s ease-out}
-.obPvTip.obPvTipOn>b{scale:1;transition:width .24s cubic-bezier(.2,.7,.2,1),scale .2s cubic-bezier(.22,.61,.36,1)}
-@media (prefers-reduced-motion:reduce){.obPvTip>b,.obPvTip.obPvTipOn>b{scale:1;transition:none}}
+.obPvTip b{position:absolute;left:18px;top:14px;display:grid;align-content:center;height:34px;box-sizing:border-box;padding:0 11px;border-radius:5px;border:0;background:rgba(17,17,17,.55);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#fffffa;font:400 12px/1 ot-geist-mono-1st64u,ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0;text-transform:uppercase;white-space:nowrap}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.obPvTip b{background:rgba(17,17,17,.88)}}
 .product-gallery-slides-item::after{pointer-events:none}
 @media (hover:hover) and (pointer:fine){.obHeroShopHide{pointer-events:none!important;transition:opacity .18s ease}.obHeroShopHide.obCtaAway,html.obCtaHidden .obHeroShopHide{opacity:0!important}.obHeroShopHide:focus-within{opacity:1!important}}
 @media (prefers-reduced-motion:reduce){.obHeroShopHide{transition:none!important}}

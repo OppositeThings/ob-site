@@ -1,4 +1,6 @@
-/* OB SOLID SUITE v17.21 · ob-suite.js · Opposite Things
+/* OB SOLID SUITE v17.23 · ob-suite.js · Opposite Things
+   v17.23 = v17.22 + computers, the pointer chip in black glass at 34px (dark see-through glass, off-white words, 12px; Ben 28 Nov).
+   v17.22 = v17.20 at 44px (v17.21's smaller chip set aside) + pointer chip flashing fixed: no grow-in (scaling a blurred-glass chip can flicker), a 120ms wait before it fades when the mouse crosses a gap, and coming back mid-fade it glides on instead of jumping.
    v17.21 = v17.20 + computers, the pointer chip is smaller: 34px tall, 12px words (was 44px / 13px), same light glass, corner and capitals (Ben: option 4).
    v17.20 = v17.19 + computers, the pointer chip: follows the mouse by time (same on every screen, ~0.1s trail instead of ~0.5s at 60Hz), grows in slightly as it fades in (96% to 100%, 0.2s), fades out over 0.15s instead of 0.08s.
    v17.19 = v17.18 + smoothness pass: the back chip slides in over 0.42s easing out, away over 0.28s easing in, like the store chips bar (ob-suite.css; the rest is in Custom CSS v17.16).
@@ -872,7 +874,7 @@ try {
       if (!dlg || !dlg.open) { var ow = el.closest(".obOtDragging[data-ob-tip]") || el.closest("[data-ob-tip]"); if (ow && fine() && ow.getAttribute("data-ob-tip")) return ow.getAttribute("data-ob-tip"); return heroWord(el, lastE) || tileWord(el); }
       return "";
     };
-    var mx = 0, my = 0, cx = 0, cy = 0, on = false, raf = 0, lastE = null, word = "", swapT = 0;
+    var mx = 0, my = 0, cx = 0, cy = 0, on = false, raf = 0, lastE = null, word = "", swapT = 0, hideT = 0, offAt = 0;
     /* v17.42: a new word slides in rather than jumping: the old word slides up and fades, the new one rises in, and the chip's width eases to fit it */
     var wordSpan = function (w) { var s = document.createElement("span"); s.textContent = w; return s; };
     var setWord = function (w) {
@@ -912,10 +914,15 @@ try {
       if (tip.parentNode !== home) home.appendChild(tip);
       /* while the photos slide or the viewer closes, keep the word as it was */
       var w = (closing || Date.now() < navUntil) && on && word ? word : tipWord(document.elementFromPoint(e.clientX, e.clientY));
-      if (!w) { tip.classList.remove("obPvTipOn"); on = false; return; }
+      /* v17.22: no word under the mouse (a gap between photos, an edge): the chip waits 120ms before it fades, so crossing a gap doesn't make it blink; and if it comes back while still fading out, it glides on from where it was instead of jumping (the jump read as a flash) */
+      if (!w) {
+        if (on && !hideT) hideT = setTimeout(function () { hideT = 0; tip.classList.remove("obPvTipOn"); on = false; offAt = Date.now(); }, 120);
+        return;
+      }
+      clearTimeout(hideT); hideT = 0;
       setWord(w);
       mx = e.clientX; my = e.clientY;
-      if (!on) { cx = mx; cy = my; on = true; }
+      if (!on) { if (Date.now() - offAt > 200) { cx = mx; cy = my; } on = true; }
       tip.classList.add("obPvTipOn");
       if (!raf) raf = requestAnimationFrame(draw);
     };
